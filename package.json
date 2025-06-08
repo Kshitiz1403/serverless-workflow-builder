@@ -24,6 +24,7 @@
     "@reactflow/background": "^11.3.9",
     "@reactflow/controls": "^11.2.11",
     "@reactflow/minimap": "^11.7.8",
+    "@uiw/react-json-view": "^2.0.0-alpha.32",
     "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

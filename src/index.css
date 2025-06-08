@@ -18,6 +18,8 @@
   --danger-color: #ef4444;
   --primary-color: #4f46e5;
   --info-color: #3b82f6;
+  --bg-secondary: #f8f9fa;
+  --text-placeholder: #9ca3af;
 }
 
 :root.dark {
@@ -40,6 +42,8 @@
   --danger-color: #dc2626;
   --primary-color: #6366f1;
   --info-color: #2563eb;
+  --bg-secondary: #374151;
+  --text-placeholder: #6b7280;
 }
 
 body {
