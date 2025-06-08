@@ -254,6 +254,17 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
   const edges = [];
   const nodePositions = calculateNodePositions(workflowData.states);
 
+  // Helper function to get next state from transition (handles both string and object formats)
+  const getNextState = (transition) => {
+    if (typeof transition === 'string') {
+      return transition;
+    }
+    if (transition && typeof transition === 'object' && transition.nextState) {
+      return transition.nextState;
+    }
+    return null;
+  };
+
   // Create start node
   const startNode = {
     id: 'start-1',
@@ -325,14 +336,15 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
     if (!sourceNodeId) return;
 
     // Handle operation and event states with simple transitions
-    if ((state.type === 'operation' || state.type === 'event') && state.transition?.nextState) {
-      const targetNodeId = stateNodeMap[state.transition.nextState];
+    const nextState = getNextState(state.transition);
+    if ((state.type === 'operation' || state.type === 'event') && nextState) {
+      const targetNodeId = stateNodeMap[nextState];
       if (targetNodeId) {
         edges.push({
-          id: `${state.name}-to-${state.transition.nextState}`,
+          id: `${state.name}-to-${nextState}`,
           source: sourceNodeId,
           target: targetNodeId,
-          label: `→ ${state.transition.nextState}`,
+          label: `→ ${nextState}`,
           type: 'smoothstep',
           animated: true,
           className: 'edge-simple',
@@ -353,15 +365,16 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
       // Handle data conditions
       if (state.dataConditions) {
         state.dataConditions.forEach((condition, index) => {
-          if (condition.transition?.nextState) {
-            const targetNodeId = stateNodeMap[condition.transition.nextState];
+          const conditionNextState = getNextState(condition.transition);
+          if (conditionNextState) {
+            const targetNodeId = stateNodeMap[conditionNextState];
             if (targetNodeId) {
               edges.push({
-                id: `${state.name}-${condition.name}-to-${condition.transition.nextState}`,
+                id: `${state.name}-${condition.name || index}-to-${conditionNextState}`,
                 source: sourceNodeId,
                 sourceHandle: `condition-${index}`,
                 target: targetNodeId,
-                label: condition.name,
+                label: condition.name || `Condition ${index + 1}`,
                 type: 'smoothstep',
                 className: 'edge-condition',
                 style: { strokeWidth: 2 },
@@ -384,15 +397,16 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
       // Handle event conditions
       if (state.eventConditions) {
         state.eventConditions.forEach((condition, index) => {
-          if (condition.transition?.nextState) {
-            const targetNodeId = stateNodeMap[condition.transition.nextState];
+          const eventConditionNextState = getNextState(condition.transition);
+          if (eventConditionNextState) {
+            const targetNodeId = stateNodeMap[eventConditionNextState];
             if (targetNodeId) {
               edges.push({
-                id: `${state.name}-${condition.name}-to-${condition.transition.nextState}`,
+                id: `${state.name}-${condition.name || index}-to-${eventConditionNextState}`,
                 source: sourceNodeId,
                 sourceHandle: `condition-${index}`,
                 target: targetNodeId,
-                label: condition.name,
+                label: condition.name || `Event ${index + 1}`,
                 type: 'smoothstep',
                 className: 'edge-condition',
                 style: { strokeWidth: 2 },
@@ -413,11 +427,12 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
       }
 
       // Handle default condition
-      if (state.defaultCondition?.transition?.nextState) {
-        const targetNodeId = stateNodeMap[state.defaultCondition.transition.nextState];
+      const defaultNextState = getNextState(state.defaultCondition?.transition);
+      if (defaultNextState) {
+        const targetNodeId = stateNodeMap[defaultNextState];
         if (targetNodeId) {
           edges.push({
-            id: `${state.name}-default-to-${state.defaultCondition.transition.nextState}`,
+            id: `${state.name}-default-to-${defaultNextState}`,
             source: sourceNodeId,
             sourceHandle: 'default',
             target: targetNodeId,
