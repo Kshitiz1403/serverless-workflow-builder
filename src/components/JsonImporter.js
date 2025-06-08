@@ -265,11 +265,11 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
     return null;
   };
 
-  // Create start node
+  // Create start node positioned above the workflow
   const startNode = {
     id: 'start-1',
     type: 'start',
-    position: { x: 50, y: 50 },
+    position: { x: 50, y: 0 }, // Position above the main workflow
     data: { label: 'Start' },
   };
   nodes.push(startNode);
@@ -458,17 +458,15 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
     // Create end nodes for states marked as end
     if (state.end) {
       const endNodeId = `end-${state.name}-${Date.now()}`;
+      const sourceNode = nodes.find((n) => n.id === sourceNodeId);
+      const sourcePosition = sourceNode ? sourceNode.position : { x: 0, y: 0 };
+
       const endNode = {
         id: endNodeId,
         type: 'end',
         position: {
-          x:
-            (stateNodeMap[state.name]
-              ? nodes.find((n) => n.id === stateNodeMap[state.name])?.position.x
-              : 0) + 300,
-          y: stateNodeMap[state.name]
-            ? nodes.find((n) => n.id === stateNodeMap[state.name])?.position.y
-            : 0,
+          x: sourcePosition.x + 450, // More spacing to the right
+          y: sourcePosition.y + 50,   // Slight offset down for visual clarity
         },
         data: { label: 'End' },
       };
@@ -563,17 +561,56 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
 }
 
 function calculateNodePositions(states) {
+  console.log("states", states)
   const positions = {};
-  const columns = Math.ceil(Math.sqrt(states.length));
 
-  states.forEach((state, index) => {
-    const row = Math.floor(index / columns);
-    const col = index % columns;
-    positions[state.name] = {
-      x: 200 + col * 300,
-      y: 100 + row * 200,
-    };
-  });
+  // Improved spacing configuration
+  const nodeWidth = 280;
+  const nodeHeight = 180;
+  const horizontalSpacing = 400; // More horizontal space between nodes
+  const verticalSpacing = 250;   // More vertical space between rows
+  const startX = 50;
+  const startY = 50;
+
+  // Calculate better grid layout
+  const totalNodes = states.length;
+
+  // For better visual distribution, use different strategies based on node count
+  if (totalNodes <= 4) {
+    // Small workflows: arrange horizontally
+    states.forEach((state, index) => {
+      positions[state.name] = {
+        x: startX + index * horizontalSpacing,
+        y: startY + 100,
+      };
+    });
+  } else if (totalNodes <= 9) {
+    // Medium workflows: use a balanced grid
+    const columns = Math.min(3, Math.ceil(Math.sqrt(totalNodes)));
+    states.forEach((state, index) => {
+      const row = Math.floor(index / columns);
+      const col = index % columns;
+      positions[state.name] = {
+        x: startX + col * horizontalSpacing,
+        y: startY + row * verticalSpacing,
+      };
+    });
+  } else {
+    // Large workflows: use a wider grid with more columns
+    const columns = Math.min(3, Math.ceil(Math.sqrt(totalNodes * 1.2)));
+    states.forEach((state, index) => {
+      const row = Math.floor(index / columns);
+      const col = index % columns;
+
+      // Add some staggering for visual appeal
+      const staggerOffset = (row % 2) * (horizontalSpacing * 0.3);
+
+      positions[state.name] = {
+        x: startX + col * horizontalSpacing + staggerOffset,
+        y: startY + row * verticalSpacing,
+      };
+    });
+  }
 
   return positions;
 }
