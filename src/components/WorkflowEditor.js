@@ -19,6 +19,7 @@ import EndNode from './nodes/EndNode';
 import EventNode from './nodes/EventNode';
 import JsonExporter from './JsonExporter';
 import JsonImporter from './JsonImporter';
+import { useHistory } from '../hooks/useHistory';
 import './WorkflowEditor.css';
 
 const nodeTypes = {
@@ -75,6 +76,30 @@ function WorkflowEditor() {
   const [showJsonImporter, setShowJsonImporter] = useState(false);
   const [workflowMetadata, setWorkflowMetadata] = useState(savedState.workflowMetadata);
 
+  // History management for undo/redo
+  const {
+    state: historyState,
+    setState: setHistoryState,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    reset: resetHistory,
+  } = useHistory({
+    nodes: savedState.nodes,
+    edges: savedState.edges,
+    workflowMetadata: savedState.workflowMetadata,
+  });
+
+  // Helper function to update history state
+  const updateHistoryState = useCallback((newNodes, newEdges, newMetadata = workflowMetadata) => {
+    setHistoryState({
+      nodes: newNodes,
+      edges: newEdges,
+      workflowMetadata: newMetadata,
+    });
+  }, [setHistoryState, workflowMetadata]);
+
   // Save state to localStorage whenever nodes or edges change
   useEffect(() => {
     const saveState = {
@@ -90,6 +115,29 @@ function WorkflowEditor() {
       console.error('Error saving state to localStorage:', error);
     }
   }, [nodes, edges, workflowMetadata]);
+
+  // Handle undo/redo operations
+  const handleUndo = useCallback(() => {
+    const previousState = undo();
+    if (previousState) {
+      setNodes(previousState.nodes);
+      setEdges(previousState.edges);
+      setWorkflowMetadata(previousState.workflowMetadata);
+      setSelectedNodeId(null);
+      setSelectedNodes([]);
+    }
+  }, [undo, setNodes, setEdges]);
+
+  const handleRedo = useCallback(() => {
+    const nextState = redo();
+    if (nextState) {
+      setNodes(nextState.nodes);
+      setEdges(nextState.edges);
+      setWorkflowMetadata(nextState.workflowMetadata);
+      setSelectedNodeId(null);
+      setSelectedNodes([]);
+    }
+  }, [redo, setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params) => {
@@ -145,9 +193,13 @@ function WorkflowEditor() {
         },
       };
 
-      setEdges((eds) => addEdge(newEdge, eds));
+      setEdges((eds) => {
+        const newEdges = addEdge(newEdge, eds);
+        updateHistoryState(nodes, newEdges);
+        return newEdges;
+      });
     },
-    [setEdges, nodes]
+    [setEdges, nodes, updateHistoryState]
   );
 
   const onNodeClick = useCallback((event, node) => {
@@ -178,24 +230,30 @@ function WorkflowEditor() {
         position,
         data: getDefaultNodeData(type),
       };
-      setNodes((nds) => nds.concat(newNode));
+      setNodes((nds) => {
+        const newNodes = nds.concat(newNode);
+        updateHistoryState(newNodes, edges);
+        return newNodes;
+      });
     },
-    [setNodes]
+    [setNodes, edges, updateHistoryState]
   );
 
   const updateNodeData = useCallback(
     (nodeId, newData) => {
-      setNodes((nds) =>
-        nds.map((node) =>
+      setNodes((nds) => {
+        const newNodes = nds.map((node) =>
           node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
-        )
-      );
+        );
+        updateHistoryState(newNodes, edges);
+        return newNodes;
+      });
 
       // Update edge labels if this is a switch node
       const updatedNode = nodes.find((n) => n.id === nodeId);
       if (updatedNode && updatedNode.type === 'switch') {
-        setEdges((eds) =>
-          eds.map((edge) => {
+        setEdges((eds) => {
+          const newEdges = eds.map((edge) => {
             if (edge.source === nodeId && edge.sourceHandle) {
               let newLabel = '';
               if (edge.sourceHandle === 'default') {
@@ -208,45 +266,75 @@ function WorkflowEditor() {
               return { ...edge, label: newLabel };
             }
             return edge;
-          })
-        );
+          });
+          // Update history with the new nodes and edges
+          setHistoryState((prev) => ({
+            ...prev,
+            nodes: prev.nodes.map((node) =>
+              node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
+            ),
+            edges: newEdges,
+          }));
+          return newEdges;
+        });
       }
     },
-    [setNodes, setEdges, nodes]
+    [setNodes, setEdges, nodes, edges, updateHistoryState, setHistoryState]
   );
 
   const deleteNode = useCallback(
     (nodeId) => {
-      setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-      setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+      setNodes((nds) => {
+        const newNodes = nds.filter((node) => node.id !== nodeId);
+        setEdges((eds) => {
+          const newEdges = eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId);
+          updateHistoryState(newNodes, newEdges);
+          return newEdges;
+        });
+        return newNodes;
+      });
       setSelectedNodeId(null);
     },
-    [setNodes, setEdges]
+    [setNodes, setEdges, updateHistoryState]
   );
 
   const deleteSelectedNodes = useCallback(() => {
     if (selectedNodes.length > 0) {
       const nodeIdsToDelete = selectedNodes.map(node => node.id);
-      setNodes((nds) => nds.filter((node) => !nodeIdsToDelete.includes(node.id)));
-      setEdges((eds) => eds.filter((edge) =>
-        !nodeIdsToDelete.includes(edge.source) && !nodeIdsToDelete.includes(edge.target)
-      ));
+      setNodes((nds) => {
+        const newNodes = nds.filter((node) => !nodeIdsToDelete.includes(node.id));
+        setEdges((eds) => {
+          const newEdges = eds.filter((edge) =>
+            !nodeIdsToDelete.includes(edge.source) && !nodeIdsToDelete.includes(edge.target)
+          );
+          updateHistoryState(newNodes, newEdges);
+          return newEdges;
+        });
+        return newNodes;
+      });
       setSelectedNodeId(null);
       setSelectedNodes([]);
     }
-  }, [selectedNodes, setNodes, setEdges]);
+  }, [selectedNodes, setNodes, setEdges, updateHistoryState]);
 
-  // Handle keyboard events for deleting selected nodes
+  // Handle keyboard events for deleting selected nodes and undo/redo
   useEffect(() => {
     const handleKeyDown = (event) => {
+      // Prevent actions if we're editing text in an input field
+      const activeElement = document.activeElement;
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+        return;
+      }
+
       if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNodes.length > 0) {
-        // Prevent deletion if we're editing text in an input field
-        const activeElement = document.activeElement;
-        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-          return;
-        }
         event.preventDefault();
         deleteSelectedNodes();
+      } else if ((event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        handleUndo();
+      } else if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
+        event.preventDefault();
+        handleRedo();
       }
     };
 
@@ -254,7 +342,7 @@ function WorkflowEditor() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedNodes, deleteSelectedNodes]);
+  }, [selectedNodes, deleteSelectedNodes, handleUndo, handleRedo]);
 
   const selectedNode = useMemo(() => {
     return nodes.find((node) => node.id === selectedNodeId);
@@ -266,8 +354,13 @@ function WorkflowEditor() {
     setSelectedNodeId(null);
     setSelectedNodes([]);
     setWorkflowMetadata(null);
+    resetHistory({
+      nodes: defaultInitialNodes,
+      edges: defaultInitialEdges,
+      workflowMetadata: null,
+    });
     localStorage.removeItem(STORAGE_KEY);
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, resetHistory]);
 
   const getSavedTimestamp = useCallback(() => {
     try {
@@ -289,8 +382,13 @@ function WorkflowEditor() {
       setWorkflowMetadata(metadata);
       setSelectedNodeId(null);
       setSelectedNodes([]);
+      resetHistory({
+        nodes,
+        edges,
+        workflowMetadata: metadata,
+      });
     },
-    [setNodes, setEdges]
+    [setNodes, setEdges, resetHistory]
   );
 
   return (
@@ -327,6 +425,10 @@ function WorkflowEditor() {
         onImportJson={() => setShowJsonImporter(true)}
         onClearWorkflow={clearWorkflow}
         getSavedTimestamp={getSavedTimestamp}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
 
       {showJsonExporter && (

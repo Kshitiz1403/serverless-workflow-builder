@@ -11,6 +11,8 @@ import {
   RefreshCw,
   Save,
   Zap,
+  Undo,
+  Redo,
 } from 'lucide-react';
 import NodePropertiesEditor from './NodePropertiesEditor';
 import './Sidebar.css';
@@ -26,6 +28,10 @@ const Sidebar = ({
   onImportJson,
   onClearWorkflow,
   getSavedTimestamp,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
 }) => {
   const [activeTab, setActiveTab] = useState('palette');
   const [lastSaved, setLastSaved] = useState(null);
@@ -234,6 +240,27 @@ const Sidebar = ({
         )}
 
         <div className="footer-actions">
+          <div className="undo-redo-actions">
+            <button
+              className="undo-btn"
+              onClick={onUndo}
+              disabled={!canUndo}
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo size={16} />
+              Undo
+            </button>
+            <button
+              className="redo-btn"
+              onClick={onRedo}
+              disabled={!canRedo}
+              title="Redo (Ctrl+Y)"
+            >
+              <Redo size={16} />
+              Redo
+            </button>
+          </div>
+
           <button className="new-workflow-btn" onClick={handleClearWorkflow}>
             <RefreshCw size={16} />
             New Workflow

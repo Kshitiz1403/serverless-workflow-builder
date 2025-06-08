@@ -172,6 +172,44 @@
   gap: 8px;
 }
 
+/* Undo/Redo Actions */
+.undo-redo-actions {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.undo-btn,
+.redo-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  font-size: 13px;
+}
+
+.undo-btn:hover:not(:disabled),
+.redo-btn:hover:not(:disabled) {
+  background-color: var(--button-hover-bg);
+  border-color: var(--border-hover);
+}
+
+.undo-btn:disabled,
+.redo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--text-secondary);
+}
+
 /* New Workflow Button */
 .new-workflow-btn {
   width: 100%;

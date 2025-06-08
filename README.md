@@ -47,7 +47,7 @@ Try the editor live at: **[https://kshitiz1403.github.io/serverless-workflow-bui
 - **Auto-save**: Automatic local storage backup
 - **New Workflow**: Quick workflow reset with confirmation
 - **Live Editing**: Real-time property updates
-- **Undo/Redo**: Coming soon
+- **Undo/Redo**: Undo/Redo the last applied actions
 
 ### 🎯 Standards Compliance
 
@@ -199,7 +199,7 @@ We welcome contributions! Here's how you can help:
 ## 📋 Roadmap
 
 - [ ] **Workflow Validation**: Real-time error checking and validation
-- [ ] **Undo/Redo System**: Full action history management
+- [x] **Undo/Redo System**: Full action history management
 - [ ] **Collaborative Editing**: Multi-user workflow editing
 - [ ] **Cloud Storage**: Save workflows to cloud providers
 - [ ] **Template Library**: Expanded collection of workflow templates
@@ -210,7 +210,7 @@ We welcome contributions! Here's how you can help:
 
 - Large workflows may experience performance degradation
 - Mobile responsiveness needs improvement
-- Undo/redo functionality not yet implemented
+- ~Undo/redo functionality not yet implemented~
 
 ## 📄 License
 
