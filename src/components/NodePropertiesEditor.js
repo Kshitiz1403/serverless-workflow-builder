@@ -9,6 +9,22 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData }) => {
     setFormData(node.data || {});
   }, [node]);
 
+  // Start and End nodes should not have editable properties
+  if (node.type === 'start' || node.type === 'end') {
+    return (
+      <div className="node-properties-editor">
+        <div className="no-properties">
+          <p className="no-properties-message">
+            {node.type === 'start' ? 'Start' : 'End'} nodes have no editable properties.
+          </p>
+          <p className="node-info">
+            This node serves as the workflow {node.type === 'start' ? 'entry point' : 'termination point'}.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const handleInputChange = (field, value) => {
     const updatedData = { ...formData, [field]: value };
     setFormData(updatedData);

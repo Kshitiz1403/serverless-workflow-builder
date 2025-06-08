@@ -660,9 +660,9 @@ function getDefaultNodeData(type) {
         },
       };
     case 'start':
-      return { label: 'Start' };
+      return {};
     case 'end':
-      return { label: 'End' };
+      return {};
     default:
       return { label: type };
   }

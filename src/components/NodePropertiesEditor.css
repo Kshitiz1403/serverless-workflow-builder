@@ -126,3 +126,24 @@
   background-color: var(--danger-color);
   color: white;
 }
+
+/* No Properties Section */
+.no-properties {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-secondary);
+}
+
+.no-properties-message {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
+}
+
+.node-info {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-style: italic;
+}
