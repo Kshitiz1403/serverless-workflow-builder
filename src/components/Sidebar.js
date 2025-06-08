@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Save,
   Zap,
+  Clock,
   Undo,
   Redo,
   GripVertical,
@@ -148,6 +149,12 @@ const Sidebar = ({
       label: 'Event',
       icon: Zap,
       description: 'Wait for events with timeout',
+    },
+    {
+      type: 'sleep',
+      label: 'Sleep',
+      icon: Clock,
+      description: 'Pause workflow for specified duration',
     },
     {
       type: 'start',

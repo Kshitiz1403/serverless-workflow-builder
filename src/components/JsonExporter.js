@@ -220,6 +220,22 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
 
       return eventState;
 
+    case 'sleep':
+      const isSleepEnd = outgoingEdges.length === 0 || hasEndNodeTarget(outgoingEdges, allNodes);
+      const sleepState = {
+        name: stateName,
+        type: 'sleep',
+        duration: node.data.duration || 'PT30M',
+      };
+
+      if (isSleepEnd) {
+        sleepState.end = true;
+      } else {
+        sleepState.transition = getTransition(node, outgoingEdges, allNodes);
+      }
+
+      return sleepState;
+
     case 'switch':
       const switchState = {
         name: stateName,
