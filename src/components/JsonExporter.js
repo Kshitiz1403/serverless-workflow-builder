@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { X, Copy, Download } from 'lucide-react';
 import './JsonExporter.css';
 
@@ -9,6 +9,7 @@ const JsonExporter = ({ nodes, edges, onClose }) => {
     name: 'My Workflow',
     description: 'Generated serverless workflow',
   });
+  const modalRef = useRef(null);
 
   const serverlessWorkflow = useMemo(() => {
     // Find the start node and its first connected state
@@ -45,6 +46,29 @@ const JsonExporter = ({ nodes, edges, onClose }) => {
 
   const jsonString = JSON.stringify(serverlessWorkflow, null, 2);
 
+  // Handle escape key and outside click
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(jsonString);
@@ -68,7 +92,7 @@ const JsonExporter = ({ nodes, edges, onClose }) => {
 
   return (
     <div className="json-exporter-overlay">
-      <div className="json-exporter">
+      <div className="json-exporter" ref={modalRef}>
         <div className="exporter-header">
           <h2>Export Serverless Workflow</h2>
           <button className="close-btn" onClick={onClose}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, FileText } from 'lucide-react';
 import './JsonImporter.css';
 
@@ -6,6 +6,7 @@ const JsonImporter = ({ onImport, onClose }) => {
   const [jsonInput, setJsonInput] = useState('');
   const [error, setError] = useState('');
   const [importMode, setImportMode] = useState('paste'); // 'paste' or 'file'
+  const modalRef = useRef(null);
 
   const handleImport = () => {
     try {
@@ -37,6 +38,29 @@ const JsonImporter = ({ onImport, onClose }) => {
       reader.readAsText(file);
     }
   };
+
+  // Handle escape key and outside click
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
 
   const loadExampleWorkflow = () => {
     const exampleWorkflow = {
@@ -126,7 +150,7 @@ const JsonImporter = ({ onImport, onClose }) => {
 
   return (
     <div className="json-importer-overlay">
-      <div className="json-importer">
+      <div className="json-importer" ref={modalRef}>
         <div className="importer-header">
           <h2>Import Serverless Workflow</h2>
           <button className="close-btn" onClick={onClose}>
