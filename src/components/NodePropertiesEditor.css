@@ -13,25 +13,26 @@
 .form-group label {
   font-size: 12px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-color);
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
   padding: 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 12px;
   font-family: inherit;
-  background-color: white;
+  background-color: var(--surface-color);
+  color: var(--text-color);
 }
 
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
 }
 
@@ -48,7 +49,7 @@
 }
 
 .form-group select:hover {
-  border-color: #9ca3af;
+  border-color: var(--border-hover);
 }
 
 .form-group select:focus {
@@ -61,10 +62,10 @@
 }
 
 .section {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 12px;
-  background-color: #f9fafb;
+  background-color: var(--bg-color);
 }
 
 .section-header {
@@ -73,32 +74,32 @@
   gap: 8px;
   margin-bottom: 12px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-color);
 }
 
 .add-btn {
   margin-left: auto;
   padding: 4px;
-  border: 1px solid #10b981;
-  background-color: white;
-  color: #10b981;
+  border: 1px solid var(--success-color);
+  background-color: var(--surface-color);
+  color: var(--success-color);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .add-btn:hover {
-  background-color: #10b981;
+  background-color: var(--success-color);
   color: white;
 }
 
 .action-item,
 .condition-item {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 12px;
   margin-bottom: 8px;
-  background-color: white;
+  background-color: var(--surface-color);
 }
 
 .item-header {
@@ -107,21 +108,21 @@
   justify-content: space-between;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-color);
   font-size: 12px;
 }
 
 .remove-btn {
   padding: 4px;
-  border: 1px solid #ef4444;
-  background-color: white;
-  color: #ef4444;
+  border: 1px solid var(--danger-color);
+  background-color: var(--surface-color);
+  color: var(--danger-color);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .remove-btn:hover {
-  background-color: #ef4444;
+  background-color: var(--danger-color);
   color: white;
 }

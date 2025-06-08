@@ -1,16 +1,18 @@
 .sidebar {
   width: 320px;
-  background-color: #f8fafc;
-  border-left: 1px solid #e2e8f0;
+  background-color: var(--surface-color);
+  border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   height: 100%;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .sidebar-header {
   padding: 1rem;
-  border-bottom: 1px solid #e2e8f0;
-  background-color: white;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .sidebar-tabs {
@@ -21,8 +23,9 @@
 .tab {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  color: var(--text-color);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -31,13 +34,14 @@
 }
 
 .tab:hover:not(:disabled) {
-  background-color: #e2e8f0;
+  background-color: var(--button-hover-bg);
+  border-color: var(--border-hover);
 }
 
 .tab.active {
-  background-color: #4f46e5;
+  background-color: var(--primary-color);
   color: white;
-  border-color: #4f46e5;
+  border-color: var(--primary-color);
 }
 
 .tab:disabled {
@@ -53,8 +57,9 @@
 
 .sidebar-footer {
   padding: 1rem;
-  border-top: 1px solid #e2e8f0;
-  background-color: white;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 /* Node Palette */
@@ -62,7 +67,7 @@
   margin: 0 0 1rem 0;
   font-size: 16px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-color);
 }
 
 .node-types {
@@ -73,16 +78,16 @@
 
 .node-type-item {
   padding: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  background-color: white;
+  background-color: var(--surface-color);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .node-type-item:hover {
-  border-color: #4f46e5;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 4px var(--shadow);
 }
 
 .node-type-header {
@@ -91,7 +96,7 @@
   gap: 8px;
   margin-bottom: 4px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-color);
 }
 
 .add-icon {
@@ -106,7 +111,7 @@
 .node-type-description {
   margin: 0;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 /* Node Properties */
@@ -114,7 +119,7 @@
   margin: 0 0 1rem 0;
   font-size: 16px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-color);
 }
 
 .properties-header {
@@ -126,22 +131,22 @@
 
 .delete-btn {
   padding: 6px;
-  border: 1px solid #ef4444;
-  background-color: white;
-  color: #ef4444;
+  border: 1px solid var(--danger-color);
+  background-color: var(--surface-color);
+  color: var(--danger-color);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .delete-btn:hover {
-  background-color: #ef4444;
+  background-color: var(--danger-color);
   color: white;
 }
 
 .no-selection {
   text-align: center;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-style: italic;
   margin-top: 2rem;
 }
@@ -152,12 +157,12 @@
   align-items: center;
   gap: 6px;
   margin-bottom: 1rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 12px;
   padding: 6px 8px;
-  background-color: #f9fafb;
+  background-color: var(--bg-color);
   border-radius: 4px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
 }
 
 /* Footer Actions */
@@ -171,9 +176,9 @@
 .new-workflow-btn {
   width: 100%;
   padding: 10px;
-  border: 1px solid #e5e7eb;
-  background-color: white;
-  color: #374151;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  color: var(--text-color);
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
@@ -186,17 +191,17 @@
 }
 
 .new-workflow-btn:hover {
-  background-color: #f3f4f6;
-  border-color: #d1d5db;
+  background-color: var(--button-hover-bg);
+  border-color: var(--border-hover);
 }
 
 /* Import Button */
 .import-btn {
   width: 100%;
   padding: 10px;
-  border: 1px solid #3b82f6;
-  background-color: white;
-  color: #3b82f6;
+  border: 1px solid var(--info-color);
+  background-color: var(--surface-color);
+  color: var(--info-color);
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
@@ -209,7 +214,7 @@
 }
 
 .import-btn:hover {
-  background-color: #3b82f6;
+  background-color: var(--info-color);
   color: white;
 }
 
@@ -218,7 +223,7 @@
   width: 100%;
   padding: 12px;
   border: none;
-  background-color: #10b981;
+  background-color: var(--success-color);
   color: white;
   border-radius: 6px;
   cursor: pointer;
@@ -246,13 +251,13 @@
 .multi-selection-info p {
   margin: 0 0 1rem 0;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-color);
 }
 
 .selected-nodes-list {
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   margin-bottom: 1rem;
 }
@@ -262,8 +267,8 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-bottom: 1px solid #f3f4f6;
-  background-color: white;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--surface-color);
 }
 
 .selected-node-item:last-child {
@@ -271,14 +276,14 @@
 }
 
 .selected-node-item:hover {
-  background-color: #f9fafb;
+  background-color: var(--button-hover-bg);
 }
 
 .node-type {
   font-size: 12px;
   font-weight: 500;
-  color: #6b7280;
-  background-color: #f3f4f6;
+  color: var(--text-secondary);
+  background-color: var(--bg-color);
   padding: 2px 6px;
   border-radius: 4px;
   text-transform: capitalize;
@@ -286,30 +291,30 @@
 
 .node-label {
   font-size: 14px;
-  color: #374151;
+  color: var(--text-color);
   flex: 1;
 }
 
 .multi-selection-actions {
   padding: 12px;
-  background-color: #f9fafb;
+  background-color: var(--bg-color);
   border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
 }
 
 .help-text {
   margin: 0;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
   text-align: center;
 }
 
 .help-text kbd {
-  background-color: #e5e7eb;
-  border: 1px solid #d1d5db;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
   border-radius: 3px;
   padding: 2px 4px;
   font-size: 11px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-color);
 }

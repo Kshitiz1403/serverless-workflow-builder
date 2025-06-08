@@ -12,9 +12,9 @@
 }
 
 .json-exporter {
-  background-color: white;
+  background-color: var(--surface-color);
   border-radius: 8px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px var(--shadow);
   width: 90%;
   max-width: 800px;
   max-height: 90vh;
@@ -27,35 +27,35 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .exporter-header h2 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-color);
 }
 
 .close-btn {
   padding: 8px;
   border: none;
   background-color: transparent;
-  color: #6b7280;
+  color: var(--text-secondary);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--button-hover-bg);
+  color: var(--text-color);
 }
 
 .workflow-info {
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  background-color: #f9fafb;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-color);
 }
 
 .info-grid {
@@ -76,14 +76,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .output-header h3 {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-color);
 }
 
 .output-actions {
@@ -94,9 +94,9 @@
 .copy-btn,
 .download-btn {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  background-color: white;
-  color: #374151;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  color: var(--text-color);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -108,14 +108,14 @@
 }
 
 .copy-btn:hover {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
+  background-color: var(--button-hover-bg);
+  border-color: var(--border-hover);
 }
 
 .download-btn {
-  background-color: #4f46e5;
+  background-color: var(--primary-color);
   color: white;
-  border-color: #4f46e5;
+  border-color: var(--primary-color);
 }
 
 .download-btn:hover {

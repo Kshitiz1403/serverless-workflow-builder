@@ -12,9 +12,9 @@
 }
 
 .json-importer {
-  background-color: white;
+  background-color: var(--surface-color);
   border-radius: 8px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px var(--shadow);
   width: 90%;
   max-width: 700px;
   max-height: 90vh;
@@ -27,44 +27,45 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .importer-header h2 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-color);
 }
 
 .close-btn {
   padding: 8px;
   border: none;
   background-color: transparent;
-  color: #6b7280;
+  color: var(--text-secondary);
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--button-hover-bg);
+  color: var(--text-color);
 }
 
 .import-mode-selector {
   display: flex;
   gap: 4px;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  background-color: #f9fafb;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-color);
 }
 
 .mode-btn {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  background-color: white;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  color: var(--text-color);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -77,39 +78,40 @@
 }
 
 .mode-btn:hover:not(.active) {
-  background-color: #f3f4f6;
+  background-color: var(--button-hover-bg);
 }
 
 .mode-btn.active {
-  background-color: #4f46e5;
+  background-color: var(--primary-color);
   color: white;
-  border-color: #4f46e5;
+  border-color: var(--primary-color);
 }
 
 .file-upload-section {
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  background-color: #f9fafb;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-color);
 }
 
 .file-input {
   width: 100%;
   padding: 8px;
-  border: 2px dashed #d1d5db;
+  border: 2px dashed var(--border-color);
   border-radius: 6px;
-  background-color: white;
+  background-color: var(--surface-color);
+  color: var(--text-color);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .file-input:hover {
-  border-color: #4f46e5;
+  border-color: var(--primary-color);
 }
 
 .file-help {
   margin: 8px 0 0 0;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .json-input-section {
@@ -129,14 +131,14 @@
 
 .input-header label {
   font-weight: 500;
-  color: #374151;
+  color: var(--text-color);
 }
 
 .example-btn {
   padding: 6px 12px;
-  border: 1px solid #d1d5db;
-  background-color: white;
-  color: #374151;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  color: var(--text-color);
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -144,26 +146,27 @@
 }
 
 .example-btn:hover {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
+  background-color: var(--button-hover-bg);
+  border-color: var(--border-hover);
 }
 
 .json-textarea {
   flex: 1;
   width: 100%;
   padding: 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-family: 'Courier New', monospace;
   font-size: 12px;
   line-height: 1.5;
   resize: none;
   outline: none;
-  background-color: #f9fafb;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .json-textarea:focus {
-  border-color: #4f46e5;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
@@ -177,19 +180,25 @@
   font-size: 14px;
 }
 
+:root.dark .error-message {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #fca5a5;
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
 .importer-actions {
   display: flex;
   gap: 12px;
   padding: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
   justify-content: flex-end;
 }
 
 .cancel-btn {
   padding: 10px 16px;
-  border: 1px solid #d1d5db;
-  background-color: white;
-  color: #374151;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  color: var(--text-color);
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
@@ -197,14 +206,14 @@
 }
 
 .cancel-btn:hover {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
+  background-color: var(--button-hover-bg);
+  border-color: var(--border-hover);
 }
 
 .import-btn {
   padding: 10px 16px;
   border: none;
-  background-color: #10b981;
+  background-color: var(--success-color);
   color: white;
   border-radius: 6px;
   cursor: pointer;
@@ -217,6 +226,6 @@
 }
 
 .import-btn:disabled {
-  background-color: #d1d5db;
+  background-color: var(--text-secondary);
   cursor: not-allowed;
 }
