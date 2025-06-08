@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Upload, FileText } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 import './JsonImporter.css';
 
 const JsonImporter = ({ onImport, onClose }) => {
@@ -17,10 +18,26 @@ const JsonImporter = ({ onImport, onClose }) => {
         throw new Error('Invalid workflow format: missing or invalid states array');
       }
 
-      // Convert serverless workflow to nodes and edges
-      const { nodes, edges } = convertWorkflowToReactFlow(workflowData);
+      // Create retry policies with IDs first
+      const retryPolicyNameToId = {};
+      const retryPolicies = workflowData.retryPolicies?.map(policy => {
+        const id = uuidv4();
+        retryPolicyNameToId[policy.name] = id;
+        return {
+          ...policy,
+          id
+        };
+      }) || [];
 
-      onImport(nodes, edges, workflowData);
+      // Convert serverless workflow to nodes and edges
+      const { nodes, edges } = convertWorkflowToReactFlow(workflowData, retryPolicyNameToId);
+
+      // Create workflow metadata
+      const metadata = {
+        retryPolicies
+      };
+
+      onImport(nodes, edges, metadata);
       onClose();
     } catch (err) {
       setError(err.message || 'Invalid JSON format');
@@ -69,10 +86,25 @@ const JsonImporter = ({ onImport, onClose }) => {
       name: 'Example Workflow',
       description: 'A simple example workflow',
       start: 'assessUrgency',
+      retryPolicies: [
+        {
+          name: 'simpleRetry',
+          delay: 'PT2S',
+          maxAttempts: 3,
+          increment: 'PT1S',
+          multiplier: 2.0,
+          maxDelay: 'PT30S',
+          jitter: {
+            from: 'PT0S',
+            to: 'PT1S'
+          }
+        }
+      ],
       states: [
         {
           name: 'assessUrgency',
           type: 'operation',
+          retryRef: 'simpleRetry',
           actions: [
             {
               name: 'assess',
@@ -217,7 +249,7 @@ const JsonImporter = ({ onImport, onClose }) => {
 };
 
 // Convert serverless workflow JSON to React Flow nodes and edges
-function convertWorkflowToReactFlow(workflowData) {
+function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
   const nodes = [];
   const edges = [];
   const nodePositions = calculateNodePositions(workflowData.states);
@@ -239,7 +271,7 @@ function convertWorkflowToReactFlow(workflowData) {
     const nodeData = {
       label: state.name,
       name: state.name,
-      ...convertStateToNodeData(state),
+      ...convertStateToNodeData(state, retryPolicyNameToId),
     };
 
     const node = {
@@ -452,12 +484,19 @@ function convertWorkflowToReactFlow(workflowData) {
   return { nodes, edges };
 }
 
-function convertStateToNodeData(state) {
+function convertStateToNodeData(state, retryPolicyNameToId = {}) {
   switch (state.type) {
     case 'operation':
-      return {
+      const operationData = {
         actions: state.actions || [],
       };
+
+      // Convert retry policy name reference to ID reference
+      if (state.retryRef && retryPolicyNameToId[state.retryRef]) {
+        operationData.retryRef = retryPolicyNameToId[state.retryRef];
+      }
+
+      return operationData;
     case 'switch':
       const hasDataConditions = state.dataConditions && state.dataConditions.length > 0;
       const hasEventConditions = state.eventConditions && state.eventConditions.length > 0;

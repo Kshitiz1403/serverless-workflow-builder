@@ -602,10 +602,17 @@ function WorkflowEditor() {
         onRedo={handleRedo}
         canUndo={canUndo}
         canRedo={canRedo}
+        workflowMetadata={workflowMetadata}
+        onUpdateWorkflowMetadata={setWorkflowMetadata}
       />
 
       {showJsonExporter && (
-        <JsonExporter nodes={nodes} edges={edges} onClose={() => setShowJsonExporter(false)} />
+        <JsonExporter
+          nodes={nodes}
+          edges={edges}
+          workflowMetadata={workflowMetadata}
+          onClose={() => setShowJsonExporter(false)}
+        />
       )}
 
       {showJsonImporter && (
@@ -630,6 +637,7 @@ function getDefaultNodeData(type) {
             },
           },
         ],
+        retryRef: '', // Reference to retry policy
       };
     case 'switch':
       return {
