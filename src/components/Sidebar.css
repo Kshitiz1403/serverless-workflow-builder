@@ -1,11 +1,88 @@
 .sidebar {
-  width: 320px;
+  min-width: 250px;
+  max-width: 600px;
   background-color: var(--surface-color);
   border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   height: 100%;
   transition: background-color 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+
+.resize-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background-color: transparent;
+  cursor: ew-resize;
+  z-index: 10;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resize-handle:hover {
+  background-color: rgba(79, 70, 229, 0.1);
+  width: 12px;
+}
+
+.resize-handle:active {
+  background-color: rgba(79, 70, 229, 0.2);
+}
+
+.resize-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.resize-handle:hover .resize-indicator {
+  opacity: 1;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.2);
+  animation: none;
+}
+
+.sidebar.resizing {
+  pointer-events: none;
+}
+
+.sidebar.resizing .resize-handle {
+  background-color: rgba(79, 70, 229, 0.2);
+  pointer-events: auto;
+  width: 12px;
+}
+
+.sidebar.resizing .resize-indicator {
+  opacity: 1;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+  transform: scale(1.1);
+  animation: none;
 }
 
 .sidebar-header {

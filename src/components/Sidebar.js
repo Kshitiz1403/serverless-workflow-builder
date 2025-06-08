@@ -13,6 +13,7 @@ import {
   Zap,
   Undo,
   Redo,
+  GripVertical,
 } from 'lucide-react';
 import NodePropertiesEditor from './NodePropertiesEditor';
 import './Sidebar.css';
@@ -35,6 +36,11 @@ const Sidebar = ({
 }) => {
   const [activeTab, setActiveTab] = useState('palette');
   const [lastSaved, setLastSaved] = useState(null);
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const savedWidth = localStorage.getItem('sidebar-width');
+    return savedWidth ? parseInt(savedWidth, 10) : 320;
+  });
+  const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
     const timestamp = getSavedTimestamp();
@@ -49,6 +55,46 @@ const Sidebar = ({
 
     return () => clearInterval(interval);
   }, [getSavedTimestamp]);
+
+  // Save sidebar width to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-width', sidebarWidth.toString());
+  }, [sidebarWidth]);
+
+  // Handle mouse resize functionality
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing) return;
+
+      const newWidth = window.innerWidth - e.clientX;
+      // Constrain width between 250px and 600px
+      const constrainedWidth = Math.max(250, Math.min(600, newWidth));
+      setSidebarWidth(constrainedWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing]);
+
+  const handleResizeStart = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
 
   const handleClearWorkflow = () => {
     if (
@@ -129,7 +175,19 @@ const Sidebar = ({
   };
 
   return (
-    <div className="sidebar">
+    <div
+      className={`sidebar ${isResizing ? 'resizing' : ''}`}
+      style={{ width: `${sidebarWidth}px` }}
+    >
+      <div
+        className="resize-handle"
+        onMouseDown={handleResizeStart}
+        title="Drag to resize sidebar"
+      >
+        <div className="resize-indicator">
+          <GripVertical size={12} />
+        </div>
+      </div>
       <div className="sidebar-header">
         <div className="sidebar-tabs">
           <button
