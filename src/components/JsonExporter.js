@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { X, Copy, Download } from 'lucide-react';
 import './JsonExporter.css';
 
-const JsonExporter = ({ nodes, edges, onClose }) => {
+const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
   const [workflowInfo, setWorkflowInfo] = useState({
     id: 'my-workflow',
     version: '1.0',
@@ -29,7 +29,7 @@ const JsonExporter = ({ nodes, edges, onClose }) => {
     // Convert nodes to states, excluding start nodes as they're not states
     const states = nodes
       .filter((node) => node.type !== 'start')
-      .map((node) => convertNodeToState(node, edges, nodes));
+      .map((node) => convertNodeToState(node, edges, nodes, workflowMetadata));
 
     // Build the complete serverless workflow
     const workflow = {
@@ -40,6 +40,15 @@ const JsonExporter = ({ nodes, edges, onClose }) => {
       start: startStateName,
       states: states.filter((state) => state !== null),
     };
+
+    // Add retry policies if they exist
+    if (workflowMetadata?.retryPolicies && workflowMetadata.retryPolicies.length > 0) {
+      workflow.retryPolicies = workflowMetadata.retryPolicies.map(policy => {
+        // Convert policy to Serverless Workflow format (exclude internal ID)
+        const { id, ...exportPolicy } = policy;
+        return exportPolicy;
+      });
+    }
 
     return workflow;
   }, [nodes, edges, workflowInfo]);
@@ -162,7 +171,7 @@ function getNodeStateName(node) {
   return node.data.name || node.id.replace(/-\d+$/, '');
 }
 
-function convertNodeToState(node, edges, allNodes) {
+function convertNodeToState(node, edges, allNodes, workflowMetadata) {
   const stateName = getNodeStateName(node);
 
   // Find outgoing edges from this node
@@ -177,6 +186,14 @@ function convertNodeToState(node, edges, allNodes) {
         type: 'operation',
         actions: node.data.actions || [],
       };
+
+      // Add retry policy reference if one exists
+      if (node.data.retryRef && workflowMetadata?.retryPolicies) {
+        const retryPolicy = workflowMetadata.retryPolicies.find(policy => policy.id === node.data.retryRef);
+        if (retryPolicy) {
+          operationState.retryRef = retryPolicy.name;
+        }
+      }
 
       if (isOperationEnd) {
         operationState.end = true;

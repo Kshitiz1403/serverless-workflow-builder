@@ -607,7 +607,12 @@ function WorkflowEditor() {
       />
 
       {showJsonExporter && (
-        <JsonExporter nodes={nodes} edges={edges} onClose={() => setShowJsonExporter(false)} />
+        <JsonExporter
+          nodes={nodes}
+          edges={edges}
+          workflowMetadata={workflowMetadata}
+          onClose={() => setShowJsonExporter(false)}
+        />
       )}
 
       {showJsonImporter && (
