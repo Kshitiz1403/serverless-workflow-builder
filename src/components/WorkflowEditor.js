@@ -91,27 +91,56 @@ function WorkflowEditor() {
 
   const onConnect = useCallback(
     (params) => {
-      // Find the source node to get condition information
+      // Find the source and target nodes to get transition information
       const sourceNode = nodes.find((node) => node.id === params.source);
+      const targetNode = nodes.find((node) => node.id === params.target);
+
       let edgeLabel = '';
+      let edgeType = 'simple';
+      let labelStyle = { fill: '#10b981', fontWeight: 500, fontSize: '12px' };
 
       if (sourceNode && sourceNode.type === 'switch' && params.sourceHandle) {
         if (params.sourceHandle === 'default') {
           edgeLabel = 'default';
+          edgeType = 'default';
+          labelStyle = { fill: '#6b7280', fontWeight: 500, fontSize: '12px' };
         } else if (params.sourceHandle.startsWith('condition-')) {
           const conditionIndex = parseInt(params.sourceHandle.replace('condition-', ''));
           const condition = sourceNode.data.dataConditions?.[conditionIndex];
           edgeLabel = condition?.name || `condition${conditionIndex + 1}`;
+          edgeType = 'condition';
+          labelStyle = { fill: '#f59e0b', fontWeight: 500, fontSize: '12px' };
+        }
+      } else {
+        // Simple transition - add a label showing source to target
+        if (targetNode?.type === 'end') {
+          edgeLabel = 'end';
+          edgeType = 'end';
+          labelStyle = { fill: '#ef4444', fontWeight: 500, fontSize: '12px' };
+        } else {
+          edgeLabel = `→ ${targetNode?.data?.name || targetNode?.data?.label || 'next'}`;
+          edgeType = 'simple';
         }
       }
 
       const newEdge = {
         ...params,
+        id: `${params.source}-${params.target}-${edgeType}`,
         label: edgeLabel,
-        labelStyle: { fill: '#6b7280', fontWeight: 500, fontSize: '12px' },
-        labelBgStyle: { fill: 'white', fillOpacity: 0.8 },
-        labelBgPadding: [4, 2],
-        labelBgBorderRadius: 2,
+        type: 'smoothstep',
+        animated: edgeType === 'simple',
+        className: `edge-${edgeType}`,
+        style: { strokeWidth: edgeType === 'end' ? 3 : 2 },
+        data: { type: edgeType },
+        labelStyle,
+        labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
+        labelBgPadding: [6, 3],
+        labelBgBorderRadius: 4,
+        markerEnd: {
+          type: 'arrowclosed',
+          width: 20,
+          height: 20,
+        },
       };
 
       setEdges((eds) => addEdge(newEdge, eds));

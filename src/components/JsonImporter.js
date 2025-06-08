@@ -268,6 +268,21 @@ function convertWorkflowToReactFlow(workflowData) {
         id: `start-to-${workflowData.start}`,
         source: startNode.id,
         target: startStateNode.id,
+        label: `→ ${workflowData.start}`,
+        type: 'smoothstep',
+        animated: true,
+        className: 'edge-simple',
+        style: { strokeWidth: 2 },
+        data: { type: 'simple' },
+        labelStyle: { fill: '#10b981', fontWeight: 500, fontSize: '12px' },
+        labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
+        labelBgPadding: [6, 3],
+        labelBgBorderRadius: 4,
+        markerEnd: {
+          type: 'arrowclosed',
+          width: 20,
+          height: 20,
+        },
       });
     }
   }
@@ -285,6 +300,21 @@ function convertWorkflowToReactFlow(workflowData) {
           id: `${state.name}-to-${state.transition.nextState}`,
           source: sourceNodeId,
           target: targetNodeId,
+          label: `→ ${state.transition.nextState}`,
+          type: 'smoothstep',
+          animated: true,
+          className: 'edge-simple',
+          style: { strokeWidth: 2 },
+          data: { type: 'simple' },
+          labelStyle: { fill: '#10b981', fontWeight: 500, fontSize: '12px' },
+          labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
+          labelBgPadding: [6, 3],
+          labelBgBorderRadius: 4,
+          markerEnd: {
+            type: 'arrowclosed',
+            width: 20,
+            height: 20,
+          },
         });
       }
     } else if (state.type === 'switch') {
@@ -300,10 +330,19 @@ function convertWorkflowToReactFlow(workflowData) {
                 sourceHandle: `condition-${index}`,
                 target: targetNodeId,
                 label: condition.name,
-                labelStyle: { fill: '#6b7280', fontWeight: 500, fontSize: '12px' },
-                labelBgStyle: { fill: 'white', fillOpacity: 0.8 },
-                labelBgPadding: [4, 2],
-                labelBgBorderRadius: 2,
+                type: 'smoothstep',
+                className: 'edge-condition',
+                style: { strokeWidth: 2 },
+                data: { type: 'condition' },
+                labelStyle: { fill: '#f59e0b', fontWeight: 500, fontSize: '12px' },
+                labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
+                labelBgPadding: [6, 3],
+                labelBgBorderRadius: 4,
+                markerEnd: {
+                  type: 'arrowclosed',
+                  width: 20,
+                  height: 20,
+                },
               });
             }
           }
@@ -322,10 +361,19 @@ function convertWorkflowToReactFlow(workflowData) {
                 sourceHandle: `condition-${index}`,
                 target: targetNodeId,
                 label: condition.name,
+                type: 'smoothstep',
+                className: 'edge-condition',
+                style: { strokeWidth: 2 },
+                data: { type: 'condition' },
                 labelStyle: { fill: '#8b5cf6', fontWeight: 500, fontSize: '12px' },
-                labelBgStyle: { fill: 'white', fillOpacity: 0.8 },
-                labelBgPadding: [4, 2],
-                labelBgBorderRadius: 2,
+                labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
+                labelBgPadding: [6, 3],
+                labelBgBorderRadius: 4,
+                markerEnd: {
+                  type: 'arrowclosed',
+                  width: 20,
+                  height: 20,
+                },
               });
             }
           }
@@ -342,10 +390,19 @@ function convertWorkflowToReactFlow(workflowData) {
             sourceHandle: 'default',
             target: targetNodeId,
             label: 'default',
+            type: 'smoothstep',
+            className: 'edge-default',
+            style: { strokeWidth: 2 },
+            data: { type: 'default' },
             labelStyle: { fill: '#6b7280', fontWeight: 500, fontSize: '12px' },
-            labelBgStyle: { fill: 'white', fillOpacity: 0.8 },
-            labelBgPadding: [4, 2],
-            labelBgBorderRadius: 2,
+            labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
+            labelBgPadding: [6, 3],
+            labelBgBorderRadius: 4,
+            markerEnd: {
+              type: 'arrowclosed',
+              width: 20,
+              height: 20,
+            },
           });
         }
       }
@@ -374,6 +431,20 @@ function convertWorkflowToReactFlow(workflowData) {
         id: `${state.name}-to-end`,
         source: sourceNodeId,
         target: endNodeId,
+        label: 'end',
+        type: 'smoothstep',
+        className: 'edge-end',
+        style: { strokeWidth: 3 },
+        data: { type: 'end' },
+        labelStyle: { fill: '#ef4444', fontWeight: 500, fontSize: '12px' },
+        labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
+        labelBgPadding: [6, 3],
+        labelBgBorderRadius: 4,
+        markerEnd: {
+          type: 'arrowclosed',
+          width: 20,
+          height: 20,
+        },
       });
     }
   });
