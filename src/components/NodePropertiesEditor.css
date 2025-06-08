@@ -147,3 +147,58 @@
   margin: 0;
   font-style: italic;
 }
+
+/* Retry Policy Styles */
+.retry-policy-item {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background-color: var(--surface-color);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.no-retry-policies {
+  text-align: center;
+  padding: 1rem;
+  color: var(--text-secondary);
+}
+
+.create-retry-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--primary-color);
+  background-color: var(--surface-color);
+  color: var(--primary-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 8px auto 0;
+}
+
+.create-retry-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.retry-policies-management {
+  margin-top: 12px;
+}
+
+/* Enhanced form inputs for retry policies */
+.retry-policy-item .form-group input[type="number"] {
+  min-width: 0;
+}
+
+.retry-policy-item .form-row .form-group {
+  min-width: 0;
+}

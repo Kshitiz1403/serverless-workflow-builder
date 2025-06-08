@@ -602,6 +602,8 @@ function WorkflowEditor() {
         onRedo={handleRedo}
         canUndo={canUndo}
         canRedo={canRedo}
+        workflowMetadata={workflowMetadata}
+        onUpdateWorkflowMetadata={setWorkflowMetadata}
       />
 
       {showJsonExporter && (
@@ -630,6 +632,7 @@ function getDefaultNodeData(type) {
             },
           },
         ],
+        retryRef: '', // Reference to retry policy
       };
     case 'switch':
       return {
