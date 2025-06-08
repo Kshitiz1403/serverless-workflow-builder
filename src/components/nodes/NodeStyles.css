@@ -1,0 +1,133 @@
+.custom-node {
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.custom-node.selected {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.custom-node:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.node-title {
+  font-size: 14px;
+}
+
+.node-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.node-field {
+  font-size: 11px;
+  color: #666;
+}
+
+/* Node type specific styles */
+.operation-node {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+}
+
+.operation-node .node-header {
+  color: #059669;
+}
+
+.switch-node {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  min-width: 180px;
+  min-height: auto;
+}
+
+.switch-node .node-header {
+  color: #d97706;
+}
+
+.switch-outputs {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.switch-output-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  position: relative;
+}
+
+.output-label {
+  font-size: 11px;
+  color: #374151;
+  font-weight: 500;
+  flex: 1;
+}
+
+.condition-handle-dot,
+.default-handle-dot {
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 50% !important;
+  cursor: crosshair !important;
+}
+
+.switch-node .condition-handle-dot:hover {
+  transform: scale(1.2) !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3) !important;
+}
+
+.switch-node .default-handle-dot:hover {
+  transform: scale(1.2) !important;
+  box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.3) !important;
+}
+
+.start-node {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.start-node .node-header {
+  color: #2563eb;
+}
+
+.end-node {
+  border-color: #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.end-node .node-header {
+  color: #dc2626;
+}
+
+.event-node {
+  border-color: #8b5cf6;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+
+.event-node .node-header {
+  color: #7c3aed;
+} 
