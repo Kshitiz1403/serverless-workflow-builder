@@ -31,7 +31,7 @@ function App() {
           onClick={toggleDarkMode}
           title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
         </button>
       </header>
       <main className="App-main">

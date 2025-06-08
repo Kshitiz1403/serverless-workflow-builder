@@ -79,7 +79,7 @@ const Sidebar = ({
     if (isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = 'ew-resize';
+      document.body.style.cursor = 'grabbing';
       document.body.style.userSelect = 'none';
     }
 
