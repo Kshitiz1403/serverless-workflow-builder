@@ -159,13 +159,24 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background-color: var(--surface-color);
-  cursor: pointer;
+  cursor: grab;
   transition: all 0.2s ease;
+  user-select: none;
 }
 
 .node-type-item:hover {
   border-color: var(--primary-color);
   box-shadow: 0 2px 4px var(--shadow);
+}
+
+.node-type-item:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.node-type-item:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 .node-type-header {

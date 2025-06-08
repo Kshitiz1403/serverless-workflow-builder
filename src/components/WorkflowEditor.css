@@ -7,4 +7,40 @@
 .workflow-canvas {
   flex: 1;
   height: 100%;
+  position: relative;
+}
+
+/* Drag and Drop Visual Feedback */
+.workflow-canvas.drag-over {
+  background-color: rgba(79, 70, 229, 0.05);
+  transition: background-color 0.2s ease;
+}
+
+.workflow-canvas.drag-over::after {
+  content: 'Drop here to add node';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--primary-color);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  animation: bounce-in 0.2s ease-out;
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }

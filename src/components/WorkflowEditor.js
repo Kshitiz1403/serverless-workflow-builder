@@ -78,6 +78,8 @@ function WorkflowEditor() {
   const [workflowMetadata, setWorkflowMetadata] = useState(savedState.workflowMetadata);
   const reactFlowInstance = useReactFlow();
   const reactFlowWrapper = useRef(null);
+  const [reactFlowBounds, setReactFlowBounds] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // History management for undo/redo
   const {
@@ -437,6 +439,81 @@ function WorkflowEditor() {
     };
   }, [reactFlowInstance]);
 
+  // Handle drag and drop functionality
+  useEffect(() => {
+    const reactFlowElement = reactFlowWrapper.current;
+    if (!reactFlowElement || !reactFlowInstance) return;
+
+    // Update bounds when ReactFlow instance changes
+    setReactFlowBounds(reactFlowElement.getBoundingClientRect());
+
+    const handleDragOver = (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (event) => {
+      event.preventDefault();
+      setIsDragOver(false);
+
+      const nodeType = event.dataTransfer.getData('application/reactflow');
+      if (!nodeType) return;
+
+      // Update bounds to get current position
+      const bounds = reactFlowElement.getBoundingClientRect();
+
+      // Calculate position relative to ReactFlow canvas
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top,
+      });
+
+      // Create new node
+      const newNode = {
+        id: `${nodeType}-${Date.now()}`,
+        type: nodeType,
+        position,
+        data: getDefaultNodeData(nodeType),
+      };
+
+      setNodes((nds) => {
+        const newNodes = nds.concat(newNode);
+        updateHistoryState(newNodes, edges);
+        return newNodes;
+      });
+    };
+
+    const handleDragEnter = (event) => {
+      event.preventDefault();
+      // Check if the drag contains our expected data type
+      if (event.dataTransfer.types.includes('application/reactflow')) {
+        setIsDragOver(true);
+      }
+    };
+
+    const handleDragLeave = (event) => {
+      event.preventDefault();
+      // Only set drag over to false if we're leaving the entire ReactFlow area
+      if (!reactFlowElement.contains(event.relatedTarget)) {
+        setIsDragOver(false);
+      }
+    };
+
+    // Add drag and drop event listeners
+    reactFlowElement.addEventListener('dragover', handleDragOver);
+    reactFlowElement.addEventListener('drop', handleDrop);
+    reactFlowElement.addEventListener('dragenter', handleDragEnter);
+    reactFlowElement.addEventListener('dragleave', handleDragLeave);
+
+    return () => {
+      // Cleanup event listeners
+      reactFlowElement.removeEventListener('dragover', handleDragOver);
+      reactFlowElement.removeEventListener('drop', handleDrop);
+      reactFlowElement.removeEventListener('dragenter', handleDragEnter);
+      reactFlowElement.removeEventListener('dragleave', handleDragLeave);
+    };
+  }, [reactFlowInstance, setNodes, edges, updateHistoryState]);
+
   const selectedNode = useMemo(() => {
     return nodes.find((node) => node.id === selectedNodeId);
   }, [nodes, selectedNodeId]);
@@ -486,7 +563,7 @@ function WorkflowEditor() {
 
   return (
     <div className="workflow-editor">
-      <div className="workflow-canvas" ref={reactFlowWrapper}>
+      <div className={`workflow-canvas ${isDragOver ? 'drag-over' : ''}`} ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
