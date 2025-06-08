@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Minus, Settings, RefreshCw } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import JsonEditor from './JsonEditor';
 import './NodePropertiesEditor.css';
 
 const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpdateWorkflowMetadata }) => {
@@ -43,25 +44,14 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
         },
       };
     } else if (field === 'functionRef.arguments') {
-      try {
-        const parsedArgs = JSON.parse(value);
-        actions[index] = {
-          ...actions[index],
-          functionRef: {
-            ...actions[index].functionRef,
-            arguments: parsedArgs,
-          },
-        };
-      } catch (e) {
-        // Keep the string value if JSON parsing fails
-        actions[index] = {
-          ...actions[index],
-          functionRef: {
-            ...actions[index].functionRef,
-            arguments: value,
-          },
-        };
-      }
+      // Value is already parsed by JsonEditor
+      actions[index] = {
+        ...actions[index],
+        functionRef: {
+          ...actions[index].functionRef,
+          arguments: value,
+        },
+      };
     } else {
       actions[index] = { ...actions[index], [field]: value };
     }
@@ -129,13 +119,8 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
   const handleEventChange = (index, field, value) => {
     const events = [...(formData.events || [])];
     if (field === 'eventRefs') {
-      try {
-        const parsedRefs = JSON.parse(value);
-        events[index] = { ...events[index], eventRefs: parsedRefs };
-      } catch (e) {
-        // Keep the string value if JSON parsing fails
-        events[index] = { ...events[index], eventRefs: value };
-      }
+      // Value is already parsed by JsonEditor
+      events[index] = { ...events[index], eventRefs: value };
     } else {
       events[index] = { ...events[index], [field]: value };
     }
@@ -326,21 +311,13 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                 />
               </div>
 
-              <div className="form-group">
-                <label>Arguments (JSON)</label>
-                <textarea
-                  value={
-                    typeof action.functionRef?.arguments === 'string'
-                      ? action.functionRef.arguments
-                      : JSON.stringify(action.functionRef?.arguments || {}, null, 2)
-                  }
-                  onChange={(e) =>
-                    handleActionChange(index, 'functionRef.arguments', e.target.value)
-                  }
-                  placeholder='{"key": "value"}'
-                  rows="3"
-                />
-              </div>
+              <JsonEditor
+                label="Arguments (JSON)"
+                value={action.functionRef?.arguments}
+                onChange={(value) => handleActionChange(index, 'functionRef.arguments', value)}
+                placeholder='{"key": "value"}'
+                height="120px"
+              />
             </div>
           ))}
         </div>
@@ -512,19 +489,13 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                 </button>
               </div>
 
-              <div className="form-group">
-                <label>Event References (JSON Array)</label>
-                <textarea
-                  value={
-                    typeof event.eventRefs === 'string'
-                      ? event.eventRefs
-                      : JSON.stringify(event.eventRefs || [], null, 2)
-                  }
-                  onChange={(e) => handleEventChange(index, 'eventRefs', e.target.value)}
-                  placeholder='["event_name_1", "event_name_2"]'
-                  rows="2"
-                />
-              </div>
+              <JsonEditor
+                label="Event References (JSON Array)"
+                value={event.eventRefs}
+                onChange={(value) => handleEventChange(index, 'eventRefs', value)}
+                placeholder='["event_name_1", "event_name_2"]'
+                height="80px"
+              />
             </div>
           ))}
 
