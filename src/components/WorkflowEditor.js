@@ -246,9 +246,21 @@ function WorkflowEditor() {
 
   const updateNodeData = useCallback(
     (nodeId, newData) => {
+      // If retry policy is being set, also set the retry policy name
+      let enhancedData = { ...newData };
+      if (newData.retryRef && workflowMetadata?.retryPolicies) {
+        const retryPolicy = workflowMetadata.retryPolicies.find(policy => policy.id === newData.retryRef);
+        if (retryPolicy) {
+          enhancedData.retryRefName = retryPolicy.name;
+        }
+      } else if (newData.retryRef === '') {
+        // Clear retry policy name when retry policy is removed
+        enhancedData.retryRefName = '';
+      }
+
       setNodes((nds) => {
         const newNodes = nds.map((node) =>
-          node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
+          node.id === nodeId ? { ...node, data: { ...node.data, ...enhancedData } } : node
         );
         updateHistoryState(newNodes, edges);
         return newNodes;
@@ -265,7 +277,7 @@ function WorkflowEditor() {
                 newLabel = 'default';
               } else if (edge.sourceHandle.startsWith('condition-')) {
                 const conditionIndex = parseInt(edge.sourceHandle.replace('condition-', ''));
-                const condition = newData.dataConditions?.[conditionIndex];
+                const condition = enhancedData.dataConditions?.[conditionIndex];
                 newLabel = condition?.name || `condition${conditionIndex + 1}`;
               }
               return { ...edge, label: newLabel };
@@ -276,7 +288,7 @@ function WorkflowEditor() {
           setHistoryState((prev) => ({
             ...prev,
             nodes: prev.nodes.map((node) =>
-              node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
+              node.id === nodeId ? { ...node, data: { ...node.data, ...enhancedData } } : node
             ),
             edges: newEdges,
           }));
@@ -284,7 +296,7 @@ function WorkflowEditor() {
         });
       }
     },
-    [setNodes, setEdges, nodes, edges, updateHistoryState, setHistoryState]
+    [setNodes, setEdges, nodes, edges, updateHistoryState, setHistoryState, workflowMetadata]
   );
 
   const deleteNode = useCallback(
