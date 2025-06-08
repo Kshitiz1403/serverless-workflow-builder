@@ -22,6 +22,34 @@
   font-weight: 600;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.github-link {
+  background: var(--button-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  text-decoration: none;
+}
+
+.github-link:hover {
+  background: var(--button-hover-bg);
+  border-color: var(--button-hover-border);
+  color: var(--text-color);
+}
+
 .dark-mode-toggle {
   background: var(--button-bg);
   border: 1px solid var(--border-color);

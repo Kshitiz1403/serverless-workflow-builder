@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Github } from 'lucide-react';
 import WorkflowEditor from './components/WorkflowEditor';
 import './App.css';
 
@@ -26,13 +26,24 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Serverless Workflow Builder</h1>
-        <button
-          className="dark-mode-toggle"
-          onClick={toggleDarkMode}
-          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
+        <div className="header-controls">
+          <a
+            href="https://github.com/Kshitiz1403/serverless-workflow-builder"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="github-link"
+            title="View on GitHub"
+          >
+            <Github size={16} />
+          </a>
+          <button
+            className="dark-mode-toggle"
+            onClick={toggleDarkMode}
+            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+        </div>
       </header>
       <main className="App-main">
         <WorkflowEditor />
