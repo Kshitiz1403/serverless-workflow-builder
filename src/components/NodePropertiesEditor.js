@@ -516,6 +516,30 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
         </div>
       )}
 
+      {node.type === 'sleep' && (
+        <div className="section">
+          <div className="form-group">
+            <label>Duration</label>
+            <input
+              type="text"
+              value={formData.duration || ''}
+              onChange={(e) => handleInputChange('duration', e.target.value)}
+              placeholder="PT30M (ISO 8601 duration format)"
+            />
+          </div>
+          <div className="form-help">
+            <p>Use ISO 8601 duration format:</p>
+            <ul>
+              <li>PT30S - 30 seconds</li>
+              <li>PT5M - 5 minutes</li>
+              <li>PT2H - 2 hours</li>
+              <li>PT24H - 24 hours</li>
+              <li>P1D - 1 day</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
       {node.type === 'switch' && (
         <div className="section">
           <div className="form-group">

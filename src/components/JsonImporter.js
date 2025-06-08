@@ -335,9 +335,9 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
     const sourceNodeId = stateNodeMap[state.name];
     if (!sourceNodeId) return;
 
-    // Handle operation and event states with simple transitions
+    // Handle operation, event, and sleep states with simple transitions
     const nextState = getNextState(state.transition);
-    if ((state.type === 'operation' || state.type === 'event') && nextState) {
+    if ((state.type === 'operation' || state.type === 'event' || state.type === 'sleep') && nextState) {
       const targetNodeId = stateNodeMap[nextState];
       if (targetNodeId) {
         edges.push({
@@ -555,13 +555,16 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
         events: state.onEvents || [],
         timeouts: state.timeouts || {},
       };
+    case 'sleep':
+      return {
+        duration: state.duration || 'PT30M',
+      };
     default:
       return {};
   }
 }
 
 function calculateNodePositions(states) {
-  console.log("states", states)
   const positions = {};
 
   // Improved spacing configuration

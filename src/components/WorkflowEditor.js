@@ -18,6 +18,7 @@ import SwitchNode from './nodes/SwitchNode';
 import StartNode from './nodes/StartNode';
 import EndNode from './nodes/EndNode';
 import EventNode from './nodes/EventNode';
+import SleepNode from './nodes/SleepNode';
 import JsonExporter from './JsonExporter';
 import JsonImporter from './JsonImporter';
 import { useHistory } from '../hooks/useHistory';
@@ -29,6 +30,7 @@ const nodeTypes = {
   start: StartNode,
   end: EndNode,
   event: EventNode,
+  sleep: SleepNode,
 };
 
 const STORAGE_KEY = 'serverless-workflow-editor-state';
@@ -678,6 +680,12 @@ function getDefaultNodeData(type) {
         timeouts: {
           eventTimeout: 'PT30M',
         },
+      };
+    case 'sleep':
+      return {
+        label: 'Sleep',
+        name: 'newSleep',
+        duration: 'PT30M', // ISO 8601 duration format (30 minutes)
       };
     case 'start':
       return {};
