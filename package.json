@@ -8,7 +8,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "serverless",
@@ -19,18 +21,19 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@reactflow/background": "^11.3.9",
+    "@reactflow/controls": "^11.2.11",
+    "@reactflow/minimap": "^11.7.8",
+    "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "reactflow": "^11.10.4",
-    "@reactflow/controls": "^11.2.11",
-    "@reactflow/background": "^11.3.9",
-    "@reactflow/minimap": "^11.7.8",
-    "uuid": "^9.0.1",
-    "lucide-react": "^0.263.1"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/uuid": "^9.0.2"
+    "@types/uuid": "^9.0.2",
+    "prettier": "^3.5.3"
   },
   "browserslist": {
     "production": [

@@ -7,18 +7,18 @@ const JsonExporter = ({ nodes, edges, onClose }) => {
     id: 'my-workflow',
     version: '1.0',
     name: 'My Workflow',
-    description: 'Generated serverless workflow'
+    description: 'Generated serverless workflow',
   });
 
   const serverlessWorkflow = useMemo(() => {
     // Find the start node and its first connected state
-    const startNode = nodes.find(node => node.type === 'start');
+    const startNode = nodes.find((node) => node.type === 'start');
     let startStateName = 'start';
 
     if (startNode) {
-      const startEdge = edges.find(edge => edge.source === startNode.id);
+      const startEdge = edges.find((edge) => edge.source === startNode.id);
       if (startEdge) {
-        const firstState = nodes.find(node => node.id === startEdge.target);
+        const firstState = nodes.find((node) => node.id === startEdge.target);
         if (firstState && firstState.type !== 'end') {
           startStateName = getNodeStateName(firstState);
         }
@@ -27,8 +27,8 @@ const JsonExporter = ({ nodes, edges, onClose }) => {
 
     // Convert nodes to states, excluding start nodes as they're not states
     const states = nodes
-      .filter(node => node.type !== 'start')
-      .map(node => convertNodeToState(node, edges, nodes));
+      .filter((node) => node.type !== 'start')
+      .map((node) => convertNodeToState(node, edges, nodes));
 
     // Build the complete serverless workflow
     const workflow = {
@@ -37,7 +37,7 @@ const JsonExporter = ({ nodes, edges, onClose }) => {
       name: workflowInfo.name,
       description: workflowInfo.description,
       start: startStateName,
-      states: states.filter(state => state !== null)
+      states: states.filter((state) => state !== null),
     };
 
     return workflow;
@@ -142,15 +142,16 @@ function convertNodeToState(node, edges, allNodes) {
   const stateName = getNodeStateName(node);
 
   // Find outgoing edges from this node
-  const outgoingEdges = edges.filter(edge => edge.source === node.id);
+  const outgoingEdges = edges.filter((edge) => edge.source === node.id);
 
   switch (node.type) {
     case 'operation':
-      const isOperationEnd = outgoingEdges.length === 0 || hasEndNodeTarget(outgoingEdges, allNodes);
+      const isOperationEnd =
+        outgoingEdges.length === 0 || hasEndNodeTarget(outgoingEdges, allNodes);
       const operationState = {
         name: stateName,
         type: 'operation',
-        actions: node.data.actions || []
+        actions: node.data.actions || [],
       };
 
       if (isOperationEnd) {
@@ -167,7 +168,7 @@ function convertNodeToState(node, edges, allNodes) {
         name: stateName,
         type: 'event',
         onEvents: node.data.events || [],
-        timeouts: node.data.timeouts || {}
+        timeouts: node.data.timeouts || {},
       };
 
       if (isEventEnd) {
@@ -182,7 +183,7 @@ function convertNodeToState(node, edges, allNodes) {
       const switchState = {
         name: stateName,
         type: 'switch',
-        defaultCondition: node.data.defaultCondition || { transition: { nextState: '' } }
+        defaultCondition: node.data.defaultCondition || { transition: { nextState: '' } },
       };
 
       // Determine condition type and handle accordingly
@@ -194,20 +195,22 @@ function convertNodeToState(node, edges, allNodes) {
       if (conditionType === 'data') {
         switchState.dataConditions = [];
         conditions.forEach((condition, index) => {
-          const conditionEdge = outgoingEdges.find(edge =>
-            edge.sourceHandle === `condition-${index}`
+          const conditionEdge = outgoingEdges.find(
+            (edge) => edge.sourceHandle === `condition-${index}`
           );
 
           const conditionData = { ...condition };
 
           if (conditionEdge) {
-            const targetNode = allNodes.find(n => n.id === conditionEdge.target);
+            const targetNode = allNodes.find((n) => n.id === conditionEdge.target);
             if (targetNode && targetNode.type === 'end') {
               conditionData.end = true;
               // Remove transition property when ending
               delete conditionData.transition;
             } else {
-              conditionData.transition = { nextState: getTargetStateName(conditionEdge.target, allNodes) };
+              conditionData.transition = {
+                nextState: getTargetStateName(conditionEdge.target, allNodes),
+              };
             }
           } else {
             // No edge found, use existing transition if available
@@ -222,20 +225,22 @@ function convertNodeToState(node, edges, allNodes) {
       } else {
         switchState.eventConditions = [];
         conditions.forEach((condition, index) => {
-          const conditionEdge = outgoingEdges.find(edge =>
-            edge.sourceHandle === `condition-${index}`
+          const conditionEdge = outgoingEdges.find(
+            (edge) => edge.sourceHandle === `condition-${index}`
           );
 
           const conditionData = { ...condition };
 
           if (conditionEdge) {
-            const targetNode = allNodes.find(n => n.id === conditionEdge.target);
+            const targetNode = allNodes.find((n) => n.id === conditionEdge.target);
             if (targetNode && targetNode.type === 'end') {
               conditionData.end = true;
               // Remove transition property when ending
               delete conditionData.transition;
             } else {
-              conditionData.transition = { nextState: getTargetStateName(conditionEdge.target, allNodes) };
+              conditionData.transition = {
+                nextState: getTargetStateName(conditionEdge.target, allNodes),
+              };
             }
           } else {
             // No edge found, use existing transition if available
@@ -250,14 +255,14 @@ function convertNodeToState(node, edges, allNodes) {
       }
 
       // Handle default condition
-      const defaultEdge = outgoingEdges.find(edge => edge.sourceHandle === 'default');
+      const defaultEdge = outgoingEdges.find((edge) => edge.sourceHandle === 'default');
       if (defaultEdge) {
-        const targetNode = allNodes.find(n => n.id === defaultEdge.target);
+        const targetNode = allNodes.find((n) => n.id === defaultEdge.target);
         if (targetNode && targetNode.type === 'end') {
           switchState.defaultCondition = { end: true };
         } else {
           switchState.defaultCondition = {
-            transition: { nextState: getTargetStateName(defaultEdge.target, allNodes) }
+            transition: { nextState: getTargetStateName(defaultEdge.target, allNodes) },
           };
         }
       }
@@ -278,19 +283,19 @@ function getTransition(node, outgoingEdges, allNodes) {
   }
 
   const targetNodeId = outgoingEdges[0].target;
-  const targetNode = allNodes.find(n => n.id === targetNodeId);
+  const targetNode = allNodes.find((n) => n.id === targetNodeId);
 
   if (targetNode && targetNode.type === 'end') {
     return undefined; // No transition needed for end nodes
   }
 
   return {
-    nextState: getTargetStateName(targetNodeId, allNodes)
+    nextState: getTargetStateName(targetNodeId, allNodes),
   };
 }
 
 function getTargetStateName(targetNodeId, allNodes) {
-  const targetNode = allNodes.find(n => n.id === targetNodeId);
+  const targetNode = allNodes.find((n) => n.id === targetNodeId);
   if (targetNode && targetNode.type === 'end') {
     return ''; // End nodes don't have state names
   }
@@ -298,10 +303,10 @@ function getTargetStateName(targetNodeId, allNodes) {
 }
 
 function hasEndNodeTarget(outgoingEdges, allNodes) {
-  return outgoingEdges.some(edge => {
-    const targetNode = allNodes.find(n => n.id === edge.target);
+  return outgoingEdges.some((edge) => {
+    const targetNode = allNodes.find((n) => n.id === edge.target);
     return targetNode && targetNode.type === 'end';
   });
 }
 
-export default JsonExporter; 
+export default JsonExporter;

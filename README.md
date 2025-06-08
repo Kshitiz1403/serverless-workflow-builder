@@ -14,12 +14,14 @@ Try the editor live at: **[https://kshitiz1403.github.io/serverless-workflow-bui
 ## ✨ Features
 
 ### 🎨 Visual Workflow Design
+
 - **Drag & Drop Interface**: Intuitive node-based workflow creation
 - **Real-time Visual Feedback**: See your workflow structure as you build
 - **Smart Connection System**: Easy linking between workflow states
 - **Auto-layout**: Intelligent node positioning for imported workflows
 
 ### 🔧 Comprehensive Node Support
+
 - **Start Node**: Workflow entry points
 - **Operation Node**: Function calls and actions
 - **Switch Node**: Conditional branching with data/event conditions
@@ -27,24 +29,28 @@ Try the editor live at: **[https://kshitiz1403.github.io/serverless-workflow-bui
 - **End Node**: Workflow termination points
 
 ### 📊 Advanced Switch Conditions
+
 - **Data Conditions**: Expression-based branching (`.data == true`)
 - **Event Conditions**: Event-driven decision making
 - **Visual Condition Labels**: Clear condition identification on connections
 - **Default Fallback**: Support for default transition paths
 
 ### 💾 Import/Export Capabilities
+
 - **JSON Import**: Load existing serverless workflow definitions
 - **JSON Export**: Generate compliant serverless workflow JSON
 - **Example Workflows**: Pre-built templates to get started
 - **File Upload**: Direct .json file import support
 
 ### 🔄 Workflow Management
+
 - **Auto-save**: Automatic local storage backup
 - **New Workflow**: Quick workflow reset with confirmation
 - **Live Editing**: Real-time property updates
 - **Undo/Redo**: Coming soon
 
 ### 🎯 Standards Compliance
+
 - **Serverless Workflow Spec**: Full compliance with [v0.9.x specification](https://github.com/serverlessworkflow/specification)
 - **Action Support**: Function references, expressions, and configurations
 - **Event Integration**: Complete event state and condition support
@@ -62,23 +68,27 @@ Try the editor live at: **[https://kshitiz1403.github.io/serverless-workflow-bui
 ## 📦 Installation
 
 ### Prerequisites
+
 - Node.js 16+ (recommended: Node.js 18)
 - npm or yarn package manager
 
 ### Local Development
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/kshitiz1403/serverless-workflow-builder.git
    cd serverless-workflow-builder
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Start development server**
+
    ```bash
    npm start
    ```
@@ -116,26 +126,31 @@ The build artifacts will be stored in the `build/` directory.
 ### Node Types & Configuration
 
 #### Start Node
+
 - Entry point for workflow execution
 - Configure workflow metadata
 
 #### Operation Node
+
 - Define function calls and actions
 - Set function references and parameters
 - Configure retry policies and timeouts
 
 #### Switch Node
+
 - **Data Conditions**: Use expressions like `.data == true`
 - **Event Conditions**: Reference specific events
 - **Default Path**: Fallback transition option
 - Multiple output connections for each condition
 
 #### Event Node
+
 - Configure event references and timeouts
 - Set up event-driven state transitions
 - Handle event correlation and data filtering
 
 #### End Node
+
 - Terminate workflow execution
 - Define completion status and outputs
 
@@ -164,6 +179,7 @@ src/
 We welcome contributions! Here's how you can help:
 
 ### Development Setup
+
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature-name`
 3. Make your changes and test thoroughly
@@ -172,6 +188,7 @@ We welcome contributions! Here's how you can help:
 6. Create a Pull Request
 
 ### Areas for Contribution
+
 - **New Node Types**: Implement additional serverless workflow states
 - **UI/UX Improvements**: Enhance the visual design and user experience
 - **Export Formats**: Add support for other workflow formats
@@ -214,4 +231,4 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for the Serverless Community** 
+**Built with ❤️ for the Serverless Community**
