@@ -18,8 +18,10 @@ import './Sidebar.css';
 const Sidebar = ({
   onAddNode,
   selectedNode,
+  selectedNodes,
   onUpdateNodeData,
   onDeleteNode,
+  onDeleteSelectedNodes,
   onExportJson,
   onImportJson,
   onClearWorkflow,
@@ -133,7 +135,7 @@ const Sidebar = ({
           <button
             className={`tab ${activeTab === 'properties' ? 'active' : ''}`}
             onClick={() => setActiveTab('properties')}
-            disabled={!selectedNode}
+            disabled={!selectedNode && (!selectedNodes || selectedNodes.length === 0)}
           >
             Properties
           </button>
@@ -185,7 +187,38 @@ const Sidebar = ({
           </div>
         )}
 
-        {activeTab === 'properties' && !selectedNode && (
+        {activeTab === 'properties' && !selectedNode && selectedNodes && selectedNodes.length > 1 && (
+          <div className="multi-selection">
+            <div className="properties-header">
+              <h3>Multiple Nodes Selected</h3>
+              <button
+                className="delete-btn"
+                onClick={onDeleteSelectedNodes}
+                title="Delete Selected Nodes"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+            <div className="multi-selection-info">
+              <p>{selectedNodes.length} nodes selected</p>
+              <div className="selected-nodes-list">
+                {selectedNodes.map((node) => (
+                  <div key={node.id} className="selected-node-item">
+                    <span className="node-type">{node.type}</span>
+                    <span className="node-label">{node.data.label || node.data.name || node.id}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="multi-selection-actions">
+                <p className="help-text">
+                  Press <kbd>Delete</kbd> or <kbd>Backspace</kbd> to delete selected nodes
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'properties' && !selectedNode && (!selectedNodes || selectedNodes.length === 0) && (
           <div className="no-selection">
             <p>Select a node to edit its properties</p>
           </div>

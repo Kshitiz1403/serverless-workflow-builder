@@ -7,6 +7,7 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   ReactFlowProvider,
+  SelectionMode,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -69,6 +70,7 @@ function WorkflowEditor() {
   const [nodes, setNodes, onNodesChange] = useNodesState(savedState.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(savedState.edges);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
+  const [selectedNodes, setSelectedNodes] = useState([]);
   const [showJsonExporter, setShowJsonExporter] = useState(false);
   const [showJsonImporter, setShowJsonImporter] = useState(false);
   const [workflowMetadata, setWorkflowMetadata] = useState(savedState.workflowMetadata);
@@ -154,6 +156,17 @@ function WorkflowEditor() {
 
   const onPaneClick = useCallback(() => {
     setSelectedNodeId(null);
+    setSelectedNodes([]);
+  }, []);
+
+  const onSelectionChange = useCallback(({ nodes: selectedNodes }) => {
+    setSelectedNodes(selectedNodes);
+    // If only one node is selected, also set it as the single selected node for the properties panel
+    if (selectedNodes.length === 1) {
+      setSelectedNodeId(selectedNodes[0].id);
+    } else {
+      setSelectedNodeId(null);
+    }
   }, []);
 
   const addNode = useCallback(
@@ -211,6 +224,38 @@ function WorkflowEditor() {
     [setNodes, setEdges]
   );
 
+  const deleteSelectedNodes = useCallback(() => {
+    if (selectedNodes.length > 0) {
+      const nodeIdsToDelete = selectedNodes.map(node => node.id);
+      setNodes((nds) => nds.filter((node) => !nodeIdsToDelete.includes(node.id)));
+      setEdges((eds) => eds.filter((edge) =>
+        !nodeIdsToDelete.includes(edge.source) && !nodeIdsToDelete.includes(edge.target)
+      ));
+      setSelectedNodeId(null);
+      setSelectedNodes([]);
+    }
+  }, [selectedNodes, setNodes, setEdges]);
+
+  // Handle keyboard events for deleting selected nodes
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNodes.length > 0) {
+        // Prevent deletion if we're editing text in an input field
+        const activeElement = document.activeElement;
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+          return;
+        }
+        event.preventDefault();
+        deleteSelectedNodes();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedNodes, deleteSelectedNodes]);
+
   const selectedNode = useMemo(() => {
     return nodes.find((node) => node.id === selectedNodeId);
   }, [nodes, selectedNodeId]);
@@ -219,6 +264,7 @@ function WorkflowEditor() {
     setNodes(defaultInitialNodes);
     setEdges(defaultInitialEdges);
     setSelectedNodeId(null);
+    setSelectedNodes([]);
     setWorkflowMetadata(null);
     localStorage.removeItem(STORAGE_KEY);
   }, [setNodes, setEdges]);
@@ -242,6 +288,7 @@ function WorkflowEditor() {
       setEdges(edges);
       setWorkflowMetadata(metadata);
       setSelectedNodeId(null);
+      setSelectedNodes([]);
     },
     [setNodes, setEdges]
   );
@@ -257,7 +304,10 @@ function WorkflowEditor() {
           onConnect={onConnect}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
+          onSelectionChange={onSelectionChange}
           nodeTypes={nodeTypes}
+          selectionMode={SelectionMode.Partial}
+          multiSelectionKeyCode={null}
           fitView
         >
           <Background />
@@ -269,8 +319,10 @@ function WorkflowEditor() {
       <Sidebar
         onAddNode={addNode}
         selectedNode={selectedNode}
+        selectedNodes={selectedNodes}
         onUpdateNodeData={updateNodeData}
         onDeleteNode={deleteNode}
+        onDeleteSelectedNodes={deleteSelectedNodes}
         onExportJson={() => setShowJsonExporter(true)}
         onImportJson={() => setShowJsonImporter(true)}
         onClearWorkflow={clearWorkflow}
