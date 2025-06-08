@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -8,6 +8,7 @@ import ReactFlow, {
   useEdgesState,
   ReactFlowProvider,
   SelectionMode,
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -75,6 +76,8 @@ function WorkflowEditor() {
   const [showJsonExporter, setShowJsonExporter] = useState(false);
   const [showJsonImporter, setShowJsonImporter] = useState(false);
   const [workflowMetadata, setWorkflowMetadata] = useState(savedState.workflowMetadata);
+  const reactFlowInstance = useReactFlow();
+  const reactFlowWrapper = useRef(null);
 
   // History management for undo/redo
   const {
@@ -344,6 +347,96 @@ function WorkflowEditor() {
     };
   }, [selectedNodes, deleteSelectedNodes, handleUndo, handleRedo]);
 
+  // Handle 2-finger trackpad panning
+  useEffect(() => {
+    const reactFlowElement = reactFlowWrapper.current;
+    if (!reactFlowElement || !reactFlowInstance) return;
+
+    let isPanning = false;
+    let startX = 0;
+    let startY = 0;
+
+    const handleTouchStart = (event) => {
+      // Only handle 2-finger touches for panning
+      if (event.touches.length === 2) {
+        isPanning = true;
+        event.preventDefault();
+
+        // Calculate center point between two fingers
+        const centerX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+        const centerY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+
+        startX = centerX;
+        startY = centerY;
+      }
+    };
+
+    const handleTouchMove = (event) => {
+      if (isPanning && event.touches.length === 2) {
+        event.preventDefault();
+
+        // Calculate center point between two fingers
+        const centerX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+        const centerY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+
+        const deltaX = centerX - startX;
+        const deltaY = centerY - startY;
+
+        // Get current viewport
+        const viewport = reactFlowInstance.getViewport();
+
+        // Apply panning
+        reactFlowInstance.setViewport({
+          x: viewport.x + deltaX,
+          y: viewport.y + deltaY,
+          zoom: viewport.zoom,
+        });
+
+        startX = centerX;
+        startY = centerY;
+      }
+    };
+
+    const handleTouchEnd = (event) => {
+      if (event.touches.length < 2) {
+        isPanning = false;
+      }
+    };
+
+    // Handle trackpad gestures (wheel events with ctrlKey indicate pinch/pan on trackpad)
+    const handleWheel = (event) => {
+      // On Mac trackpads, 2-finger scrolling triggers wheel events
+      // We want to allow natural 2-finger panning behavior
+      if (!event.ctrlKey && !event.metaKey && !event.shiftKey) {
+        // This is likely a 2-finger scroll gesture on trackpad
+        const viewport = reactFlowInstance.getViewport();
+
+        // Apply panning with inverted delta for natural feel
+        reactFlowInstance.setViewport({
+          x: viewport.x - event.deltaX,
+          y: viewport.y - event.deltaY,
+          zoom: viewport.zoom,
+        });
+
+        event.preventDefault();
+      }
+    };
+
+    // Add event listeners
+    reactFlowElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+    reactFlowElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+    reactFlowElement.addEventListener('touchend', handleTouchEnd, { passive: false });
+    reactFlowElement.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      // Cleanup event listeners
+      reactFlowElement.removeEventListener('touchstart', handleTouchStart);
+      reactFlowElement.removeEventListener('touchmove', handleTouchMove);
+      reactFlowElement.removeEventListener('touchend', handleTouchEnd);
+      reactFlowElement.removeEventListener('wheel', handleWheel);
+    };
+  }, [reactFlowInstance]);
+
   const selectedNode = useMemo(() => {
     return nodes.find((node) => node.id === selectedNodeId);
   }, [nodes, selectedNodeId]);
@@ -393,7 +486,7 @@ function WorkflowEditor() {
 
   return (
     <div className="workflow-editor">
-      <div className="workflow-canvas">
+      <div className="workflow-canvas" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -406,6 +499,9 @@ function WorkflowEditor() {
           nodeTypes={nodeTypes}
           selectionMode={SelectionMode.Partial}
           multiSelectionKeyCode={null}
+          panOnDrag={true}
+          panOnScroll={false}
+          preventScrolling={false}
           fitView
         >
           <Background />
