@@ -20,14 +20,14 @@ const JsonImporter = ({ onImport, onClose }) => {
 
       // Create retry policies with IDs first
       const retryPolicyNameToId = {};
-      const retryPolicies = workflowData.retryPolicies?.map(policy => {
+      const retryPolicies = (workflowData.retries || workflowData.retryPolicies || []).map(policy => {
         const id = uuidv4();
         retryPolicyNameToId[policy.name] = id;
         return {
           ...policy,
           id
         };
-      }) || [];
+      });
 
       // Convert serverless workflow to nodes and edges
       const { nodes, edges } = convertWorkflowToReactFlow(workflowData, retryPolicyNameToId);
@@ -506,9 +506,32 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
         actions: state.actions || [],
       };
 
-      // Convert retry policy name reference to ID reference
+      // Convert retry policy name reference to ID reference (can be at state level or action level)
       if (state.retryRef && retryPolicyNameToId[state.retryRef]) {
         operationData.retryRef = retryPolicyNameToId[state.retryRef];
+        operationData.retryRefName = state.retryRef;
+      }
+
+      // Also check for retry references in actions
+      if (operationData.actions) {
+        operationData.actions = operationData.actions.map(action => {
+          const updatedAction = { ...action };
+          if (action.retryRef && retryPolicyNameToId[action.retryRef]) {
+            updatedAction.retryRef = retryPolicyNameToId[action.retryRef];
+          }
+          return updatedAction;
+        });
+      }
+
+      // If no state-level retry policy but actions have retry policies, 
+      // promote the first action's retry policy to state level for UI compatibility
+      if (!operationData.retryRef && operationData.actions && operationData.actions.length > 0) {
+        const firstAction = operationData.actions[0];
+        const firstActionRetryRefName = state.actions && state.actions[0] && state.actions[0].retryRef;
+        if (firstAction.retryRef && firstActionRetryRefName) {
+          operationData.retryRef = firstAction.retryRef;
+          operationData.retryRefName = firstActionRetryRefName;
+        }
       }
 
       return operationData;
@@ -516,12 +539,19 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
       const hasDataConditions = state.dataConditions && state.dataConditions.length > 0;
       const hasEventConditions = state.eventConditions && state.eventConditions.length > 0;
 
-      return {
+      const switchData = {
         conditionType: hasDataConditions ? 'data' : 'event',
         dataConditions: state.dataConditions || [],
         eventConditions: state.eventConditions || [],
         defaultCondition: state.defaultCondition || true,
       };
+
+      // Convert retry policy name reference to ID reference
+      if (state.retryRef && retryPolicyNameToId[state.retryRef]) {
+        switchData.retryRef = retryPolicyNameToId[state.retryRef];
+      }
+
+      return switchData;
     case 'event':
       return {
         events: state.onEvents || [],

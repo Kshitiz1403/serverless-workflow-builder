@@ -1,5 +1,5 @@
 import React from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, useReactFlow } from 'reactflow';
 import { Play } from 'lucide-react';
 import './NodeStyles.css';
 
@@ -20,6 +20,11 @@ const OperationNode = ({ data, selected }) => {
         {data.actions && data.actions.length > 0 && (
           <div className="node-field">
             <strong>Actions:</strong> {data.actions.length}
+          </div>
+        )}
+        {data.retryRefName && (
+          <div className="node-field">
+            <strong>Retry Policy:</strong> {data.retryRefName}
           </div>
         )}
       </div>
