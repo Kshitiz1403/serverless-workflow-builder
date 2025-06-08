@@ -40,7 +40,7 @@ const SwitchNode = ({ data, selected }) => {
         <div className="switch-outputs">
           {conditions.map((condition, index) => (
             <div key={`condition-${index}`} className="switch-output-item">
-              <span className="output-label">{condition.name || `condition${index + 1}`}</span>
+              <span className="output-label">{condition.name || condition.eventRef || condition.condition || `condition${index + 1}`}</span>
               <Handle
                 type="source"
                 position={Position.Right}
