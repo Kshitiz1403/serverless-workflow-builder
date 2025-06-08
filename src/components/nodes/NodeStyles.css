@@ -1,21 +1,22 @@
 .custom-node {
   padding: 12px;
   border-radius: 8px;
-  border: 2px solid #ddd;
-  background-color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--border-color);
+  background-color: var(--surface-color);
+  box-shadow: 0 2px 8px var(--shadow);
   min-width: 150px;
   font-size: 12px;
   transition: all 0.2s ease;
+  color: var(--text-color);
 }
 
 .custom-node.selected {
-  border-color: #4f46e5;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 .custom-node:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--shadow-hover);
 }
 
 .node-header {
@@ -38,7 +39,7 @@
 
 .node-field {
   font-size: 11px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 /* Node type specific styles */
@@ -74,15 +75,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid #e5e7eb;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   position: relative;
 }
 
 .output-label {
   font-size: 11px;
-  color: #374151;
+  color: var(--text-color);
   font-weight: 500;
   flex: 1;
 }

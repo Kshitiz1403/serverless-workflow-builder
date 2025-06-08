@@ -1,3 +1,47 @@
+:root {
+  /* Light theme colors */
+  --bg-color: #f5f5f5;
+  --surface-color: #ffffff;
+  --text-color: #374151;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --border-hover: #d1d5db;
+  --header-bg: #282c34;
+  --header-text: #ffffff;
+  --button-bg: #ffffff;
+  --button-hover-bg: #f3f4f6;
+  --button-hover-border: #d1d5db;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-hover: rgba(0, 0, 0, 0.15);
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --primary-color: #4f46e5;
+  --info-color: #3b82f6;
+}
+
+:root.dark {
+  /* Dark theme colors */
+  --bg-color: #111827;
+  --surface-color: #1f2937;
+  --text-color: #f9fafb;
+  --text-secondary: #9ca3af;
+  --border-color: #374151;
+  --border-hover: #4b5563;
+  --header-bg: #1f2937;
+  --header-text: #f9fafb;
+  --button-bg: #374151;
+  --button-hover-bg: #4b5563;
+  --button-hover-border: #6b7280;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-hover: rgba(0, 0, 0, 0.4);
+  --success-color: #059669;
+  --warning-color: #d97706;
+  --danger-color: #dc2626;
+  --primary-color: #6366f1;
+  --info-color: #2563eb;
+}
+
 body {
   margin: 0;
   font-family:
@@ -5,7 +49,9 @@ body {
     'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 code {
@@ -41,45 +87,46 @@ code {
 
 /* Edge styling improvements */
 .react-flow__edge-path {
-  stroke: #4f46e5;
+  stroke: var(--primary-color);
   stroke-width: 2;
 }
 
 .react-flow__edge-text {
   font-size: 12px;
   font-weight: 500;
+  fill: var(--text-color);
 }
 
 .react-flow__edge.selected .react-flow__edge-path {
-  stroke: #6366f1;
+  stroke: var(--primary-color);
   stroke-width: 3;
 }
 
 .react-flow__edge .react-flow__edge-textbg {
-  fill: white;
+  fill: var(--surface-color);
   fill-opacity: 0.9;
 }
 
 /* Different edge types */
 .react-flow__edge.edge-simple .react-flow__edge-path {
-  stroke: #10b981;
+  stroke: var(--success-color);
   stroke-width: 2;
   animation: flow 2s ease-in-out infinite;
 }
 
 .react-flow__edge.edge-condition .react-flow__edge-path {
-  stroke: #f59e0b;
+  stroke: var(--warning-color);
   stroke-width: 2;
 }
 
 .react-flow__edge.edge-default .react-flow__edge-path {
-  stroke: #6b7280;
+  stroke: var(--text-secondary);
   stroke-width: 2;
   stroke-dasharray: 5,5;
 }
 
 .react-flow__edge.edge-end .react-flow__edge-path {
-  stroke: #ef4444;
+  stroke: var(--danger-color);
   stroke-width: 3;
 }
 
@@ -97,21 +144,51 @@ code {
 
 /* Arrow head styling */
 .react-flow__arrowhead {
-  fill: #4f46e5;
+  fill: var(--primary-color);
 }
 
 .react-flow__edge.edge-simple .react-flow__arrowhead {
-  fill: #10b981;
+  fill: var(--success-color);
 }
 
 .react-flow__edge.edge-condition .react-flow__arrowhead {
-  fill: #f59e0b;
+  fill: var(--warning-color);
 }
 
 .react-flow__edge.edge-default .react-flow__arrowhead {
-  fill: #6b7280;
+  fill: var(--text-secondary);
 }
 
 .react-flow__edge.edge-end .react-flow__arrowhead {
-  fill: #ef4444;
+  fill: var(--danger-color);
+}
+
+/* ReactFlow dark mode support */
+:root.dark .react-flow__pane {
+  background: var(--bg-color);
+}
+
+:root.dark .react-flow__controls {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+}
+
+:root.dark .react-flow__controls button {
+  background: var(--surface-color);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+:root.dark .react-flow__controls button:hover {
+  background: var(--button-hover-bg);
+}
+
+:root.dark .react-flow__minimap {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+}
+
+:root.dark .react-flow__handle {
+  background: var(--text-secondary);
+  border: 2px solid var(--surface-color);
 }
