@@ -70,8 +70,9 @@ const Sidebar = ({
       if (!isResizing) return;
 
       const newWidth = window.innerWidth - e.clientX;
-      // Constrain width between 250px and 600px
-      const constrainedWidth = Math.max(250, Math.min(600, newWidth));
+      // Constrain width between 250px and 80% of screen width
+      const maxWidth = Math.floor(window.innerWidth * 0.8);
+      const constrainedWidth = Math.max(250, Math.min(maxWidth, newWidth));
       setSidebarWidth(constrainedWidth);
     };
 
