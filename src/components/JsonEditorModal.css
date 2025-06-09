@@ -1,0 +1,265 @@
+.json-editor-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.json-editor-modal {
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  width: 90vw;
+  max-width: 900px;
+  height: 80vh;
+  max-height: 700px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.json-editor-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+}
+
+.json-editor-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.json-editor-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.json-editor-modal-actions button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.json-editor-modal-actions button:hover:not(:disabled) {
+  background-color: var(--button-hover-bg);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.json-editor-modal-actions button:active:not(:disabled) {
+  transform: translateY(0) scale(0.96);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.1s ease;
+}
+
+.json-editor-modal-actions .save-btn {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.json-editor-modal-actions .save-btn:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+  filter: brightness(0.85);
+}
+
+.json-editor-modal-actions .save-btn:active:not(:disabled) {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(0) scale(0.96);
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.4);
+  filter: brightness(0.7);
+}
+
+.json-editor-modal-actions .save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.json-editor-modal-actions .reset-btn {
+  background-color: var(--warning-color);
+  border-color: var(--warning-color);
+  color: white;
+}
+
+.json-editor-modal-actions .close-btn {
+  background-color: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 8px;
+}
+
+.json-editor-modal-actions .close-btn:hover {
+  background-color: var(--button-hover-bg);
+  color: var(--text-color);
+}
+
+.json-editor-modal-content {
+  flex: 1;
+  padding: 24px;
+  overflow: hidden;
+  background-color: var(--bg-color);
+}
+
+.json-editor-modal-content .json-editor {
+  height: 100%;
+}
+
+.json-editor-modal-content .json-editor-content {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.json-editor-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+}
+
+.json-editor-modal-info {
+  flex: 1;
+}
+
+.changes-indicator {
+  color: var(--warning-color);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.json-editor-modal-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.json-editor-modal-buttons button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
+}
+
+.cancel-btn {
+  background-color: var(--bg-color);
+  color: var(--text-secondary);
+}
+
+.cancel-btn:hover {
+  background-color: var(--button-hover-bg);
+  color: var(--text-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cancel-btn:active {
+  transform: translateY(0) scale(0.96);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.1s ease;
+}
+
+.save-btn.primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.save-btn.primary:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+  filter: brightness(0.85);
+}
+
+.save-btn.primary:active:not(:disabled) {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(0) scale(0.96);
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.4);
+  transition: all 0.1s ease;
+  filter: brightness(0.7);
+}
+
+.save-btn.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .json-editor-modal {
+    width: 95vw;
+    height: 85vh;
+    margin: 20px;
+  }
+  
+  .json-editor-modal-header {
+    padding: 16px 20px;
+  }
+  
+  .json-editor-modal-content {
+    padding: 20px;
+  }
+  
+  .json-editor-modal-footer {
+    padding: 12px 20px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .json-editor-modal-buttons {
+    width: 100%;
+    justify-content: stretch;
+  }
+  
+  .json-editor-modal-buttons button {
+    flex: 1;
+  }
+} 

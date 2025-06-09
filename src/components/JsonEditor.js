@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import JsonView from '@uiw/react-json-view';
-import { AlertCircle, CheckCircle, Eye, Edit3, Maximize2, Minimize2 } from 'lucide-react';
+import { AlertCircle, CheckCircle, Eye, Edit3, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
 import './JsonEditor.css';
 
 const JsonEditor = ({
@@ -10,7 +10,9 @@ const JsonEditor = ({
  label,
  height = '120px',
  allowEdit = true,
- showValidation = true
+ showValidation = true,
+ showModalButton = true,
+ onOpenModal = null
 }) => {
  const [mode, setMode] = useState('edit'); // 'edit' or 'view'
  const [isExpanded, setIsExpanded] = useState(false);
@@ -113,6 +115,16 @@ const JsonEditor = ({
         )}
         <span>{isValid ? 'Valid JSON' : 'Invalid JSON'}</span>
        </div>
+      )}
+      {showModalButton && onOpenModal && (
+       <button
+        type="button"
+        className="json-control-btn modal-btn"
+        onClick={onOpenModal}
+        title="Open in Modal"
+       >
+        <ExternalLink size={14} />
+       </button>
       )}
       <button
        type="button"

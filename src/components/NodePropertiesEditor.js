@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Minus, Settings, RefreshCw } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import JsonEditor from './JsonEditor';
+import JsonEditorModal from './JsonEditorModal';
 import './NodePropertiesEditor.css';
 
 const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpdateWorkflowMetadata }) => {
   const [formData, setFormData] = useState({});
+  const [modalState, setModalState] = useState({ isOpen: false, value: null, onChange: null, title: '', label: '' });
 
   useEffect(() => {
     setFormData(node.data || {});
@@ -250,6 +252,20 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     onUpdateNodeData(node.id, updatedData);
   };
 
+  const openJsonModal = (value, onChange, title, label) => {
+    setModalState({
+      isOpen: true,
+      value,
+      onChange,
+      title,
+      label
+    });
+  };
+
+  const closeJsonModal = () => {
+    setModalState({ isOpen: false, value: null, onChange: null, title: '', label: '' });
+  };
+
   return (
     <div className="node-properties-editor">
       <div className="form-group">
@@ -317,6 +333,12 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                 onChange={(value) => handleActionChange(index, 'functionRef.arguments', value)}
                 placeholder='{"key": "value"}'
                 height="120px"
+                onOpenModal={() => openJsonModal(
+                  action.functionRef?.arguments,
+                  (value) => handleActionChange(index, 'functionRef.arguments', value),
+                  `Function Arguments - ${action.name || `Action ${index + 1}`}`,
+                  "Function Arguments (JSON)"
+                )}
               />
             </div>
           ))}
@@ -495,6 +517,12 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                 onChange={(value) => handleEventChange(index, 'eventRefs', value)}
                 placeholder='["event_name_1", "event_name_2"]'
                 height="80px"
+                onOpenModal={() => openJsonModal(
+                  event.eventRefs,
+                  (value) => handleEventChange(index, 'eventRefs', value),
+                  `Event References - Event ${index + 1}`,
+                  "Event References (JSON Array)"
+                )}
               />
             </div>
           ))}
@@ -622,6 +650,15 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
           ))}
         </div>
       )}
+
+      <JsonEditorModal
+        isOpen={modalState.isOpen}
+        onClose={closeJsonModal}
+        value={modalState.value}
+        onChange={modalState.onChange}
+        title={modalState.title}
+        label={modalState.label}
+      />
     </div>
   );
 };
