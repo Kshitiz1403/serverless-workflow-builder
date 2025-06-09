@@ -9,6 +9,7 @@ import ReactFlow, {
   ReactFlowProvider,
   SelectionMode,
   useReactFlow,
+  useViewport,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -23,15 +24,6 @@ import JsonExporter from './JsonExporter';
 import JsonImporter from './JsonImporter';
 import { useHistory } from '../hooks/useHistory';
 import './WorkflowEditor.css';
-
-const nodeTypes = {
-  operation: OperationNode,
-  switch: SwitchNode,
-  start: StartNode,
-  end: EndNode,
-  event: EventNode,
-  sleep: SleepNode,
-};
 
 const STORAGE_KEY = 'serverless-workflow-editor-state';
 
@@ -82,6 +74,17 @@ function WorkflowEditor() {
   const reactFlowWrapper = useRef(null);
   const [reactFlowBounds, setReactFlowBounds] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const { zoom } = useViewport();
+
+  // Node types with zoom prop
+  const nodeTypes = useMemo(() => ({
+    operation: (props) => <OperationNode {...props} zoom={zoom} />,
+    switch: (props) => <SwitchNode {...props} zoom={zoom} />,
+    start: (props) => <StartNode {...props} zoom={zoom} />,
+    end: (props) => <EndNode {...props} zoom={zoom} />,
+    event: (props) => <EventNode {...props} zoom={zoom} />,
+    sleep: (props) => <SleepNode {...props} zoom={zoom} />,
+  }), [zoom]);
 
   // History management for undo/redo
   const {

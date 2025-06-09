@@ -3,7 +3,9 @@ import { Handle, Position } from 'reactflow';
 import { GitBranch } from 'lucide-react';
 import './NodeStyles.css';
 
-const SwitchNode = ({ data, selected }) => {
+const SwitchNode = ({ data, selected, zoom = 1 }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+  const shouldShowDetails = zoom > 1.5 && isHovered; // Show details only when zoomed AND hovered
   const dataConditions = data.dataConditions || [];
   const eventConditions = data.eventConditions || [];
   const conditions = dataConditions.length > 0 ? dataConditions : eventConditions;
@@ -12,7 +14,11 @@ const SwitchNode = ({ data, selected }) => {
   const totalHandles = conditions.length + (hasDefault ? 1 : 0);
 
   return (
-    <div className={`custom-node switch-node switch-node-${conditionType} ${selected ? 'selected' : ''}`}>
+    <div
+      className={`custom-node switch-node switch-node-${conditionType} ${selected ? 'selected' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <Handle type="target" position={Position.Top} />
 
       <div className="node-header">
@@ -41,6 +47,16 @@ const SwitchNode = ({ data, selected }) => {
           {conditions.map((condition, index) => (
             <div key={`condition-${index}`} className="switch-output-item">
               <span className="output-label">{condition.name || condition.eventRef || condition.condition || `condition${index + 1}`}</span>
+              {shouldShowDetails && conditionType === 'data' && condition.condition && (
+                <div className="condition-detail">
+                  <code>{condition.condition}</code>
+                </div>
+              )}
+              {shouldShowDetails && conditionType === 'event' && condition.eventRef && (
+                <div className="condition-detail">
+                  Event: <code>{condition.eventRef}</code>
+                </div>
+              )}
               <Handle
                 type="source"
                 position={Position.Right}

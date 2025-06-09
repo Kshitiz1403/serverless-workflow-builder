@@ -3,9 +3,15 @@ import { Handle, Position } from 'reactflow';
 import { Zap } from 'lucide-react';
 import './NodeStyles.css';
 
-const EventNode = ({ data, selected }) => {
+const EventNode = ({ data, selected, zoom = 1 }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+  const shouldShowDetails = zoom > 1.5 && isHovered;
   return (
-    <div className={`custom-node event-node ${selected ? 'selected' : ''}`}>
+    <div
+      className={`custom-node event-node ${selected ? 'selected' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <Handle type="target" position={Position.Top} />
 
       <div className="node-header">
@@ -27,6 +33,18 @@ const EventNode = ({ data, selected }) => {
             <strong>Timeout:</strong> Yes
           </div>
         )}
+
+        {/* Show detailed event info when highly zoomed AND hovered */}
+        {shouldShowDetails && data.events && data.events.map((event, index) => (
+          <div key={index} className="detailed-action">
+            <div className="action-name">• Event {index + 1}</div>
+            {event.eventRefs && (
+              <div className="event-refs">
+                <code>{JSON.stringify(event.eventRefs)}</code>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       <Handle type="source" position={Position.Bottom} />
