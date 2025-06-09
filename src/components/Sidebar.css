@@ -260,6 +260,11 @@
   gap: 8px;
 }
 
+.json-actions {
+  display: flex;
+  gap: 8px;
+}
+
 /* Undo/Redo Actions */
 .undo-redo-actions {
   display: flex;

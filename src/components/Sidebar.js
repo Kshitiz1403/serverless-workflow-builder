@@ -339,15 +339,17 @@ const Sidebar = ({
             New Workflow
           </button>
 
-          <button className="import-btn" onClick={onImportJson}>
-            <Upload size={16} />
-            Import JSON
-          </button>
+          <div className="json-actions">
+            <button className="import-btn" onClick={onImportJson}>
+              <Upload size={16} />
+              Import JSON
+            </button>
 
-          <button className="export-btn" onClick={onExportJson}>
-            <Download size={16} />
-            Export JSON
-          </button>
+            <button className="export-btn" onClick={onExportJson}>
+              <Download size={16} />
+              Export JSON
+            </button>
+          </div>
         </div>
       </div>
     </div>
