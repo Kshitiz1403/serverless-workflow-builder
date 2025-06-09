@@ -204,7 +204,7 @@ We welcome contributions! Here's how you can help:
 - [ ] **Cloud Storage**: Save workflows to cloud providers
 - [ ] **Template Library**: Expanded collection of workflow templates
 - [ ] **Advanced Debugging**: Workflow execution simulation
-- [ ] **Export Formats**: Support for additional workflow standards
+- [x] **Export Formats**: Support for additional workflow standards
 
 ## 🐛 Known Issues
 
