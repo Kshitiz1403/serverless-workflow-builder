@@ -63,6 +63,26 @@
   color: #d97706;
 }
 
+/* Data condition switch nodes (default orange) */
+.switch-node-data {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+}
+
+.switch-node-data .node-header {
+  color: #d97706;
+}
+
+/* Event condition switch nodes (purple) */
+.switch-node-event {
+  border-color: #8b5cf6;
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+}
+
+.switch-node-event .node-header {
+  color: #7c3aed;
+}
+
 .switch-outputs {
   margin-top: 8px;
   display: flex;
@@ -126,7 +146,7 @@
 
 .event-node {
   border-color: #8b5cf6;
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
 }
 
 .event-node .node-header {

@@ -12,7 +12,7 @@ const SwitchNode = ({ data, selected }) => {
   const totalHandles = conditions.length + (hasDefault ? 1 : 0);
 
   return (
-    <div className={`custom-node switch-node ${selected ? 'selected' : ''}`}>
+    <div className={`custom-node switch-node switch-node-${conditionType} ${selected ? 'selected' : ''}`}>
       <Handle type="target" position={Position.Top} />
 
       <div className="node-header">
