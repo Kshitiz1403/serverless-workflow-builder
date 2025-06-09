@@ -8,6 +8,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-bottom: 16px;
 }
 
 .form-group label {
@@ -64,7 +65,8 @@
 .section {
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  padding: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
   background-color: var(--bg-color);
 }
 
@@ -72,7 +74,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   font-weight: 500;
   color: var(--text-color);
 }
@@ -97,8 +99,8 @@
 .condition-item {
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  padding: 12px;
-  margin-bottom: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
   background-color: var(--surface-color);
 }
 
@@ -106,7 +108,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
   font-weight: 500;
   color: var(--text-color);
   font-size: 12px;
@@ -152,8 +154,8 @@
 .retry-policy-item {
   border: 1px solid var(--border-color);
   border-radius: 4px;
-  padding: 12px;
-  margin-bottom: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
   background-color: var(--surface-color);
 }
 
@@ -197,6 +199,19 @@
 /* Enhanced form inputs for retry policies */
 .retry-policy-item .form-group input[type="number"] {
   min-width: 0;
+}
+
+/* Spacing for JsonEditor components */
+.action-item .json-editor {
+  margin-bottom: 16px;
+}
+
+.condition-item .json-editor {
+  margin-bottom: 16px;
+}
+
+.event-item .json-editor {
+  margin-bottom: 16px;
 }
 
 .retry-policy-item .form-row .form-group {
