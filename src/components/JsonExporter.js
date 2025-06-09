@@ -3,6 +3,7 @@ import { X, Copy, Download } from 'lucide-react';
 import './JsonExporter.css';
 
 const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
+  const [exportFormat, setExportFormat] = useState('serverless'); // 'serverless' or 'reactflow'
   const [workflowInfo, setWorkflowInfo] = useState({
     id: 'my-workflow',
     version: '1.0',
@@ -53,7 +54,23 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
     return workflow;
   }, [nodes, edges, workflowInfo]);
 
-  const jsonString = JSON.stringify(serverlessWorkflow, null, 2);
+  const reactFlowData = useMemo(() => {
+    return {
+      format: 'react-flow-workflow',
+      version: '1.0',
+      metadata: {
+        createdAt: new Date().toISOString(),
+        name: workflowInfo.name,
+        description: workflowInfo.description,
+      },
+      nodes,
+      edges,
+      workflowMetadata,
+    };
+  }, [nodes, edges, workflowMetadata, workflowInfo]);
+
+  const currentData = exportFormat === 'serverless' ? serverlessWorkflow : reactFlowData;
+  const jsonString = JSON.stringify(currentData, null, 2);
 
   // Handle escape key and outside click
   useEffect(() => {
@@ -92,7 +109,10 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${workflowInfo.id}.json`;
+    const fileName = exportFormat === 'serverless'
+      ? `${workflowInfo.id}.json`
+      : `${workflowInfo.name.replace(/\s+/g, '-').toLowerCase()}-layout.json`;
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -103,52 +123,108 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
     <div className="json-exporter-overlay">
       <div className="json-exporter" ref={modalRef}>
         <div className="exporter-header">
-          <h2>Export Serverless Workflow</h2>
+          <h2>Export Workflow</h2>
           <button className="close-btn" onClick={onClose}>
             <X size={20} />
           </button>
         </div>
 
-        <div className="workflow-info">
-          <div className="info-grid">
-            <div className="form-group">
-              <label>Workflow ID</label>
+        <div className="export-format-selector">
+          <div className="format-options">
+            <label className="format-option">
               <input
-                type="text"
-                value={workflowInfo.id}
-                onChange={(e) => setWorkflowInfo({ ...workflowInfo, id: e.target.value })}
+                type="radio"
+                name="exportFormat"
+                value="serverless"
+                checked={exportFormat === 'serverless'}
+                onChange={(e) => setExportFormat(e.target.value)}
               />
-            </div>
-            <div className="form-group">
-              <label>Version</label>
+              <div className="format-details">
+                <strong>Serverless Workflow</strong>
+                <span>Standard format for execution engines</span>
+              </div>
+            </label>
+            <label className="format-option">
               <input
-                type="text"
-                value={workflowInfo.version}
-                onChange={(e) => setWorkflowInfo({ ...workflowInfo, version: e.target.value })}
+                type="radio"
+                name="exportFormat"
+                value="reactflow"
+                checked={exportFormat === 'reactflow'}
+                onChange={(e) => setExportFormat(e.target.value)}
               />
-            </div>
-            <div className="form-group">
-              <label>Name</label>
-              <input
-                type="text"
-                value={workflowInfo.name}
-                onChange={(e) => setWorkflowInfo({ ...workflowInfo, name: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>Description</label>
-              <input
-                type="text"
-                value={workflowInfo.description}
-                onChange={(e) => setWorkflowInfo({ ...workflowInfo, description: e.target.value })}
-              />
-            </div>
+              <div className="format-details">
+                <strong>React Flow Layout</strong>
+                <span>Preserves visual positioning for sharing</span>
+              </div>
+            </label>
           </div>
         </div>
 
+        {exportFormat === 'serverless' && (
+          <div className="workflow-info">
+            <div className="info-grid">
+              <div className="form-group">
+                <label>Workflow ID</label>
+                <input
+                  type="text"
+                  value={workflowInfo.id}
+                  onChange={(e) => setWorkflowInfo({ ...workflowInfo, id: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Version</label>
+                <input
+                  type="text"
+                  value={workflowInfo.version}
+                  onChange={(e) => setWorkflowInfo({ ...workflowInfo, version: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Name</label>
+                <input
+                  type="text"
+                  value={workflowInfo.name}
+                  onChange={(e) => setWorkflowInfo({ ...workflowInfo, name: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <input
+                  type="text"
+                  value={workflowInfo.description}
+                  onChange={(e) => setWorkflowInfo({ ...workflowInfo, description: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {exportFormat === 'reactflow' && (
+          <div className="workflow-info">
+            <div className="info-grid">
+              <div className="form-group">
+                <label>Layout Name</label>
+                <input
+                  type="text"
+                  value={workflowInfo.name}
+                  onChange={(e) => setWorkflowInfo({ ...workflowInfo, name: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <input
+                  type="text"
+                  value={workflowInfo.description}
+                  onChange={(e) => setWorkflowInfo({ ...workflowInfo, description: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="json-output">
           <div className="output-header">
-            <h3>Generated JSON</h3>
+            <h3>Generated {exportFormat === 'serverless' ? 'Serverless Workflow' : 'React Flow Layout'}</h3>
             <div className="output-actions">
               <button className="copy-btn" onClick={handleCopy}>
                 <Copy size={16} />

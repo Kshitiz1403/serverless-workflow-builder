@@ -11,9 +11,24 @@ const JsonImporter = ({ onImport, onClose }) => {
 
   const handleImport = () => {
     try {
-      const workflowData = JSON.parse(jsonInput);
+      const data = JSON.parse(jsonInput);
 
-      // Basic validation
+      // Check if this is a React Flow format
+      if (data.format === 'react-flow-workflow') {
+        // Direct import of React Flow format
+        if (!data.nodes || !data.edges) {
+          throw new Error('Invalid React Flow format: missing nodes or edges');
+        }
+
+        onImport(data.nodes, data.edges, data.workflowMetadata || null);
+        onClose();
+        return;
+      }
+
+      // Handle serverless workflow format
+      const workflowData = data;
+
+      // Basic validation for serverless workflow
       if (!workflowData.states || !Array.isArray(workflowData.states)) {
         throw new Error('Invalid workflow format: missing or invalid states array');
       }
@@ -184,7 +199,7 @@ const JsonImporter = ({ onImport, onClose }) => {
     <div className="json-importer-overlay">
       <div className="json-importer" ref={modalRef}>
         <div className="importer-header">
-          <h2>Import Serverless Workflow</h2>
+          <h2>Import Workflow</h2>
           <button className="close-btn" onClick={onClose}>
             <X size={20} />
           </button>
@@ -216,7 +231,7 @@ const JsonImporter = ({ onImport, onClose }) => {
 
         <div className="json-input-section">
           <div className="input-header">
-            <label>Serverless Workflow JSON</label>
+            <label>Workflow JSON</label>
             <button className="example-btn" onClick={loadExampleWorkflow}>
               Load Example
             </button>
@@ -227,7 +242,7 @@ const JsonImporter = ({ onImport, onClose }) => {
               setJsonInput(e.target.value);
               setError('');
             }}
-            placeholder="Paste your serverless workflow JSON here..."
+            placeholder="Paste your workflow JSON here (Serverless Workflow or React Flow format)..."
             rows="15"
             className="json-textarea"
           />
