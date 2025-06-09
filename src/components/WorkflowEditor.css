@@ -44,3 +44,56 @@
     transform: translate(-50%, -50%) scale(1);
   }
 }
+
+/* MiniMap Styling */
+.react-flow__minimap {
+  position: absolute !important;
+  bottom: 16px !important;
+  right: 16px !important;
+  width: 200px !important;
+  height: 150px !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  background-color: var(--surface-color) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  z-index: 10 !important;
+  overflow: hidden !important;
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(79, 70, 229, 0.08) !important;
+  stroke: var(--primary-color) !important;
+  stroke-width: 1 !important;
+  stroke-opacity: 0.6 !important;
+}
+
+.react-flow__minimap-node {
+  fill: var(--text-secondary) !important;
+  stroke: var(--border-color) !important;
+  stroke-width: 1 !important;
+}
+
+/* Different colors for different node types in minimap */
+.react-flow__minimap .react-flow__node-start {
+  fill: var(--success-color) !important;
+}
+
+.react-flow__minimap .react-flow__node-end {
+  fill: var(--danger-color) !important;
+}
+
+.react-flow__minimap .react-flow__node-operation {
+  fill: var(--primary-color) !important;
+}
+
+.react-flow__minimap .react-flow__node-switch {
+  fill: var(--warning-color) !important;
+}
+
+.react-flow__minimap .react-flow__node-event {
+  fill: var(--info-color) !important;
+}
+
+.react-flow__minimap .react-flow__node-sleep {
+  fill: var(--text-secondary) !important;
+}

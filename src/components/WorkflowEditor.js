@@ -585,7 +585,23 @@ function WorkflowEditor() {
         >
           <Background />
           <Controls />
-          <MiniMap />
+          <MiniMap
+            nodeColor={(node) => {
+              switch (node.type) {
+                case 'start': return '#10b981';
+                case 'end': return '#ef4444';
+                case 'operation': return '#4f46e5';
+                case 'switch': return '#f59e0b';
+                case 'event': return '#06b6d4';
+                case 'sleep': return '#6b7280';
+                default: return '#6b7280';
+              }
+            }}
+            maskColor="rgba(79, 70, 229, 0.08)"
+            position="bottom-right"
+            zoomable={true}
+            pannable={true}
+          />
         </ReactFlow>
       </div>
 
