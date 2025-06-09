@@ -246,11 +246,7 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     onUpdateWorkflowMetadata(updatedMetadata);
   };
 
-  const handleRetryPolicyChange = (field, value) => {
-    const updatedData = { ...formData, [field]: value };
-    setFormData(updatedData);
-    onUpdateNodeData(node.id, updatedData);
-  };
+
 
   const openJsonModal = (value, onChange, title, label) => {
     setModalState({
@@ -340,6 +336,21 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                   "Function Arguments (JSON)"
                 )}
               />
+
+              <div className="form-group">
+                <label>Retry Policy</label>
+                <select
+                  value={action.retryRef || ''}
+                  onChange={(e) => handleActionChange(index, 'retryRef', e.target.value)}
+                >
+                  <option value="">No retry policy</option>
+                  {getRetryPolicies().map((policy) => (
+                    <option key={policy.id} value={policy.id}>
+                      {policy.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           ))}
         </div>
@@ -349,27 +360,15 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
         <div className="section">
           <div className="section-header">
             <RefreshCw size={16} />
-            <span>Retry Policy</span>
-          </div>
-
-          <div className="form-group">
-            <label>Retry Policy</label>
-            <select
-              value={formData.retryRef || ''}
-              onChange={(e) => handleRetryPolicyChange('retryRef', e.target.value)}
-            >
-              <option value="">No retry policy</option>
-              {getRetryPolicies().map((policy) => (
-                <option key={policy.id} value={policy.id}>
-                  {policy.name}
-                </option>
-              ))}
-            </select>
+            <span>Retry Policies Management</span>
+            <button className="add-btn" onClick={addRetryPolicy}>
+              <Plus size={14} />
+            </button>
           </div>
 
           {getRetryPolicies().length === 0 && (
             <div className="no-retry-policies">
-              <p>No retry policies defined.</p>
+              <p>No retry policies defined. Create policies to use with individual actions.</p>
               <button
                 className="create-retry-btn"
                 onClick={addRetryPolicy}
@@ -383,14 +382,6 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
 
           {getRetryPolicies().length > 0 && (
             <div className="retry-policies-management">
-              <div className="section-header">
-                <Settings size={16} />
-                <span>Manage Retry Policies</span>
-                <button className="add-btn" onClick={addRetryPolicy}>
-                  <Plus size={14} />
-                </button>
-              </div>
-
               {getRetryPolicies().map((policy) => (
                 <div key={policy.id} className="retry-policy-item">
                   <div className="item-header">

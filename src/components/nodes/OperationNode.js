@@ -22,11 +22,6 @@ const OperationNode = ({ data, selected }) => {
             <strong>Actions:</strong> {data.actions.length}
           </div>
         )}
-        {data.retryRefName && (
-          <div className="node-field">
-            <strong>Retry Policy:</strong> {data.retryRefName}
-          </div>
-        )}
       </div>
 
       <Handle type="source" position={Position.Bottom} />

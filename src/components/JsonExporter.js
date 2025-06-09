@@ -181,19 +181,27 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
     case 'operation':
       const isOperationEnd =
         outgoingEdges.length === 0 || hasEndNodeTarget(outgoingEdges, allNodes);
+      // Process actions and add retry policy references at action level
+      const processedActions = (node.data.actions || []).map(action => {
+        const processedAction = { ...action };
+
+        // Add retry policy reference if action has one and it's valid
+        if (action.retryRef && workflowMetadata?.retryPolicies) {
+          const retryPolicy = workflowMetadata.retryPolicies.find(policy => policy.id === action.retryRef);
+          if (retryPolicy) {
+            processedAction.retryRef = retryPolicy.name;
+          }
+          // Note: If retryPolicy is not found, we intentionally don't include retryRef in the export
+        }
+
+        return processedAction;
+      });
+
       const operationState = {
         name: stateName,
         type: 'operation',
-        actions: node.data.actions || [],
+        actions: processedActions,
       };
-
-      // Add retry policy reference if one exists
-      if (node.data.retryRef && workflowMetadata?.retryPolicies) {
-        const retryPolicy = workflowMetadata.retryPolicies.find(policy => policy.id === node.data.retryRef);
-        if (retryPolicy) {
-          operationState.retryRef = retryPolicy.name;
-        }
-      }
 
       if (isOperationEnd) {
         operationState.end = true;
