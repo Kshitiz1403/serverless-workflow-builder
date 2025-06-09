@@ -184,7 +184,7 @@ function WorkflowEditor() {
         ...params,
         id: `${params.source}-${params.target}-${edgeType}`,
         label: edgeLabel,
-        type: 'smoothstep',
+        type: 'default',
         animated: edgeType === 'simple',
         className: `edge-${edgeType}`,
         style: { strokeWidth: edgeType === 'end' ? 3 : 2 },
