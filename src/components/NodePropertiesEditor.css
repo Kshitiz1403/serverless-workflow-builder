@@ -218,6 +218,18 @@
   min-width: 0;
 }
 
+/* Retry Policy Hint */
+.retry-policy-hint {
+  margin-top: 4px;
+  padding: 8px;
+  background-color: rgba(79, 70, 229, 0.05);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--primary-color);
+  text-align: center;
+}
+
 /* Form help styles */
 .form-help {
   margin-top: 8px;

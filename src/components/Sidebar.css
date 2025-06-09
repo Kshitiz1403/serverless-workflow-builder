@@ -94,20 +94,21 @@
 
 .sidebar-tabs {
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
 
 .tab {
   flex: 1;
-  padding: 8px 12px;
+  padding: 8px 8px;
   border: 1px solid var(--border-color);
   background-color: var(--bg-color);
   color: var(--text-color);
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   transition: all 0.2s ease;
+  text-align: center;
 }
 
 .tab:hover:not(:disabled) {
@@ -204,6 +205,14 @@
 
 /* Node Properties */
 .node-properties h3 {
+  margin: 0 0 1rem 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* Workflow Properties */
+.workflow-properties h3 {
   margin: 0 0 1rem 0;
   font-size: 16px;
   font-weight: 600;

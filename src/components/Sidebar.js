@@ -17,6 +17,7 @@ import {
   GripVertical,
 } from 'lucide-react';
 import NodePropertiesEditor from './NodePropertiesEditor';
+import WorkflowPropertiesEditor from './WorkflowPropertiesEditor';
 import './Sidebar.css';
 
 const Sidebar = ({
@@ -207,6 +208,12 @@ const Sidebar = ({
             Palette
           </button>
           <button
+            className={`tab ${activeTab === 'workflow' ? 'active' : ''}`}
+            onClick={() => setActiveTab('workflow')}
+          >
+            Workflow
+          </button>
+          <button
             className={`tab ${activeTab === 'properties' ? 'active' : ''}`}
             onClick={() => setActiveTab('properties')}
             disabled={!selectedNode && (!selectedNodes || selectedNodes.length === 0)}
@@ -241,6 +248,16 @@ const Sidebar = ({
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'workflow' && (
+          <div className="workflow-properties">
+            <h3>Workflow Settings</h3>
+            <WorkflowPropertiesEditor
+              workflowMetadata={workflowMetadata}
+              onUpdateWorkflowMetadata={onUpdateWorkflowMetadata}
+            />
           </div>
         )}
 
