@@ -161,3 +161,69 @@
 .sleep-node .node-header {
   color: #0891b2;
 }
+
+/* Detailed view styles for high zoom levels */
+.detailed-action {
+  margin-top: 8px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.action-name {
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 2px;
+}
+
+.action-function {
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: 4px;
+}
+
+.action-args {
+  margin: 4px 0;
+}
+
+.action-args code {
+  font-size: 9px;
+  background: var(--bg-secondary);
+  padding: 2px 4px;
+  border-radius: 2px;
+  color: var(--text-color);
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.action-retry {
+  font-size: 9px;
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+/* Condition detail styles for switch nodes */
+.condition-detail {
+  margin-top: 4px;
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+.condition-detail code {
+  font-size: 8px;
+  background: var(--bg-secondary);
+  padding: 1px 3px;
+  border-radius: 2px;
+  color: var(--text-color);
+  white-space: nowrap;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
