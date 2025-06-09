@@ -581,6 +581,8 @@ function WorkflowEditor() {
           panOnDrag={true}
           panOnScroll={false}
           preventScrolling={false}
+          minZoom={0.1}
+          maxZoom={4}
           fitView
         >
           <Background />
