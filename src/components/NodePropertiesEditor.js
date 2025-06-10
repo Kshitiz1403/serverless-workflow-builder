@@ -85,6 +85,21 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     onUpdateNodeData(node.id, updatedData);
   };
 
+  const insertAction = (index) => {
+    const actions = [...(formData.actions || [])];
+    const newAction = {
+      name: `action${actions.length + 1}`,
+      functionRef: {
+        refName: 'functionName',
+        arguments: {},
+      },
+    };
+    actions.splice(index + 1, 0, newAction);
+    const updatedData = { ...formData, actions };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
   const handleConditionChange = (index, field, value) => {
     const conditionType = formData.conditionType || 'data';
     const conditionKey = conditionType === 'data' ? 'dataConditions' : 'eventConditions';
@@ -218,9 +233,18 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
             <div key={index} className="action-item">
               <div className="item-header">
                 <span>Action {index + 1}</span>
-                <button className="remove-btn" onClick={() => removeAction(index)}>
-                  <Minus size={14} />
-                </button>
+                <div className="action-buttons">
+                  <button
+                    className="insert-btn"
+                    onClick={() => insertAction(index)}
+                    title="Insert action after this one"
+                  >
+                    <Plus size={14} />
+                  </button>
+                  <button className="remove-btn" onClick={() => removeAction(index)}>
+                    <Minus size={14} />
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">

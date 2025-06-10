@@ -114,6 +114,26 @@
   font-size: 12px;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.insert-btn {
+  padding: 4px;
+  border: 1px solid var(--primary-color);
+  background-color: var(--surface-color);
+  color: var(--primary-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.insert-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
 .remove-btn {
   padding: 4px;
   border: 1px solid var(--danger-color);
