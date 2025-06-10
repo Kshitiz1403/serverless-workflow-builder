@@ -181,7 +181,33 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     return workflowMetadata?.retryPolicies || [];
   };
 
+  // Error Handler Functions
+  const addErrorHandler = () => {
+    const onErrors = [...(formData.onErrors || [])];
+    onErrors.push({
+      errorRef: 'DefaultErrorRef',
+      transition: 'ErrorHandlingState',
+    });
+    const updatedData = { ...formData, onErrors };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
 
+  const removeErrorHandler = (index) => {
+    const onErrors = [...(formData.onErrors || [])];
+    onErrors.splice(index, 1);
+    const updatedData = { ...formData, onErrors };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  const handleErrorHandlerChange = (index, field, value) => {
+    const onErrors = [...(formData.onErrors || [])];
+    onErrors[index] = { ...onErrors[index], [field]: value };
+    const updatedData = { ...formData, onErrors };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
 
   const openJsonModal = (value, onChange, title, label) => {
     setModalState({
@@ -302,6 +328,48 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
               </div>
             </div>
           ))}
+
+          {/* Error Handlers Section */}
+          <div className="section">
+            <div className="section-header">
+              <Settings size={16} />
+              <span>Error Handlers</span>
+              <button className="add-btn" onClick={addErrorHandler}>
+                <Plus size={14} />
+              </button>
+            </div>
+
+            {(formData.onErrors || []).map((errorHandler, index) => (
+              <div key={index} className="error-handler-item">
+                <div className="item-header">
+                  <span>Error Handler {index + 1}</span>
+                  <button className="remove-btn" onClick={() => removeErrorHandler(index)}>
+                    <Minus size={14} />
+                  </button>
+                </div>
+
+                <div className="form-group">
+                  <label>Error Reference</label>
+                  <input
+                    type="text"
+                    value={errorHandler.errorRef || ''}
+                    onChange={(e) => handleErrorHandlerChange(index, 'errorRef', e.target.value)}
+                    placeholder="Error reference name"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Transition State</label>
+                  <input
+                    type="text"
+                    value={errorHandler.transition || ''}
+                    onChange={(e) => handleErrorHandlerChange(index, 'transition', e.target.value)}
+                    placeholder="Target state name"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

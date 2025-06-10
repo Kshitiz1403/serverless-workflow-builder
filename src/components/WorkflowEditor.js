@@ -275,6 +275,12 @@ function WorkflowEditor() {
           edgeType = 'condition';
           labelStyle = { fill: '#f59e0b', fontWeight: 500, fontSize: '12px' };
         }
+      } else if (sourceNode && sourceNode.type === 'operation' && params.sourceHandle && params.sourceHandle.startsWith('error-')) {
+        const errorIndex = parseInt(params.sourceHandle.replace('error-', ''));
+        const errorHandler = sourceNode.data.onErrors?.[errorIndex];
+        edgeLabel = `⚠ ${errorHandler?.errorRef || 'error'}`;
+        edgeType = 'error';
+        labelStyle = { fill: '#ef4444', fontWeight: 500, fontSize: '12px' };
       } else {
         // Simple transition - add a label showing source to target
         if (targetNode?.type === 'end') {
@@ -294,7 +300,9 @@ function WorkflowEditor() {
         type: 'default',
         animated: edgeType === 'simple',
         className: `edge-${edgeType}`,
-        style: { strokeWidth: edgeType === 'end' ? 3 : 2 },
+        style: edgeType === 'error'
+          ? { strokeWidth: 2, strokeDasharray: '5,5', stroke: '#ef4444' }
+          : { strokeWidth: edgeType === 'end' ? 3 : 2 },
         data: { type: edgeType },
         labelStyle,
         labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
@@ -304,6 +312,7 @@ function WorkflowEditor() {
           type: 'arrowclosed',
           width: 20,
           height: 20,
+          color: edgeType === 'error' ? '#ef4444' : undefined,
         },
       };
 
@@ -796,7 +805,7 @@ function getDefaultNodeData(type) {
             },
           },
         ],
-
+        onErrors: [],
       };
     case 'switch':
       return {

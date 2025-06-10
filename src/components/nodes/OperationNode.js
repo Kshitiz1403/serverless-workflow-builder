@@ -22,9 +22,30 @@ const OperationNode = ({ data, selected }) => {
             <strong>Actions:</strong> {data.actions.length}
           </div>
         )}
+        {data.onErrors && data.onErrors.length > 0 && (
+          <div className="node-field">
+            <strong>Error Handlers:</strong> {data.onErrors.length}
+          </div>
+        )}
       </div>
 
       <Handle type="source" position={Position.Bottom} />
+
+      {/* Error handles on the right side */}
+      {data.onErrors && data.onErrors.map((errorHandler, index) => (
+        <Handle
+          key={`error-${index}`}
+          type="source"
+          position={Position.Right}
+          id={`error-${index}`}
+          style={{
+            top: `${30 + (index * 20)}%`,
+            background: '#ef4444',
+            borderColor: '#dc2626',
+          }}
+          title={`Error: ${errorHandler.errorRef || 'error'}`}
+        />
+      ))}
     </div>
   );
 };

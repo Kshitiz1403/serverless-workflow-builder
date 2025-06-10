@@ -96,12 +96,17 @@
 }
 
 .action-item,
-.condition-item {
+.condition-item,
+.error-handler-item {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 16px;
   margin-bottom: 16px;
   background-color: var(--surface-color);
+}
+
+.error-handler-item {
+  border-left: 4px solid #ef4444;
 }
 
 .item-header {

@@ -376,6 +376,43 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
           },
         });
       }
+    }
+
+    // Handle onErrors transitions for operation states
+    if (state.type === 'operation' && state.onErrors && Array.isArray(state.onErrors)) {
+      state.onErrors.forEach((errorHandler, index) => {
+        const errorNextState = getNextState(errorHandler.transition);
+        if (errorNextState) {
+          const targetNodeId = stateNodeMap[errorNextState];
+          if (targetNodeId) {
+            edges.push({
+              id: `${state.name}-error-${index}-to-${errorNextState}`,
+              source: sourceNodeId,
+              sourceHandle: `error-${index}`,
+              target: targetNodeId,
+              label: `⚠ ${errorHandler.errorRef || 'error'}`,
+              type: 'default',
+              className: 'edge-error',
+              style: {
+                strokeWidth: 2,
+                strokeDasharray: '5,5',
+                stroke: '#ef4444'
+              },
+              data: { type: 'error' },
+              labelStyle: { fill: '#ef4444', fontWeight: 500, fontSize: '12px' },
+              labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
+              labelBgPadding: [6, 3],
+              labelBgBorderRadius: 4,
+              markerEnd: {
+                type: 'arrowclosed',
+                width: 20,
+                height: 20,
+                color: '#ef4444',
+              },
+            });
+          }
+        }
+      });
     } else if (state.type === 'switch') {
       // Handle data conditions
       if (state.dataConditions) {
@@ -517,6 +554,7 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
     case 'operation':
       const operationData = {
         actions: state.actions || [],
+        onErrors: state.onErrors || [],
       };
 
       // Convert retry policy name reference to ID reference (can be at state level or action level)

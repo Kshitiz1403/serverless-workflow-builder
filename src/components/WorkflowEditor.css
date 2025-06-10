@@ -243,3 +243,47 @@
     transform: translate(-50%, -50%) scale(1);
   }
 }
+
+/* Edge Styles */
+.react-flow__edge.edge-error .react-flow__edge-path {
+  stroke: #ef4444;
+  stroke-width: 2;
+  stroke-dasharray: 5, 5;
+  animation: dash 1s linear infinite;
+}
+
+.react-flow__edge.edge-error .react-flow__edge-text {
+  fill: #ef4444;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.react-flow__edge.edge-error .react-flow__arrowhead {
+  fill: #ef4444;
+}
+
+.react-flow__edge.edge-simple .react-flow__edge-path {
+  stroke: #10b981;
+  stroke-width: 2;
+}
+
+.react-flow__edge.edge-condition .react-flow__edge-path {
+  stroke: #f59e0b;
+  stroke-width: 2;
+}
+
+.react-flow__edge.edge-default .react-flow__edge-path {
+  stroke: #6b7280;
+  stroke-width: 2;
+}
+
+.react-flow__edge.edge-end .react-flow__edge-path {
+  stroke: #ef4444;
+  stroke-width: 3;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
