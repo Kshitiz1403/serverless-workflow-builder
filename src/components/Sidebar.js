@@ -101,17 +101,6 @@ const Sidebar = ({
     setIsResizing(true);
   };
 
-  const handleClearWorkflow = () => {
-    if (
-      window.confirm(
-        'Are you sure you want to create a new workflow? This will clear all current work.'
-      )
-    ) {
-      onClearWorkflow();
-      setLastSaved(null);
-    }
-  };
-
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return null;
 
@@ -350,11 +339,6 @@ const Sidebar = ({
               Redo
             </button>
           </div>
-
-          <button className="new-workflow-btn" onClick={handleClearWorkflow}>
-            <RefreshCw size={16} />
-            New Workflow
-          </button>
 
           <div className="json-actions">
             <button className="import-btn" onClick={onImportJson}>
