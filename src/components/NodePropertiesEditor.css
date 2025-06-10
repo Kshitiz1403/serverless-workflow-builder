@@ -112,11 +112,15 @@
 .item-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 16px;
   font-weight: 500;
   color: var(--text-color);
   font-size: 12px;
+}
+
+.item-header span {
+  flex: 1;
 }
 
 .action-buttons {
@@ -152,6 +156,106 @@
 .remove-btn:hover {
   background-color: var(--danger-color);
   color: white;
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  cursor: grab;
+  padding: 2px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.drag-handle:hover {
+  background-color: var(--border-color);
+  color: var(--text-color);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.action-item {
+  transition: all 0.2s ease;
+}
+
+.action-item:hover {
+  border-color: var(--border-hover);
+}
+
+.action-item.dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.action-item[draggable="true"] {
+  cursor: move;
+}
+
+/* Drop zone styles */
+.drop-zone {
+  height: 4px;
+  margin: 8px 0;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  position: relative;
+  background-color: transparent;
+}
+
+.drop-zone.drag-over {
+  height: 40px;
+  background-color: rgba(79, 70, 229, 0.05);
+  border: 2px dashed var(--primary-color);
+}
+
+.drop-indicator {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+}
+
+.drop-zone.drag-over .drop-indicator {
+  display: flex;
+}
+
+.drop-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  border-radius: 1px;
+}
+
+.drop-text {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+/* Enhanced drag feedback */
+.action-item.drag-target {
+  border-color: var(--primary-color);
+  background-color: rgba(79, 70, 229, 0.02);
+}
+
+.action-item.dragging {
+  opacity: 0.6;
+  transform: rotate(1deg) scale(0.98);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  border-color: var(--primary-color);
 }
 
 /* No Properties Section */

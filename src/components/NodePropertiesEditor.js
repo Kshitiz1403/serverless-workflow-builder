@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Minus, Settings, RefreshCw } from 'lucide-react';
+import { Plus, Minus, Settings, RefreshCw, GripVertical } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import JsonEditor from './JsonEditor';
 import JsonEditorModal from './JsonEditorModal';
@@ -8,6 +8,8 @@ import './NodePropertiesEditor.css';
 const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpdateWorkflowMetadata }) => {
   const [formData, setFormData] = useState({});
   const [modalState, setModalState] = useState({ isOpen: false, value: null, onChange: null, title: '', label: '' });
+  const [draggedActionIndex, setDraggedActionIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
 
   useEffect(() => {
     setFormData(node.data || {});
@@ -107,6 +109,63 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     const updatedData = { ...formData, actions };
     setFormData(updatedData);
     onUpdateNodeData(node.id, updatedData);
+  };
+
+  const handleActionDragStart = (e, index) => {
+    setDraggedActionIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', ''); // For Firefox compatibility
+  };
+
+  const handleActionDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+
+    if (draggedActionIndex !== null && draggedActionIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleActionDragLeave = (e) => {
+    // Only clear drag over if we're leaving the container entirely
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      setDragOverIndex(null);
+    }
+  };
+
+  const handleActionDrop = (e, dropIndex) => {
+    e.preventDefault();
+
+    if (draggedActionIndex === null || draggedActionIndex === dropIndex) {
+      setDraggedActionIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const actions = [...(formData.actions || [])];
+    const draggedAction = actions[draggedActionIndex];
+
+    // Remove the dragged action
+    actions.splice(draggedActionIndex, 1);
+
+    // Insert at the new position
+    const newIndex = draggedActionIndex < dropIndex ? dropIndex - 1 : dropIndex;
+    actions.splice(newIndex, 0, draggedAction);
+
+    const updatedData = { ...formData, actions };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+    setDraggedActionIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleActionDragEnd = () => {
+    setDraggedActionIndex(null);
+    setDragOverIndex(null);
   };
 
   const handleConditionChange = (index, field, value) => {
@@ -265,151 +324,196 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
           </div>
 
           {(formData.actions || []).map((action, index) => (
-            <div key={index} className="action-item">
-              <div className="item-header">
-                <span>Action {index + 1}</span>
-                <div className="action-buttons">
-                  <button
-                    className="insert-btn"
-                    onClick={() => insertAction(index)}
-                    title="Insert action after this one"
-                  >
-                    <Plus size={14} />
-                  </button>
-                  <button className="remove-btn" onClick={() => removeAction(index)}>
-                    <Minus size={14} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Name</label>
-                <input
-                  type="text"
-                  value={action.name || ''}
-                  onChange={(e) => handleActionChange(index, 'name', e.target.value)}
-                  placeholder="Action name"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Function Reference</label>
-                <input
-                  type="text"
-                  value={action.functionRef?.refName || ''}
-                  onChange={(e) => handleActionChange(index, 'functionRef.refName', e.target.value)}
-                  placeholder="Function name"
-                />
-              </div>
-
-              <JsonEditor
-                label="Arguments (JSON)"
-                value={action.functionRef?.arguments}
-                onChange={(value) => handleActionChange(index, 'functionRef.arguments', value)}
-                placeholder='{"key": "value"}'
-                height="120px"
-                onOpenModal={() => openJsonModal(
-                  action.functionRef?.arguments,
-                  (value) => handleActionChange(index, 'functionRef.arguments', value),
-                  `Function Arguments - ${action.name || `Action ${index + 1}`}`,
-                  "Function Arguments (JSON)"
-                )}
-              />
-
-              <div className="form-group">
-                <label>Retry Policy</label>
-                <select
-                  value={action.retryRef || ''}
-                  onChange={(e) => handleActionChange(index, 'retryRef', e.target.value)}
+            <div key={index}>
+              {/* Drop zone indicator above each action */}
+              {draggedActionIndex !== null && draggedActionIndex !== index && (
+                <div
+                  className={`drop-zone ${dragOverIndex === index ? 'drag-over' : ''}`}
+                  onDragOver={(e) => handleActionDragOver(e, index)}
+                  onDrop={(e) => handleActionDrop(e, index)}
+                  onDragLeave={handleActionDragLeave}
                 >
-                  <option value="">No retry policy</option>
-                  {getRetryPolicies().map((policy) => (
-                    <option key={policy.id} value={policy.id}>
-                      {policy.name}
-                    </option>
-                  ))}
-                </select>
-                {getRetryPolicies().length === 0 && (
-                  <div className="retry-policy-hint">
-                    <span>No retry policies available. Create policies in the Workflow tab.</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Action Data Filter Toggle */}
-              <div className="form-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={!!action.actionDataFilter}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        // Enable action data filter with default values
-                        const actions = [...(formData.actions || [])];
-                        actions[index] = {
-                          ...actions[index],
-                          actionDataFilter: {
-                            useResults: true,
-                            results: '',
-                            toStateData: ''
-                          }
-                        };
-                        const updatedData = { ...formData, actions };
-                        setFormData(updatedData);
-                        onUpdateNodeData(node.id, updatedData);
-                      } else {
-                        // Disable action data filter by removing it
-                        const actions = [...(formData.actions || [])];
-                        const updatedAction = { ...actions[index] };
-                        delete updatedAction.actionDataFilter;
-                        actions[index] = updatedAction;
-                        const updatedData = { ...formData, actions };
-                        setFormData(updatedData);
-                        onUpdateNodeData(node.id, updatedData);
-                      }
-                    }}
-                  />
-                  Enable Action Data Filter
-                </label>
-                <div className="form-help">
-                  <small>Configure how action results are processed and stored</small>
-                </div>
-              </div>
-
-              {/* Action Data Filter Section - Only visible when enabled */}
-              {action.actionDataFilter && (
-                <div className="subsection">
-                  <div className="subsection-header">
-                    <span>Action Data Filter Configuration</span>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Results Filter (jq expression)</label>
-                    <input
-                      type="text"
-                      value={action.actionDataFilter?.results || ''}
-                      onChange={(e) => handleActionChange(index, 'actionDataFilter.results', e.target.value)}
-                      placeholder="${ .userLoanDetails.currentAddress | fromjson | .state }"
-                    />
-                    <div className="form-help">
-                      <small>jq expression to filter action result data</small>
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>To State Data (jq expression)</label>
-                    <input
-                      type="text"
-                      value={action.actionDataFilter?.toStateData || ''}
-                      onChange={(e) => handleActionChange(index, 'actionDataFilter.toStateData', e.target.value)}
-                      placeholder="${ .currentAddressState }"
-                    />
-                    <div className="form-help">
-                      <small>jq expression defining how to populate state data</small>
-                    </div>
+                  <div className="drop-indicator">
+                    <div className="drop-line"></div>
+                    <span className="drop-text">Drop here to insert before Action {index + 1}</span>
                   </div>
                 </div>
               )}
+
+              <div
+                className={`action-item ${draggedActionIndex === index ? 'dragging' : ''} ${dragOverIndex === index ? 'drag-target' : ''}`}
+                draggable
+                onDragStart={(e) => handleActionDragStart(e, index)}
+                onDragOver={(e) => handleActionDragOver(e, index)}
+                onDrop={(e) => handleActionDrop(e, index)}
+                onDragEnd={handleActionDragEnd}
+                onDragLeave={handleActionDragLeave}
+              >
+                <div className="item-header">
+                  <div className="drag-handle">
+                    <GripVertical size={14} />
+                  </div>
+                  <span>Action {index + 1}</span>
+                  <div className="action-buttons">
+                    <button
+                      className="insert-btn"
+                      onClick={() => insertAction(index)}
+                      title="Insert action after this one"
+                    >
+                      <Plus size={14} />
+                    </button>
+                    <button className="remove-btn" onClick={() => removeAction(index)}>
+                      <Minus size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    value={action.name || ''}
+                    onChange={(e) => handleActionChange(index, 'name', e.target.value)}
+                    placeholder="Action name"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Function Reference</label>
+                  <input
+                    type="text"
+                    value={action.functionRef?.refName || ''}
+                    onChange={(e) => handleActionChange(index, 'functionRef.refName', e.target.value)}
+                    placeholder="Function name"
+                  />
+                </div>
+
+                <JsonEditor
+                  label="Arguments (JSON)"
+                  value={action.functionRef?.arguments}
+                  onChange={(value) => handleActionChange(index, 'functionRef.arguments', value)}
+                  placeholder='{"key": "value"}'
+                  height="120px"
+                  onOpenModal={() => openJsonModal(
+                    action.functionRef?.arguments,
+                    (value) => handleActionChange(index, 'functionRef.arguments', value),
+                    `Function Arguments - ${action.name || `Action ${index + 1}`}`,
+                    "Function Arguments (JSON)"
+                  )}
+                />
+
+                <div className="form-group">
+                  <label>Retry Policy</label>
+                  <select
+                    value={action.retryRef || ''}
+                    onChange={(e) => handleActionChange(index, 'retryRef', e.target.value)}
+                  >
+                    <option value="">No retry policy</option>
+                    {getRetryPolicies().map((policy) => (
+                      <option key={policy.id} value={policy.id}>
+                        {policy.name}
+                      </option>
+                    ))}
+                  </select>
+                  {getRetryPolicies().length === 0 && (
+                    <div className="retry-policy-hint">
+                      <span>No retry policies available. Create policies in the Workflow tab.</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Data Filter Toggle */}
+                <div className="form-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={!!action.actionDataFilter}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          // Enable action data filter with default values
+                          const actions = [...(formData.actions || [])];
+                          actions[index] = {
+                            ...actions[index],
+                            actionDataFilter: {
+                              useResults: true,
+                              results: '',
+                              toStateData: ''
+                            }
+                          };
+                          const updatedData = { ...formData, actions };
+                          setFormData(updatedData);
+                          onUpdateNodeData(node.id, updatedData);
+                        } else {
+                          // Disable action data filter by removing it
+                          const actions = [...(formData.actions || [])];
+                          const updatedAction = { ...actions[index] };
+                          delete updatedAction.actionDataFilter;
+                          actions[index] = updatedAction;
+                          const updatedData = { ...formData, actions };
+                          setFormData(updatedData);
+                          onUpdateNodeData(node.id, updatedData);
+                        }
+                      }}
+                    />
+                    Enable Action Data Filter
+                  </label>
+                  <div className="form-help">
+                    <small>Configure how action results are processed and stored</small>
+                  </div>
+                </div>
+
+                {/* Action Data Filter Section - Only visible when enabled */}
+                {action.actionDataFilter && (
+                  <div className="subsection">
+                    <div className="subsection-header">
+                      <span>Action Data Filter Configuration</span>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Results Filter (jq expression)</label>
+                      <input
+                        type="text"
+                        value={action.actionDataFilter?.results || ''}
+                        onChange={(e) => handleActionChange(index, 'actionDataFilter.results', e.target.value)}
+                        placeholder="${ .userLoanDetails.currentAddress | fromjson | .state }"
+                      />
+                      <div className="form-help">
+                        <small>jq expression to filter action result data</small>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label>To State Data (jq expression)</label>
+                      <input
+                        type="text"
+                        value={action.actionDataFilter?.toStateData || ''}
+                        onChange={(e) => handleActionChange(index, 'actionDataFilter.toStateData', e.target.value)}
+                        placeholder="${ .currentAddressState }"
+                      />
+                      <div className="form-help">
+                        <small>jq expression defining how to populate state data</small>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Drop zone at the end for the last item */}
+              {draggedActionIndex !== null &&
+                draggedActionIndex !== index &&
+                index === (formData.actions || []).length - 1 && (
+                  <div
+                    className={`drop-zone ${dragOverIndex === index + 1 ? 'drag-over' : ''}`}
+                    onDragOver={(e) => handleActionDragOver(e, index + 1)}
+                    onDrop={(e) => handleActionDrop(e, index + 1)}
+                    onDragLeave={handleActionDragLeave}
+                  >
+                    <div className="drop-indicator">
+                      <div className="drop-line"></div>
+                      <span className="drop-text">Drop here to insert after Action {index + 1}</span>
+                    </div>
+                  </div>
+                )}
             </div>
           ))}
 
