@@ -21,7 +21,10 @@ import EventNode from './nodes/EventNode';
 import SleepNode from './nodes/SleepNode';
 import JsonExporter from './JsonExporter';
 import JsonImporter from './JsonImporter';
+import ProjectManager, { ProjectStorage } from './ProjectManager';
+import ProjectSidebar from './ProjectSidebar';
 import { useHistory } from '../hooks/useHistory';
+import { useProjectMigration } from '../hooks/useProjectMigration';
 import './WorkflowEditor.css';
 
 const nodeTypes = {
@@ -32,8 +35,6 @@ const nodeTypes = {
   event: EventNode,
   sleep: SleepNode,
 };
-
-const STORAGE_KEY = 'serverless-workflow-editor-state';
 
 const defaultInitialNodes = [
   {
@@ -46,20 +47,23 @@ const defaultInitialNodes = [
 
 const defaultInitialEdges = [];
 
-// Load saved state from localStorage
-function loadSavedState() {
-  try {
-    const savedState = localStorage.getItem(STORAGE_KEY);
-    if (savedState) {
-      const parsed = JSON.parse(savedState);
-      return {
-        nodes: parsed.nodes || defaultInitialNodes,
-        edges: parsed.edges || defaultInitialEdges,
-        workflowMetadata: parsed.workflowMetadata || null,
-      };
-    }
-  } catch (error) {
-    console.error('Error loading saved state:', error);
+// Load project state from localStorage
+function loadProjectState(projectId) {
+  if (!projectId) {
+    return {
+      nodes: defaultInitialNodes,
+      edges: defaultInitialEdges,
+      workflowMetadata: null,
+    };
+  }
+
+  const projectData = ProjectStorage.getProjectData(projectId);
+  if (projectData) {
+    return {
+      nodes: projectData.nodes || defaultInitialNodes,
+      edges: projectData.edges || defaultInitialEdges,
+      workflowMetadata: projectData.workflowMetadata || null,
+    };
   }
 
   return {
@@ -70,14 +74,28 @@ function loadSavedState() {
 }
 
 function WorkflowEditor() {
-  const savedState = loadSavedState();
-  const [nodes, setNodes, onNodesChange] = useNodesState(savedState.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(savedState.edges);
+  // Run migration hook
+  useProjectMigration();
+
+  // Project management state
+  const [currentProjectId, setCurrentProjectId] = useState(ProjectStorage.getCurrentProjectId());
+  const [currentProject, setCurrentProject] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showProjectManager, setShowProjectManager] = useState(false);
+  const [isProjectSidebarCollapsed, setIsProjectSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem('project-sidebar-collapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // Load initial project state
+  const initialState = loadProjectState(currentProjectId);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialState.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialState.edges);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedNodes, setSelectedNodes] = useState([]);
   const [showJsonExporter, setShowJsonExporter] = useState(false);
   const [showJsonImporter, setShowJsonImporter] = useState(false);
-  const [workflowMetadata, setWorkflowMetadata] = useState(savedState.workflowMetadata);
+  const [workflowMetadata, setWorkflowMetadata] = useState(initialState.workflowMetadata);
   const reactFlowInstance = useReactFlow();
   const reactFlowWrapper = useRef(null);
   const [reactFlowBounds, setReactFlowBounds] = useState(null);
@@ -93,10 +111,42 @@ function WorkflowEditor() {
     canRedo,
     reset: resetHistory,
   } = useHistory({
-    nodes: savedState.nodes,
-    edges: savedState.edges,
-    workflowMetadata: savedState.workflowMetadata,
+    nodes: initialState.nodes,
+    edges: initialState.edges,
+    workflowMetadata: initialState.workflowMetadata,
   });
+
+  // Load current project info
+  useEffect(() => {
+    if (currentProjectId) {
+      const projects = ProjectStorage.getAllProjects();
+      const project = projects.find(p => p.id === currentProjectId);
+      setCurrentProject(project || null);
+    } else {
+      setCurrentProject(null);
+    }
+  }, [currentProjectId]);
+
+  // Auto-select first project if none selected
+  useEffect(() => {
+    if (!currentProjectId && !showProjectManager) {
+      const projects = ProjectStorage.getAllProjects();
+      if (projects.length > 0) {
+        const firstProject = projects[0];
+        const projectState = loadProjectState(firstProject.id);
+        setNodes(projectState.nodes);
+        setEdges(projectState.edges);
+        setWorkflowMetadata(projectState.workflowMetadata);
+        setCurrentProjectId(firstProject.id);
+        ProjectStorage.setCurrentProjectId(firstProject.id);
+        resetHistory({
+          nodes: projectState.nodes,
+          edges: projectState.edges,
+          workflowMetadata: projectState.workflowMetadata,
+        });
+      }
+    }
+  }, [currentProjectId, showProjectManager, setNodes, setEdges, resetHistory]);
 
   // Helper function to update history state
   const updateHistoryState = useCallback((newNodes, newEdges, newMetadata = workflowMetadata) => {
@@ -107,9 +157,29 @@ function WorkflowEditor() {
     });
   }, [setHistoryState, workflowMetadata]);
 
-  // Save state to localStorage whenever nodes or edges change
+  // Mark changes as unsaved when data changes
   useEffect(() => {
-    const saveState = {
+    if (currentProjectId) {
+      setHasUnsavedChanges(true);
+    }
+  }, [nodes, edges, workflowMetadata, currentProjectId]);
+
+  // Auto-save project state periodically
+  useEffect(() => {
+    if (!currentProjectId || !hasUnsavedChanges) return;
+
+    const autoSaveInterval = setInterval(() => {
+      saveCurrentProject();
+    }, 30000); // Auto-save every 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [currentProjectId, hasUnsavedChanges, nodes, edges, workflowMetadata]);
+
+  // Project management functions
+  const saveCurrentProject = useCallback(() => {
+    if (!currentProjectId) return;
+
+    const saveData = {
       nodes,
       edges,
       workflowMetadata,
@@ -117,11 +187,48 @@ function WorkflowEditor() {
     };
 
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(saveState));
+      ProjectStorage.saveProjectData(currentProjectId, saveData);
+      setHasUnsavedChanges(false);
+
+      // Update project's lastModified timestamp
+      ProjectStorage.updateProject(currentProjectId, {});
     } catch (error) {
-      console.error('Error saving state to localStorage:', error);
+      console.error('Error saving project:', error);
     }
-  }, [nodes, edges, workflowMetadata]);
+  }, [currentProjectId, nodes, edges, workflowMetadata]);
+
+  const handleProjectSwitch = useCallback((projectId) => {
+    // Save current project before switching
+    if (currentProjectId && hasUnsavedChanges) {
+      saveCurrentProject();
+    }
+
+    // Load new project
+    const projectState = loadProjectState(projectId);
+    setNodes(projectState.nodes);
+    setEdges(projectState.edges);
+    setWorkflowMetadata(projectState.workflowMetadata);
+    setCurrentProjectId(projectId);
+    setSelectedNodeId(null);
+    setSelectedNodes([]);
+    setHasUnsavedChanges(false);
+
+    // Update current project tracker
+    ProjectStorage.setCurrentProjectId(projectId);
+
+    // Reset history
+    resetHistory({
+      nodes: projectState.nodes,
+      edges: projectState.edges,
+      workflowMetadata: projectState.workflowMetadata,
+    });
+  }, [currentProjectId, hasUnsavedChanges, saveCurrentProject, setNodes, setEdges, resetHistory]);
+
+  const handleToggleProjectSidebar = useCallback(() => {
+    const newCollapsed = !isProjectSidebarCollapsed;
+    setIsProjectSidebarCollapsed(newCollapsed);
+    localStorage.setItem('project-sidebar-collapsed', JSON.stringify(newCollapsed));
+  }, [isProjectSidebarCollapsed]);
 
   // Handle undo/redo operations
   const handleUndo = useCallback(() => {
@@ -521,31 +628,43 @@ function WorkflowEditor() {
   }, [nodes, selectedNodeId]);
 
   const clearWorkflow = useCallback(() => {
-    setNodes(defaultInitialNodes);
-    setEdges(defaultInitialEdges);
-    setSelectedNodeId(null);
-    setSelectedNodes([]);
-    setWorkflowMetadata(null);
-    resetHistory({
-      nodes: defaultInitialNodes,
-      edges: defaultInitialEdges,
-      workflowMetadata: null,
-    });
-    localStorage.removeItem(STORAGE_KEY);
-  }, [setNodes, setEdges, resetHistory]);
+    if (currentProjectId) {
+      setNodes(defaultInitialNodes);
+      setEdges(defaultInitialEdges);
+      setSelectedNodeId(null);
+      setSelectedNodes([]);
+      setWorkflowMetadata({
+        name: currentProject?.name || 'New Workflow',
+        description: currentProject?.description || 'A new serverless workflow',
+        version: '1.0.0',
+      });
+      setHasUnsavedChanges(true);
+      resetHistory({
+        nodes: defaultInitialNodes,
+        edges: defaultInitialEdges,
+        workflowMetadata: {
+          name: currentProject?.name || 'New Workflow',
+          description: currentProject?.description || 'A new serverless workflow',
+          version: '1.0.0',
+        },
+      });
+    } else {
+      // No project selected, show project manager
+      setShowProjectManager(true);
+    }
+  }, [currentProjectId, currentProject, setNodes, setEdges, resetHistory]);
 
   const getSavedTimestamp = useCallback(() => {
+    if (!currentProjectId) return null;
+
     try {
-      const savedState = localStorage.getItem(STORAGE_KEY);
-      if (savedState) {
-        const parsed = JSON.parse(savedState);
-        return parsed.lastSaved;
-      }
+      const projectData = ProjectStorage.getProjectData(currentProjectId);
+      return projectData?.lastSaved || null;
     } catch (error) {
       console.error('Error reading saved timestamp:', error);
     }
     return null;
-  }, []);
+  }, [currentProjectId]);
 
   const handleImportWorkflow = useCallback(
     (nodes, edges, metadata) => {
@@ -554,18 +673,30 @@ function WorkflowEditor() {
       setWorkflowMetadata(metadata);
       setSelectedNodeId(null);
       setSelectedNodes([]);
+      if (currentProjectId) {
+        setHasUnsavedChanges(true);
+      }
       resetHistory({
         nodes,
         edges,
         workflowMetadata: metadata,
       });
     },
-    [setNodes, setEdges, resetHistory]
+    [setNodes, setEdges, resetHistory, currentProjectId]
   );
 
   return (
     <div className="workflow-editor">
-      <div className={`workflow-canvas ${isDragOver ? 'drag-over' : ''}`} ref={reactFlowWrapper}>
+      <ProjectSidebar
+        currentProject={currentProject}
+        onProjectSwitch={handleProjectSwitch}
+        onProjectSave={saveCurrentProject}
+        hasUnsavedChanges={hasUnsavedChanges}
+        isCollapsed={isProjectSidebarCollapsed}
+        onToggleCollapse={handleToggleProjectSidebar}
+      />
+
+      <div className={`workflow-canvas ${isDragOver ? 'drag-over' : ''} ${isProjectSidebarCollapsed ? 'sidebar-collapsed' : ''}`} ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -614,6 +745,25 @@ function WorkflowEditor() {
         workflowMetadata={workflowMetadata}
         onUpdateWorkflowMetadata={setWorkflowMetadata}
       />
+
+      {showProjectManager && (
+        <div className="project-manager-overlay">
+          <div className="project-manager-modal">
+            <ProjectManager
+              currentProject={currentProject}
+              onProjectSwitch={handleProjectSwitch}
+              onProjectSave={saveCurrentProject}
+              hasUnsavedChanges={hasUnsavedChanges}
+            />
+            <button
+              className="close-project-manager"
+              onClick={() => setShowProjectManager(false)}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {showJsonExporter && (
         <JsonExporter
