@@ -183,7 +183,7 @@ const ProjectSidebar = ({
  if (isCollapsed) {
   return (
    <div className="project-sidebar collapsed">
-    <div className="sidebar-header collapsed">
+    <div className="project-sidebar-header collapsed">
      <button
       className="toggle-btn"
       onClick={onToggleCollapse}
@@ -225,7 +225,7 @@ const ProjectSidebar = ({
 
  return (
   <div className="project-sidebar">
-   <div className="sidebar-header">
+   <div className="project-sidebar-header">
     <div className="header-title">
      <Folder size={16} />
      <h3>Projects</h3>
