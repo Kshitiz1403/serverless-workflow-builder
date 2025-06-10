@@ -263,12 +263,12 @@
 }
 
 .react-flow__edge.edge-simple .react-flow__edge-path {
-  stroke: #10b981;
+  stroke: var(--success-color);
   stroke-width: 2;
 }
 
 .react-flow__edge.edge-condition .react-flow__edge-path {
-  stroke: #f59e0b;
+  stroke: var(--warning-color);
   stroke-width: 2;
 }
 

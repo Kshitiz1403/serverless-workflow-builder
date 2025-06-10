@@ -44,16 +44,16 @@
 
 /* Node type specific styles */
 .operation-node {
-  border-color: #10b981;
+  border-color: var(--success-color);
   background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
 }
 
 .operation-node .node-header {
-  color: #059669;
+  color: var(--success-color);
 }
 
 .switch-node {
-  border-color: #f59e0b;
+  border-color: var(--warning-color);
   background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
   min-width: 180px;
   min-height: auto;
@@ -65,7 +65,7 @@
 
 /* Data condition switch nodes (default orange) */
 .switch-node-data {
-  border-color: #f59e0b;
+  border-color: var(--warning-color);
   background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
 }
 

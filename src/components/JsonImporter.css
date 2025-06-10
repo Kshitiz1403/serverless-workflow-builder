@@ -222,7 +222,7 @@
 }
 
 .import-btn:hover:not(:disabled) {
-  background-color: #059669;
+  background-color: var(--success-color);
 }
 
 .import-btn:disabled {

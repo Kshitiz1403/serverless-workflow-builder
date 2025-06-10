@@ -376,7 +376,7 @@
 }
 
 .export-btn:hover {
-  background-color: #059669;
+  background-color: var(--success-color);
 }
 
 /* Multi-selection styles */
