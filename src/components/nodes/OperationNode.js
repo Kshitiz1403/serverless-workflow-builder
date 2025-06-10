@@ -32,20 +32,28 @@ const OperationNode = ({ data, selected }) => {
       <Handle type="source" position={Position.Bottom} />
 
       {/* Error handles on the right side */}
-      {data.onErrors && data.onErrors.map((errorHandler, index) => (
-        <Handle
-          key={`error-${index}`}
-          type="source"
-          position={Position.Right}
-          id={`error-${index}`}
-          style={{
-            top: `${30 + (index * 20)}%`,
-            background: 'rgba(239, 68, 68, 0.6)',
-            borderColor: 'rgba(239, 68, 68, 0.6)',
-          }}
-          title={`Error: ${errorHandler.errorRef || 'error'}`}
-        />
-      ))}
+      {data.onErrors && data.onErrors.map((errorHandler, index) => {
+        // Skip error handlers without IDs to avoid rendering issues
+        if (!errorHandler.id) {
+          console.warn('Error handler without ID found:', errorHandler);
+          return null;
+        }
+
+        return (
+          <Handle
+            key={errorHandler.id}
+            type="source"
+            position={Position.Right}
+            id={errorHandler.id}
+            style={{
+              top: `${30 + (index * 20)}%`,
+              background: 'rgba(239, 68, 68, 0.6)',
+              borderColor: 'rgba(239, 68, 68, 0.6)',
+            }}
+            title={`Error: ${errorHandler.errorRef || 'error'}`}
+          />
+        );
+      })}
     </div>
   );
 };

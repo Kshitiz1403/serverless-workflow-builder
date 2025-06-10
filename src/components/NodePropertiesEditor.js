@@ -253,6 +253,7 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
   const addErrorHandler = () => {
     const onErrors = [...(formData.onErrors || [])];
     onErrors.push({
+      id: uuidv4(), // Generate unique ID for each error handler
       errorRef: 'DefaultErrorRef',
       transition: 'ErrorHandlingState',
     });
@@ -261,20 +262,23 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     onUpdateNodeData(node.id, updatedData);
   };
 
-  const removeErrorHandler = (index) => {
+  const removeErrorHandler = (errorHandlerId) => {
     const onErrors = [...(formData.onErrors || [])];
-    onErrors.splice(index, 1);
-    const updatedData = { ...formData, onErrors };
+    const updatedErrors = onErrors.filter(errorHandler => errorHandler.id !== errorHandlerId);
+    const updatedData = { ...formData, onErrors: updatedErrors };
     setFormData(updatedData);
     onUpdateNodeData(node.id, updatedData);
   };
 
-  const handleErrorHandlerChange = (index, field, value) => {
+  const handleErrorHandlerChange = (errorHandlerId, field, value) => {
     const onErrors = [...(formData.onErrors || [])];
-    onErrors[index] = { ...onErrors[index], [field]: value };
-    const updatedData = { ...formData, onErrors };
-    setFormData(updatedData);
-    onUpdateNodeData(node.id, updatedData);
+    const errorHandlerIndex = onErrors.findIndex(errorHandler => errorHandler.id === errorHandlerId);
+    if (errorHandlerIndex !== -1) {
+      onErrors[errorHandlerIndex] = { ...onErrors[errorHandlerIndex], [field]: value };
+      const updatedData = { ...formData, onErrors };
+      setFormData(updatedData);
+      onUpdateNodeData(node.id, updatedData);
+    }
   };
 
   const openJsonModal = (value, onChange, title, label) => {
@@ -528,10 +532,10 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
             </div>
 
             {(formData.onErrors || []).map((errorHandler, index) => (
-              <div key={index} className="error-handler-item">
+              <div key={errorHandler.id} className="error-handler-item">
                 <div className="item-header">
                   <span>Error Handler {index + 1}</span>
-                  <button className="remove-btn" onClick={() => removeErrorHandler(index)}>
+                  <button className="remove-btn" onClick={() => removeErrorHandler(errorHandler.id)}>
                     <Minus size={14} />
                   </button>
                 </div>
@@ -541,7 +545,7 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                   <input
                     type="text"
                     value={errorHandler.errorRef || ''}
-                    onChange={(e) => handleErrorHandlerChange(index, 'errorRef', e.target.value)}
+                    onChange={(e) => handleErrorHandlerChange(errorHandler.id, 'errorRef', e.target.value)}
                     placeholder="Error reference name"
                   />
                 </div>
@@ -551,7 +555,7 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                   <input
                     type="text"
                     value={errorHandler.transition || ''}
-                    onChange={(e) => handleErrorHandlerChange(index, 'transition', e.target.value)}
+                    onChange={(e) => handleErrorHandlerChange(errorHandler.id, 'transition', e.target.value)}
                     placeholder="Target state name"
                   />
                 </div>

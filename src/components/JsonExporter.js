@@ -304,6 +304,35 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
         actions: processedActions,
       };
 
+      // Process error handlers
+      if (node.data.onErrors && node.data.onErrors.length > 0) {
+        operationState.onErrors = node.data.onErrors.map(errorHandler => {
+          const errorEdges = outgoingEdges.filter(edge => edge.sourceHandle === errorHandler.id);
+
+          const processedErrorHandler = {
+            errorRef: errorHandler.errorRef,
+          };
+
+          if (errorEdges.length > 0) {
+            const targetNode = allNodes.find(n => n.id === errorEdges[0].target);
+            if (targetNode && targetNode.type === 'end') {
+              processedErrorHandler.end = true;
+            } else {
+              processedErrorHandler.transition = {
+                nextState: getTargetStateName(errorEdges[0].target, allNodes),
+              };
+            }
+          } else if (errorHandler.transition) {
+            // Use existing transition if no edge found
+            processedErrorHandler.transition = {
+              nextState: errorHandler.transition,
+            };
+          }
+
+          return processedErrorHandler;
+        });
+      }
+
       if (isOperationEnd) {
         operationState.end = true;
       } else {

@@ -275,9 +275,9 @@ function WorkflowEditor() {
           edgeType = 'condition';
           labelStyle = { fill: '#f59e0b', fontWeight: 500, fontSize: '12px' };
         }
-      } else if (sourceNode && sourceNode.type === 'operation' && params.sourceHandle && params.sourceHandle.startsWith('error-')) {
-        const errorIndex = parseInt(params.sourceHandle.replace('error-', ''));
-        const errorHandler = sourceNode.data.onErrors?.[errorIndex];
+      } else if (sourceNode && sourceNode.type === 'operation' && params.sourceHandle && sourceNode.data.onErrors?.some(eh => eh.id === params.sourceHandle)) {
+        // ID-based error handle
+        const errorHandler = sourceNode.data.onErrors?.find(eh => eh.id === params.sourceHandle);
         edgeLabel = `⚠ ${errorHandler?.errorRef || 'error'}`;
         edgeType = 'error';
         labelStyle = { fill: 'rgba(239, 68, 68, 0.6)', fontWeight: 500, fontSize: '12px' };
@@ -805,7 +805,7 @@ function getDefaultNodeData(type) {
             },
           },
         ],
-        onErrors: [],
+        onErrors: [], // Error handlers will get IDs when added
       };
     case 'switch':
       return {

@@ -355,6 +355,10 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
     const sourceNodeId = stateNodeMap[state.name];
     if (!sourceNodeId) return;
 
+    // Get the processed node data (which has IDs for error handlers)
+    const sourceNode = nodes.find(n => n.id === sourceNodeId);
+    if (!sourceNode) return;
+
     // Handle operation, event, and sleep states with simple transitions
     const nextState = getNextState(state.transition);
     if ((state.type === 'operation' || state.type === 'event' || state.type === 'sleep') && nextState) {
@@ -384,16 +388,16 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
     }
 
     // Handle onErrors transitions for operation states
-    if (state.type === 'operation' && state.onErrors && Array.isArray(state.onErrors)) {
-      state.onErrors.forEach((errorHandler, index) => {
+    if (state.type === 'operation' && sourceNode.data.onErrors && Array.isArray(sourceNode.data.onErrors)) {
+      sourceNode.data.onErrors.forEach((errorHandler, index) => {
         const errorNextState = getNextState(errorHandler.transition);
         if (errorNextState) {
           const targetNodeId = stateNodeMap[errorNextState];
           if (targetNodeId) {
             edges.push({
-              id: `${state.name}-error-${index}-to-${errorNextState}`,
+              id: `${state.name}-error-${errorHandler.id}-to-${errorNextState}`,
               source: sourceNodeId,
-              sourceHandle: `error-${index}`,
+              sourceHandle: errorHandler.id,
               target: targetNodeId,
               label: `⚠ ${errorHandler.errorRef || 'error'}`,
               type: 'default',
@@ -559,7 +563,10 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
     case 'operation':
       const operationData = {
         actions: state.actions || [],
-        onErrors: state.onErrors || [],
+        onErrors: (state.onErrors || []).map(errorHandler => ({
+          ...errorHandler,
+          id: errorHandler.id || uuidv4(), // Always add ID for imported error handlers
+        })),
       };
 
       // Convert retry policy name reference to ID reference (can be at state level or action level)
