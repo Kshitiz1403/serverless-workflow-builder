@@ -129,6 +129,11 @@ const JsonImporter = ({ onImport, onClose }) => {
                   input: '${.input}',
                 },
               },
+              actionDataFilter: {
+                useResults: true,
+                results: '${.assessmentResult}',
+                toStateData: '${.urgencyLevel}'
+              }
             },
           ],
           transition: {
@@ -563,13 +568,19 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
         operationData.retryRefName = state.retryRef;
       }
 
-      // Also check for retry references in actions
+      // Also check for retry references in actions and preserve actionDataFilter
       if (operationData.actions) {
         operationData.actions = operationData.actions.map(action => {
           const updatedAction = { ...action };
           if (action.retryRef && retryPolicyNameToId[action.retryRef]) {
             updatedAction.retryRef = retryPolicyNameToId[action.retryRef];
           }
+
+          // Preserve actionDataFilter if it exists
+          if (action.actionDataFilter) {
+            updatedAction.actionDataFilter = { ...action.actionDataFilter };
+          }
+
           return updatedAction;
         });
       }

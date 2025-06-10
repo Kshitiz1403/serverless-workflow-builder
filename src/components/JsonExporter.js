@@ -270,6 +270,31 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
           // Note: If retryPolicy is not found, we intentionally don't include retryRef in the export
         }
 
+        // Include actionDataFilter if it exists and has meaningful values
+        if (action.actionDataFilter) {
+          const filter = action.actionDataFilter;
+          const hasValues = filter.useResults || filter.results || filter.toStateData;
+
+          if (hasValues) {
+            processedAction.actionDataFilter = {};
+
+            // Only include useResults if it's true
+            if (filter.useResults) {
+              processedAction.actionDataFilter.useResults = filter.useResults;
+            }
+
+            // Only include results if it has a value
+            if (filter.results && filter.results.trim()) {
+              processedAction.actionDataFilter.results = filter.results;
+            }
+
+            // Only include toStateData if it has a value
+            if (filter.toStateData && filter.toStateData.trim()) {
+              processedAction.actionDataFilter.toStateData = filter.toStateData;
+            }
+          }
+        }
+
         return processedAction;
       });
 

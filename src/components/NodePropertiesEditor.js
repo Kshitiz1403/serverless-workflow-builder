@@ -54,6 +54,15 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
           arguments: value,
         },
       };
+    } else if (field.startsWith('actionDataFilter.')) {
+      const filterField = field.split('.')[1];
+      actions[index] = {
+        ...actions[index],
+        actionDataFilter: {
+          ...actions[index].actionDataFilter,
+          [filterField]: value,
+        },
+      };
     } else {
       actions[index] = { ...actions[index], [field]: value };
     }
@@ -326,6 +335,81 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                   </div>
                 )}
               </div>
+
+              {/* Action Data Filter Toggle */}
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={!!action.actionDataFilter}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        // Enable action data filter with default values
+                        const actions = [...(formData.actions || [])];
+                        actions[index] = {
+                          ...actions[index],
+                          actionDataFilter: {
+                            useResults: true,
+                            results: '',
+                            toStateData: ''
+                          }
+                        };
+                        const updatedData = { ...formData, actions };
+                        setFormData(updatedData);
+                        onUpdateNodeData(node.id, updatedData);
+                      } else {
+                        // Disable action data filter by removing it
+                        const actions = [...(formData.actions || [])];
+                        const updatedAction = { ...actions[index] };
+                        delete updatedAction.actionDataFilter;
+                        actions[index] = updatedAction;
+                        const updatedData = { ...formData, actions };
+                        setFormData(updatedData);
+                        onUpdateNodeData(node.id, updatedData);
+                      }
+                    }}
+                  />
+                  Enable Action Data Filter
+                </label>
+                <div className="form-help">
+                  <small>Configure how action results are processed and stored</small>
+                </div>
+              </div>
+
+              {/* Action Data Filter Section - Only visible when enabled */}
+              {action.actionDataFilter && (
+                <div className="subsection">
+                  <div className="subsection-header">
+                    <span>Action Data Filter Configuration</span>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Results Filter (jq expression)</label>
+                    <input
+                      type="text"
+                      value={action.actionDataFilter?.results || ''}
+                      onChange={(e) => handleActionChange(index, 'actionDataFilter.results', e.target.value)}
+                      placeholder="${ .userLoanDetails.currentAddress | fromjson | .state }"
+                    />
+                    <div className="form-help">
+                      <small>jq expression to filter action result data</small>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>To State Data (jq expression)</label>
+                    <input
+                      type="text"
+                      value={action.actionDataFilter?.toStateData || ''}
+                      onChange={(e) => handleActionChange(index, 'actionDataFilter.toStateData', e.target.value)}
+                      placeholder="${ .currentAddressState }"
+                    />
+                    <div className="form-help">
+                      <small>jq expression defining how to populate state data</small>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
 
