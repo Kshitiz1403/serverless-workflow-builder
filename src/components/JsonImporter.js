@@ -396,10 +396,10 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
               style: {
                 strokeWidth: 2,
                 strokeDasharray: '5,5',
-                stroke: '#ef4444'
+                stroke: 'rgba(239, 68, 68, 0.4)'
               },
               data: { type: 'error' },
-              labelStyle: { fill: '#ef4444', fontWeight: 500, fontSize: '12px' },
+              labelStyle: { fill: 'rgba(239, 68, 68, 0.6)', fontWeight: 500, fontSize: '12px' },
               labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
               labelBgPadding: [6, 3],
               labelBgBorderRadius: 4,
@@ -407,7 +407,7 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
                 type: 'arrowclosed',
                 width: 20,
                 height: 20,
-                color: '#ef4444',
+                color: 'rgba(239, 68, 68, 0.4)',
               },
             });
           }
@@ -533,7 +533,7 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
         className: 'edge-end',
         style: { strokeWidth: 3 },
         data: { type: 'end' },
-        labelStyle: { fill: '#ef4444', fontWeight: 500, fontSize: '12px' },
+        labelStyle: { fill: 'rgba(239, 68, 68, 0.8)', fontWeight: 500, fontSize: '12px' },
         labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
         labelBgPadding: [6, 3],
         labelBgBorderRadius: 4,

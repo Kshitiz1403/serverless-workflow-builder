@@ -106,7 +106,7 @@
 }
 
 .error-handler-item {
-  border-left: 4px solid #ef4444;
+  border-left: 4px solid rgba(239, 68, 68, 0.5);
 }
 
 .item-header {

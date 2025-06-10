@@ -280,13 +280,13 @@ function WorkflowEditor() {
         const errorHandler = sourceNode.data.onErrors?.[errorIndex];
         edgeLabel = `⚠ ${errorHandler?.errorRef || 'error'}`;
         edgeType = 'error';
-        labelStyle = { fill: '#ef4444', fontWeight: 500, fontSize: '12px' };
+        labelStyle = { fill: 'rgba(239, 68, 68, 0.6)', fontWeight: 500, fontSize: '12px' };
       } else {
         // Simple transition - add a label showing source to target
         if (targetNode?.type === 'end') {
           edgeLabel = 'end';
           edgeType = 'end';
-          labelStyle = { fill: '#ef4444', fontWeight: 500, fontSize: '12px' };
+          labelStyle = { fill: 'rgba(239, 68, 68, 0.8)', fontWeight: 500, fontSize: '12px' };
         } else {
           edgeLabel = `→ ${targetNode?.data?.name || targetNode?.data?.label || 'next'}`;
           edgeType = 'simple';
@@ -301,7 +301,7 @@ function WorkflowEditor() {
         animated: edgeType === 'simple',
         className: `edge-${edgeType}`,
         style: edgeType === 'error'
-          ? { strokeWidth: 2, strokeDasharray: '5,5', stroke: '#ef4444' }
+          ? { strokeWidth: 2, strokeDasharray: '5,5', stroke: 'rgba(239, 68, 68, 0.4)' }
           : { strokeWidth: edgeType === 'end' ? 3 : 2 },
         data: { type: edgeType },
         labelStyle,
@@ -312,7 +312,7 @@ function WorkflowEditor() {
           type: 'arrowclosed',
           width: 20,
           height: 20,
-          color: edgeType === 'error' ? '#ef4444' : undefined,
+          color: edgeType === 'error' ? 'rgba(239, 68, 68, 0.4)' : undefined,
         },
       };
 

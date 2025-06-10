@@ -40,8 +40,8 @@ const OperationNode = ({ data, selected }) => {
           id={`error-${index}`}
           style={{
             top: `${30 + (index * 20)}%`,
-            background: '#ef4444',
-            borderColor: '#dc2626',
+            background: 'rgba(239, 68, 68, 0.6)',
+            borderColor: 'rgba(239, 68, 68, 0.6)',
           }}
           title={`Error: ${errorHandler.errorRef || 'error'}`}
         />
