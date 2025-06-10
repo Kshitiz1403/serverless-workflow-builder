@@ -37,6 +37,8 @@ const Sidebar = ({
   canRedo,
   workflowMetadata,
   onUpdateWorkflowMetadata,
+  nodes,
+  edges,
 }) => {
   const [activeTab, setActiveTab] = useState('palette');
   const [lastSaved, setLastSaved] = useState(null);
@@ -268,6 +270,8 @@ const Sidebar = ({
               onUpdateNodeData={onUpdateNodeData}
               workflowMetadata={workflowMetadata}
               onUpdateWorkflowMetadata={onUpdateWorkflowMetadata}
+              nodes={nodes}
+              edges={edges}
             />
           </div>
         )}

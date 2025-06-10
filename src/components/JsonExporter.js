@@ -322,12 +322,9 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
                 nextState: getTargetStateName(errorEdges[0].target, allNodes),
               };
             }
-          } else if (errorHandler.transition) {
-            // Use existing transition if no edge found
-            processedErrorHandler.transition = {
-              nextState: errorHandler.transition,
-            };
           }
+          // Note: Error handlers without connections will not have transitions
+          // Users must visually connect error handles to define transitions
 
           return processedErrorHandler;
         });

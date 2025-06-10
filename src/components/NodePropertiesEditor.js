@@ -5,7 +5,7 @@ import JsonEditor from './JsonEditor';
 import JsonEditorModal from './JsonEditorModal';
 import './NodePropertiesEditor.css';
 
-const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpdateWorkflowMetadata }) => {
+const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpdateWorkflowMetadata, nodes, edges }) => {
   const [formData, setFormData] = useState({});
   const [modalState, setModalState] = useState({ isOpen: false, value: null, onChange: null, title: '', label: '' });
   const [draggedActionIndex, setDraggedActionIndex] = useState(null);
@@ -249,13 +249,29 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     return workflowMetadata?.retryPolicies || [];
   };
 
+  // Get target node for an error handler
+  const getErrorHandlerTarget = (errorHandlerId) => {
+    if (!edges || !nodes) return null;
+
+    // Find edge that connects from this error handler
+    const errorEdge = edges.find(edge =>
+      edge.source === node.id && edge.sourceHandle === errorHandlerId
+    );
+
+    if (!errorEdge) return null;
+
+    // Find target node
+    const targetNode = nodes.find(n => n.id === errorEdge.target);
+    return targetNode;
+  };
+
   // Error Handler Functions
   const addErrorHandler = () => {
     const onErrors = [...(formData.onErrors || [])];
     onErrors.push({
       id: uuidv4(), // Generate unique ID for each error handler
       errorRef: 'DefaultErrorRef',
-      transition: 'ErrorHandlingState',
+      // No transition field - will be determined by visual connections
     });
     const updatedData = { ...formData, onErrors };
     setFormData(updatedData);
@@ -551,13 +567,29 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                 </div>
 
                 <div className="form-group">
-                  <label>Transition State</label>
-                  <input
-                    type="text"
-                    value={errorHandler.transition || ''}
-                    onChange={(e) => handleErrorHandlerChange(errorHandler.id, 'transition', e.target.value)}
-                    placeholder="Target state name"
-                  />
+                  <label>Error Transition</label>
+                  {(() => {
+                    const targetNode = getErrorHandlerTarget(errorHandler.id);
+                    if (targetNode) {
+                      return (
+                        <div className="connection-status connected">
+                          <span className="connection-indicator">●</span>
+                          <span>Transitions to: <strong>{targetNode.data.name || targetNode.data.label || targetNode.id}</strong></span>
+                          {targetNode.type === 'end' && <span className="end-indicator">(End)</span>}
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="connection-status disconnected">
+                          <span className="connection-indicator">○</span>
+                          <span>Not connected</span>
+                        </div>
+                      );
+                    }
+                  })()}
+                  <div className="form-help">
+                    <small>Connect the error handle (red dot) on the right side of the node to define the transition target</small>
+                  </div>
                 </div>
               </div>
             ))}

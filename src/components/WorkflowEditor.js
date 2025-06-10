@@ -753,6 +753,8 @@ function WorkflowEditor() {
         canRedo={canRedo}
         workflowMetadata={workflowMetadata}
         onUpdateWorkflowMetadata={setWorkflowMetadata}
+        nodes={nodes}
+        edges={edges}
       />
 
       {showProjectManager && (
