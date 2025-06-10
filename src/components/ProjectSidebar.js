@@ -249,27 +249,7 @@ const ProjectSidebar = ({
     </div>
    </div>
 
-   {currentProject && (
-    <div className="current-project-banner">
-     <div className="current-project-info">
-      <div className="project-name">
-       {currentProject.name}
-       {hasUnsavedChanges && <span className="unsaved-indicator">•</span>}
-      </div>
-      <div className="project-status">
-       {hasUnsavedChanges ? 'Unsaved changes' : 'Saved'}
-      </div>
-     </div>
-     <button
-      className="save-current-btn"
-      onClick={handleSaveCurrentProject}
-      disabled={!hasUnsavedChanges}
-      title="Save current project"
-     >
-      <Save size={14} />
-     </button>
-    </div>
-   )}
+
 
    <div className="search-section">
     <div className="search-input-wrapper">

@@ -1,6 +1,6 @@
 :root {
   /* Light theme colors */
-  --bg-color: #f5f5f5;
+  --bg-color: #ffffff;
   --surface-color: #ffffff;
   --text-color: #374151;
   --text-secondary: #6b7280;
@@ -195,4 +195,19 @@ code {
 :root.dark .react-flow__handle {
   background: var(--text-secondary);
   border: 2px solid var(--surface-color);
+}
+
+/* Light mode ReactFlow background */
+.react-flow__pane {
+  background: var(--bg-color);
+}
+
+.react-flow__background {
+  background-color: var(--bg-color);
+}
+
+/* Custom dot pattern for better visual appeal */
+.react-flow__background.react-flow__container {
+  background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+  background-size: 15px 15px;
 }
