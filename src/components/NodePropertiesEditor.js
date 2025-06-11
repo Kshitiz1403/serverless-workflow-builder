@@ -12,7 +12,40 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
   const [dragOverIndex, setDragOverIndex] = useState(null);
 
   useEffect(() => {
-    setFormData(node.data || {});
+    const nodeData = node.data || {};
+
+    // Convert legacy metadata format to new format if needed
+    let updatedData = { ...nodeData };
+
+    // Handle main metadata
+    if (nodeData.metadata && !nodeData.metadataItems) {
+      updatedData.metadataItems = Object.entries(nodeData.metadata).map(([key, value]) => ({
+        id: uuidv4(),
+        key,
+        value
+      }));
+    }
+
+    // Handle condition metadata for both data and event conditions
+    ['dataConditions', 'eventConditions'].forEach(conditionKey => {
+      if (updatedData[conditionKey]) {
+        updatedData[conditionKey] = updatedData[conditionKey].map(condition => {
+          if (condition.metadata && !condition.metadataItems) {
+            return {
+              ...condition,
+              metadataItems: Object.entries(condition.metadata).map(([key, value]) => ({
+                id: uuidv4(),
+                key,
+                value
+              }))
+            };
+          }
+          return condition;
+        });
+      }
+    });
+
+    setFormData(updatedData);
   }, [node]);
 
   // Start and End nodes should not have editable properties
@@ -305,30 +338,92 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
 
   // Metadata handling functions
   const addMetadataField = () => {
+    // Initialize metadataItems if it doesn't exist
+    const metadataItems = formData.metadataItems || [];
+    const newItem = {
+      id: uuidv4(),
+      key: `newKey${metadataItems.length + 1}`,
+      value: ''
+    };
+    const updatedMetadataItems = [...metadataItems, newItem];
+
+    // Also update the metadata object for backwards compatibility
     const metadata = { ...formData.metadata };
-    metadata[`newKey${Object.keys(metadata || {}).length + 1}`] = '';
-    const updatedData = { ...formData, metadata };
+    metadata[newItem.key] = newItem.value;
+
+    const updatedData = {
+      ...formData,
+      metadataItems: updatedMetadataItems,
+      metadata
+    };
     setFormData(updatedData);
     onUpdateNodeData(node.id, updatedData);
   };
 
-  const updateMetadataField = (oldKey, newKey, value) => {
-    const metadata = { ...formData.metadata };
-    if (oldKey !== newKey && oldKey in metadata) {
-      delete metadata[oldKey];
+  const updateMetadataField = (itemId, field, newValue) => {
+    const metadataItems = [...(formData.metadataItems || [])];
+    const itemIndex = metadataItems.findIndex(item => item.id === itemId);
+
+    if (itemIndex === -1) return;
+
+    const oldItem = metadataItems[itemIndex];
+    const updatedItem = { ...oldItem, [field]: newValue };
+    metadataItems[itemIndex] = updatedItem;
+
+    // Rebuild metadata object from items
+    const metadata = {};
+    metadataItems.forEach(item => {
+      if (item.key.trim()) { // Only add non-empty keys
+        metadata[item.key] = item.value;
+      }
+    });
+
+    const updatedData = {
+      ...formData,
+      metadataItems,
+      metadata
+    };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  const removeMetadataField = (itemId) => {
+    const metadataItems = [...(formData.metadataItems || [])];
+    const filteredItems = metadataItems.filter(item => item.id !== itemId);
+
+    // Rebuild metadata object from remaining items
+    const metadata = {};
+    filteredItems.forEach(item => {
+      if (item.key.trim()) {
+        metadata[item.key] = item.value;
+      }
+    });
+
+    const updatedData = {
+      ...formData,
+      metadataItems: filteredItems,
+      metadata
+    };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  // Convert legacy metadata object to metadataItems format
+  const getMetadataItems = () => {
+    if (formData.metadataItems) {
+      return formData.metadataItems;
     }
-    metadata[newKey] = value;
-    const updatedData = { ...formData, metadata };
-    setFormData(updatedData);
-    onUpdateNodeData(node.id, updatedData);
-  };
 
-  const removeMetadataField = (key) => {
-    const metadata = { ...formData.metadata };
-    delete metadata[key];
-    const updatedData = { ...formData, metadata };
-    setFormData(updatedData);
-    onUpdateNodeData(node.id, updatedData);
+    // Convert legacy format
+    if (formData.metadata) {
+      return Object.entries(formData.metadata).map(([key, value]) => ({
+        id: uuidv4(),
+        key,
+        value
+      }));
+    }
+
+    return [];
   };
 
   const addConditionMetadataField = (conditionIndex) => {
@@ -336,41 +431,106 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     const conditionKey = conditionType === 'data' ? 'dataConditions' : 'eventConditions';
     const conditions = [...(formData[conditionKey] || [])];
     const condition = conditions[conditionIndex];
+
+    // Initialize metadataItems if it doesn't exist
+    const metadataItems = condition.metadataItems || [];
+    const newItem = {
+      id: uuidv4(),
+      key: `newKey${metadataItems.length + 1}`,
+      value: ''
+    };
+    const updatedMetadataItems = [...metadataItems, newItem];
+
+    // Also update the metadata object for backwards compatibility
     const metadata = { ...condition.metadata };
-    metadata[`newKey${Object.keys(metadata || {}).length + 1}`] = '';
-    conditions[conditionIndex] = { ...condition, metadata };
+    metadata[newItem.key] = newItem.value;
+
+    conditions[conditionIndex] = {
+      ...condition,
+      metadataItems: updatedMetadataItems,
+      metadata
+    };
     const updatedData = { ...formData, [conditionKey]: conditions };
     setFormData(updatedData);
     onUpdateNodeData(node.id, updatedData);
   };
 
-  const updateConditionMetadataField = (conditionIndex, oldKey, newKey, value) => {
+  const updateConditionMetadataField = (conditionIndex, itemId, field, newValue) => {
     const conditionType = formData.conditionType || 'data';
     const conditionKey = conditionType === 'data' ? 'dataConditions' : 'eventConditions';
     const conditions = [...(formData[conditionKey] || [])];
     const condition = conditions[conditionIndex];
-    const metadata = { ...condition.metadata };
-    if (oldKey !== newKey && oldKey in metadata) {
-      delete metadata[oldKey];
+
+    const metadataItems = [...(condition.metadataItems || [])];
+    const itemIndex = metadataItems.findIndex(item => item.id === itemId);
+
+    if (itemIndex === -1) return;
+
+    const oldItem = metadataItems[itemIndex];
+    const updatedItem = { ...oldItem, [field]: newValue };
+    metadataItems[itemIndex] = updatedItem;
+
+    // Rebuild metadata object from items
+    const metadata = {};
+    metadataItems.forEach(item => {
+      if (item.key.trim()) {
+        metadata[item.key] = item.value;
+      }
+    });
+
+    conditions[conditionIndex] = {
+      ...condition,
+      metadataItems,
+      metadata
+    };
+    const updatedData = { ...formData, [conditionKey]: conditions };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  const removeConditionMetadataField = (conditionIndex, itemId) => {
+    const conditionType = formData.conditionType || 'data';
+    const conditionKey = conditionType === 'data' ? 'dataConditions' : 'eventConditions';
+    const conditions = [...(formData[conditionKey] || [])];
+    const condition = conditions[conditionIndex];
+
+    const metadataItems = [...(condition.metadataItems || [])];
+    const filteredItems = metadataItems.filter(item => item.id !== itemId);
+
+    // Rebuild metadata object from remaining items
+    const metadata = {};
+    filteredItems.forEach(item => {
+      if (item.key.trim()) {
+        metadata[item.key] = item.value;
+      }
+    });
+
+    conditions[conditionIndex] = {
+      ...condition,
+      metadataItems: filteredItems,
+      metadata
+    };
+    const updatedData = { ...formData, [conditionKey]: conditions };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  // Convert legacy condition metadata object to metadataItems format
+  const getConditionMetadataItems = (condition) => {
+    if (condition.metadataItems) {
+      return condition.metadataItems;
     }
-    metadata[newKey] = value;
-    conditions[conditionIndex] = { ...condition, metadata };
-    const updatedData = { ...formData, [conditionKey]: conditions };
-    setFormData(updatedData);
-    onUpdateNodeData(node.id, updatedData);
-  };
 
-  const removeConditionMetadataField = (conditionIndex, key) => {
-    const conditionType = formData.conditionType || 'data';
-    const conditionKey = conditionType === 'data' ? 'dataConditions' : 'eventConditions';
-    const conditions = [...(formData[conditionKey] || [])];
-    const condition = conditions[conditionIndex];
-    const metadata = { ...condition.metadata };
-    delete metadata[key];
-    conditions[conditionIndex] = { ...condition, metadata };
-    const updatedData = { ...formData, [conditionKey]: conditions };
-    setFormData(updatedData);
-    onUpdateNodeData(node.id, updatedData);
+    // Convert legacy format
+    if (condition.metadata) {
+      return Object.entries(condition.metadata).map(([key, value]) => ({
+        id: uuidv4(),
+        key,
+        value
+      }));
+    }
+
+    return [];
   };
 
   return (
@@ -408,13 +568,13 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
           <small>Add custom key-value metadata for this state</small>
         </div>
 
-        {formData.metadata && Object.entries(formData.metadata).map(([key, value], index) => (
-          <div key={index} className="metadata-item">
+        {getMetadataItems().map((item, index) => (
+          <div key={item.id} className="metadata-item">
             <div className="item-header">
               <span>Metadata Field {index + 1}</span>
               <button
                 className="remove-btn"
-                onClick={() => removeMetadataField(key)}
+                onClick={() => removeMetadataField(item.id)}
               >
                 <Minus size={14} />
               </button>
@@ -424,8 +584,8 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                 <label>Key</label>
                 <input
                   type="text"
-                  value={key}
-                  onChange={(e) => updateMetadataField(key, e.target.value, value)}
+                  value={item.key}
+                  onChange={(e) => updateMetadataField(item.id, 'key', e.target.value)}
                   placeholder="metadata key"
                 />
               </div>
@@ -433,8 +593,8 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                 <label>Value</label>
                 <input
                   type="text"
-                  value={value}
-                  onChange={(e) => updateMetadataField(key, key, e.target.value)}
+                  value={item.value}
+                  onChange={(e) => updateMetadataField(item.id, 'value', e.target.value)}
                   placeholder="metadata value"
                 />
               </div>
@@ -887,13 +1047,13 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                   </button>
                 </div>
 
-                {condition.metadata && Object.entries(condition.metadata).map(([key, value], metaIndex) => (
-                  <div key={metaIndex} className="metadata-item small">
+                {getConditionMetadataItems(condition).map((item, metaIndex) => (
+                  <div key={item.id} className="metadata-item small">
                     <div className="item-header">
                       <span>Meta {metaIndex + 1}</span>
                       <button
                         className="remove-btn"
-                        onClick={() => removeConditionMetadataField(index, key)}
+                        onClick={() => removeConditionMetadataField(index, item.id)}
                       >
                         <Minus size={12} />
                       </button>
@@ -903,8 +1063,8 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                         <label>Key</label>
                         <input
                           type="text"
-                          value={key}
-                          onChange={(e) => updateConditionMetadataField(index, key, e.target.value, value)}
+                          value={item.key}
+                          onChange={(e) => updateConditionMetadataField(index, item.id, 'key', e.target.value)}
                           placeholder="key"
                         />
                       </div>
@@ -912,8 +1072,8 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                         <label>Value</label>
                         <input
                           type="text"
-                          value={value}
-                          onChange={(e) => updateConditionMetadataField(index, key, key, e.target.value)}
+                          value={item.value}
+                          onChange={(e) => updateConditionMetadataField(index, item.id, 'value', e.target.value)}
                           placeholder="value"
                         />
                       </div>

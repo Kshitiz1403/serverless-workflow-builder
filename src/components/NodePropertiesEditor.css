@@ -413,11 +413,11 @@
 }
 
 .metadata-item {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 12px;
   margin-bottom: 8px;
-  background-color: #f9fafb;
+  background-color: var(--bg-secondary);
 }
 
 .metadata-item.small {
@@ -439,14 +439,13 @@
 .metadata-fields .form-group label {
   font-size: 12px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 4px;
 }
 
 .metadata-fields .form-group input {
   padding: 6px 8px;
   font-size: 14px;
-  border: 1px solid #d1d5db;
   border-radius: 4px;
   width: 100%;
 }
