@@ -5,7 +5,7 @@ import JsonEditor from './JsonEditor';
 import JsonEditorModal from './JsonEditorModal';
 import './NodePropertiesEditor.css';
 
-const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpdateWorkflowMetadata, nodes, edges }) => {
+const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpdateWorkflowMetadata, nodes, edges, onCleanupEdges }) => {
   const [formData, setFormData] = useState({});
   const [modalState, setModalState] = useState({ isOpen: false, value: null, onChange: null, title: '', label: '' });
   const [draggedActionIndex, setDraggedActionIndex] = useState(null);
@@ -13,7 +13,7 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
 
   useEffect(() => {
     setFormData(node.data || {});
-  }, [node]);
+  }, [node.data, node.id]);
 
   // Start and End nodes should not have editable properties
   if (node.type === 'start' || node.type === 'end') {
@@ -268,12 +268,18 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
   // Error Handler Functions
   const addErrorHandler = () => {
     const onErrors = [...(formData.onErrors || [])];
-    onErrors.push({
+    const newErrorHandler = {
       id: uuidv4(), // Generate unique ID for each error handler
       errorRef: 'DefaultErrorRef',
       // No transition field - will be determined by visual connections
-    });
-    const updatedData = { ...formData, onErrors };
+    };
+    onErrors.push(newErrorHandler);
+    const updatedData = {
+      ...formData,
+      onErrors,
+      // Add a timestamp to force React Flow to re-render the node with new handles
+      _lastErrorUpdate: Date.now()
+    };
     setFormData(updatedData);
     onUpdateNodeData(node.id, updatedData);
   };
@@ -281,9 +287,19 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
   const removeErrorHandler = (errorHandlerId) => {
     const onErrors = [...(formData.onErrors || [])];
     const updatedErrors = onErrors.filter(errorHandler => errorHandler.id !== errorHandlerId);
-    const updatedData = { ...formData, onErrors: updatedErrors };
+    const updatedData = {
+      ...formData,
+      onErrors: updatedErrors,
+      // Add a timestamp to force React Flow to re-render the node with updated handles
+      _lastErrorUpdate: Date.now()
+    };
     setFormData(updatedData);
     onUpdateNodeData(node.id, updatedData);
+
+    // Clean up any edges that reference the removed error handler
+    if (onCleanupEdges) {
+      onCleanupEdges(node.id, [errorHandlerId]);
+    }
   };
 
   const handleErrorHandlerChange = (errorHandlerId, field, value) => {

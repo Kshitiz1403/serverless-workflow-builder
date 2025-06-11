@@ -39,6 +39,7 @@ const Sidebar = ({
   onUpdateWorkflowMetadata,
   nodes,
   edges,
+  onCleanupEdges,
 }) => {
   const [activeTab, setActiveTab] = useState('palette');
   const [lastSaved, setLastSaved] = useState(null);
@@ -272,6 +273,7 @@ const Sidebar = ({
               onUpdateWorkflowMetadata={onUpdateWorkflowMetadata}
               nodes={nodes}
               edges={edges}
+              onCleanupEdges={onCleanupEdges}
             />
           </div>
         )}

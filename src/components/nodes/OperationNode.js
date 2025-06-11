@@ -41,7 +41,7 @@ const OperationNode = ({ data, selected }) => {
 
         return (
           <Handle
-            key={errorHandler.id}
+            key={`error-${errorHandler.id}-${index}`}
             type="source"
             position={Position.Right}
             id={errorHandler.id}
@@ -49,6 +49,8 @@ const OperationNode = ({ data, selected }) => {
               top: `${30 + (index * 20)}%`,
               background: 'rgba(239, 68, 68, 0.6)',
               borderColor: 'rgba(239, 68, 68, 0.6)',
+              width: '10px',
+              height: '10px',
             }}
             title={`Error: ${errorHandler.errorRef || 'error'}`}
           />

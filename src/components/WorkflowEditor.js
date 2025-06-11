@@ -89,8 +89,71 @@ function WorkflowEditor() {
 
   // Load initial project state
   const initialState = loadProjectState(currentProjectId);
+
+  // Function to clean up orphaned edges that reference non-existent handles
+  const cleanupOrphanedEdges = useCallback((nodes, edges) => {
+    console.log(`Checking ${edges.length} edges for orphaned handles...`);
+
+    return edges.filter(edge => {
+      // Find the source node
+      const sourceNode = nodes.find(node => node.id === edge.source);
+      if (!sourceNode) {
+        console.warn(`Removing orphaned edge: source node "${edge.source}" not found`);
+        return false;
+      }
+
+      // If the edge has a sourceHandle, check if it exists on the node
+      if (edge.sourceHandle) {
+        // For operation nodes with error handlers
+        if (sourceNode.type === 'operation') {
+          if (!sourceNode.data.onErrors || !Array.isArray(sourceNode.data.onErrors)) {
+            console.warn(`Removing orphaned edge: operation node "${sourceNode.id}" has no error handlers but edge references handle "${edge.sourceHandle}"`);
+            return false;
+          }
+
+          const hasErrorHandle = sourceNode.data.onErrors.some(errorHandler => errorHandler.id === edge.sourceHandle);
+          if (!hasErrorHandle) {
+            console.warn(`Removing orphaned edge: operation node "${sourceNode.id}" has no error handler with ID "${edge.sourceHandle}"`);
+            return false;
+          }
+        }
+        // For switch nodes with condition handles
+        else if (sourceNode.type === 'switch') {
+          if (edge.sourceHandle === 'default') {
+            return true; // Default handle should always exist
+          } else if (edge.sourceHandle.startsWith('condition-')) {
+            const conditionIndex = parseInt(edge.sourceHandle.replace('condition-', ''));
+            const conditionType = sourceNode.data.conditionType || 'data';
+            const conditions = conditionType === 'data' ? sourceNode.data.dataConditions : sourceNode.data.eventConditions;
+            if (!conditions || conditionIndex >= conditions.length) {
+              console.warn(`Removing orphaned edge: switch node "${sourceNode.id}" has no condition at index ${conditionIndex}`);
+              return false;
+            }
+          } else {
+            console.warn(`Removing orphaned edge: unknown source handle "${edge.sourceHandle}" on switch node "${sourceNode.id}"`);
+            return false;
+          }
+        }
+        // For other node types with handles that shouldn't exist
+        else {
+          console.warn(`Removing orphaned edge: node type "${sourceNode.type}" should not have source handle "${edge.sourceHandle}"`);
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, []);
+
   const [nodes, setNodes, onNodesChange] = useNodesState(initialState.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialState.edges);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(() => {
+    // Clean up orphaned edges on initial load
+    const cleanedEdges = cleanupOrphanedEdges(initialState.nodes, initialState.edges);
+    if (cleanedEdges.length !== initialState.edges.length) {
+      console.log(`Cleaned up ${initialState.edges.length - cleanedEdges.length} orphaned edges`);
+    }
+    return cleanedEdges;
+  });
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [selectedNodes, setSelectedNodes] = useState([]);
   const [showJsonExporter, setShowJsonExporter] = useState(false);
@@ -134,19 +197,26 @@ function WorkflowEditor() {
       if (projects.length > 0) {
         const firstProject = projects[0];
         const projectState = loadProjectState(firstProject.id);
+
+        // Clean up orphaned edges in the loaded project
+        const cleanedEdges = cleanupOrphanedEdges(projectState.nodes, projectState.edges);
+        if (cleanedEdges.length !== projectState.edges.length) {
+          console.log(`Cleaned up ${projectState.edges.length - cleanedEdges.length} orphaned edges in auto-selected project ${firstProject.id}`);
+        }
+
         setNodes(projectState.nodes);
-        setEdges(projectState.edges);
+        setEdges(cleanedEdges);
         setWorkflowMetadata(projectState.workflowMetadata);
         setCurrentProjectId(firstProject.id);
         ProjectStorage.setCurrentProjectId(firstProject.id);
         resetHistory({
           nodes: projectState.nodes,
-          edges: projectState.edges,
+          edges: cleanedEdges,
           workflowMetadata: projectState.workflowMetadata,
         });
       }
     }
-  }, [currentProjectId, showProjectManager, setNodes, setEdges, resetHistory]);
+  }, [currentProjectId, showProjectManager, setNodes, setEdges, resetHistory, cleanupOrphanedEdges]);
 
   // Helper function to update history state
   const updateHistoryState = useCallback((newNodes, newEdges, newMetadata = workflowMetadata) => {
@@ -205,8 +275,15 @@ function WorkflowEditor() {
 
     // Load new project
     const projectState = loadProjectState(projectId);
+
+    // Clean up orphaned edges in the loaded project
+    const cleanedEdges = cleanupOrphanedEdges(projectState.nodes, projectState.edges);
+    if (cleanedEdges.length !== projectState.edges.length) {
+      console.log(`Cleaned up ${projectState.edges.length - cleanedEdges.length} orphaned edges in project ${projectId}`);
+    }
+
     setNodes(projectState.nodes);
-    setEdges(projectState.edges);
+    setEdges(cleanedEdges);
     setWorkflowMetadata(projectState.workflowMetadata);
     setCurrentProjectId(projectId);
     setSelectedNodeId(null);
@@ -219,10 +296,10 @@ function WorkflowEditor() {
     // Reset history
     resetHistory({
       nodes: projectState.nodes,
-      edges: projectState.edges,
+      edges: cleanedEdges,
       workflowMetadata: projectState.workflowMetadata,
     });
-  }, [currentProjectId, hasUnsavedChanges, saveCurrentProject, setNodes, setEdges, resetHistory]);
+  }, [currentProjectId, hasUnsavedChanges, saveCurrentProject, setNodes, setEdges, resetHistory, cleanupOrphanedEdges]);
 
   const handleToggleProjectSidebar = useCallback(() => {
     const newCollapsed = !isProjectSidebarCollapsed;
@@ -258,6 +335,29 @@ function WorkflowEditor() {
       // Find the source and target nodes to get transition information
       const sourceNode = nodes.find((node) => node.id === params.source);
       const targetNode = nodes.find((node) => node.id === params.target);
+
+      // Validate that the source handle exists if specified
+      if (params.sourceHandle) {
+        if (sourceNode?.type === 'operation') {
+          // For operation nodes, validate error handles
+          const hasValidErrorHandle = sourceNode.data.onErrors?.some(eh => eh.id === params.sourceHandle);
+          if (!hasValidErrorHandle) {
+            console.warn(`Cannot create edge: Invalid error handle "${params.sourceHandle}" on operation node "${sourceNode.id}"`);
+            return;
+          }
+        } else if (sourceNode?.type === 'switch') {
+          // For switch nodes, validate condition handles
+          if (params.sourceHandle !== 'default' && params.sourceHandle.startsWith('condition-')) {
+            const conditionIndex = parseInt(params.sourceHandle.replace('condition-', ''));
+            const conditionType = sourceNode.data.conditionType || 'data';
+            const conditions = conditionType === 'data' ? sourceNode.data.dataConditions : sourceNode.data.eventConditions;
+            if (!conditions || conditionIndex >= conditions.length) {
+              console.warn(`Cannot create edge: Invalid condition handle "${params.sourceHandle}" on switch node "${sourceNode.id}"`);
+              return;
+            }
+          }
+        }
+      }
 
       let edgeLabel = '';
       let edgeType = 'simple';
@@ -316,6 +416,8 @@ function WorkflowEditor() {
         },
       };
 
+      console.log(`Creating edge: ${newEdge.id} with sourceHandle: ${params.sourceHandle}`);
+
       setEdges((eds) => {
         const newEdges = addEdge(newEdge, eds);
         updateHistoryState(nodes, newEdges);
@@ -368,41 +470,44 @@ function WorkflowEditor() {
         const newNodes = nds.map((node) =>
           node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
         );
-        updateHistoryState(newNodes, edges);
+
+        // Find the updated node for further processing
+        const updatedNode = newNodes.find((n) => n.id === nodeId);
+
+        // Update edge labels if this is a switch node
+        if (updatedNode && updatedNode.type === 'switch') {
+          setEdges((eds) => {
+            const newEdges = eds.map((edge) => {
+              if (edge.source === nodeId && edge.sourceHandle) {
+                let newLabel = '';
+                if (edge.sourceHandle === 'default') {
+                  newLabel = 'default';
+                } else if (edge.sourceHandle.startsWith('condition-')) {
+                  const conditionIndex = parseInt(edge.sourceHandle.replace('condition-', ''));
+                  const condition = updatedNode.data.dataConditions?.[conditionIndex];
+                  newLabel = condition?.name || `condition${conditionIndex + 1}`;
+                }
+                return { ...edge, label: newLabel };
+              }
+              return edge;
+            });
+            // Update history with the new nodes and edges
+            setHistoryState((prev) => ({
+              ...prev,
+              nodes: newNodes,
+              edges: newEdges,
+            }));
+            return newEdges;
+          });
+        } else {
+          // For non-switch nodes, just update history with the new nodes
+          updateHistoryState(newNodes, edges);
+        }
+
         return newNodes;
       });
-
-      // Update edge labels if this is a switch node
-      const updatedNode = nodes.find((n) => n.id === nodeId);
-      if (updatedNode && updatedNode.type === 'switch') {
-        setEdges((eds) => {
-          const newEdges = eds.map((edge) => {
-            if (edge.source === nodeId && edge.sourceHandle) {
-              let newLabel = '';
-              if (edge.sourceHandle === 'default') {
-                newLabel = 'default';
-              } else if (edge.sourceHandle.startsWith('condition-')) {
-                const conditionIndex = parseInt(edge.sourceHandle.replace('condition-', ''));
-                const condition = newData.dataConditions?.[conditionIndex];
-                newLabel = condition?.name || `condition${conditionIndex + 1}`;
-              }
-              return { ...edge, label: newLabel };
-            }
-            return edge;
-          });
-          // Update history with the new nodes and edges
-          setHistoryState((prev) => ({
-            ...prev,
-            nodes: prev.nodes.map((node) =>
-              node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
-            ),
-            edges: newEdges,
-          }));
-          return newEdges;
-        });
-      }
     },
-    [setNodes, setEdges, nodes, edges, updateHistoryState, setHistoryState]
+    [setNodes, setEdges, edges, updateHistoryState, setHistoryState]
   );
 
   const deleteNode = useCallback(
@@ -677,8 +782,14 @@ function WorkflowEditor() {
 
   const handleImportWorkflow = useCallback(
     (nodes, edges, metadata) => {
+      // Clean up orphaned edges in the imported workflow
+      const cleanedEdges = cleanupOrphanedEdges(nodes, edges);
+      if (cleanedEdges.length !== edges.length) {
+        console.log(`Cleaned up ${edges.length - cleanedEdges.length} orphaned edges in imported workflow`);
+      }
+
       setNodes(nodes);
-      setEdges(edges);
+      setEdges(cleanedEdges);
       setWorkflowMetadata(metadata);
       setSelectedNodeId(null);
       setSelectedNodes([]);
@@ -687,12 +798,23 @@ function WorkflowEditor() {
       }
       resetHistory({
         nodes,
-        edges,
+        edges: cleanedEdges,
         workflowMetadata: metadata,
       });
     },
-    [setNodes, setEdges, resetHistory, currentProjectId]
+    [setNodes, setEdges, resetHistory, currentProjectId, cleanupOrphanedEdges]
   );
+
+  // Continuous validation of edges to prevent orphaned edge errors
+  useEffect(() => {
+    if (nodes.length === 0 || edges.length === 0) return;
+
+    const validEdges = cleanupOrphanedEdges(nodes, edges);
+    if (validEdges.length !== edges.length) {
+      console.log(`Found and cleaning up ${edges.length - validEdges.length} orphaned edges during runtime`);
+      setEdges(validEdges);
+    }
+  }, [nodes, edges, cleanupOrphanedEdges, setEdges]);
 
   return (
     <div className="workflow-editor">
@@ -755,6 +877,19 @@ function WorkflowEditor() {
         onUpdateWorkflowMetadata={setWorkflowMetadata}
         nodes={nodes}
         edges={edges}
+        onCleanupEdges={(nodeId, removedHandleIds) => {
+          setEdges((eds) => {
+            const newEdges = eds.filter((edge) => {
+              // Remove edges that reference the removed error handler handles
+              if (edge.source === nodeId && removedHandleIds.includes(edge.sourceHandle)) {
+                return false;
+              }
+              return true;
+            });
+            updateHistoryState(nodes, newEdges);
+            return newEdges;
+          });
+        }}
       />
 
       {showProjectManager && (
