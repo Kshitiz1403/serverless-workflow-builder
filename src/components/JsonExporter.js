@@ -36,6 +36,7 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
     const workflow = {
       id: workflowInfo.id,
       version: workflowInfo.version,
+      specVersion: "0.8.0",
       name: workflowInfo.name,
       description: workflowInfo.description,
       start: startStateName,
