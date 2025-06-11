@@ -53,7 +53,22 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
     }
 
     return workflow;
-  }, [nodes, edges, workflowInfo]);
+  }, [nodes, edges, workflowInfo, workflowMetadata]);
+
+  // Validation for missing timeouts
+  const validationErrors = useMemo(() => {
+    const errors = [];
+
+    nodes.forEach((node) => {
+      if (node.type === 'switch' &&
+        node.data.conditionType === 'event' &&
+        (!node.data.timeouts || !node.data.timeouts.eventTimeout)) {
+        errors.push(`Switch node "${node.data.name || node.data.label || 'unnamed'}" uses event conditions but has no timeout configured`);
+      }
+    });
+
+    return errors;
+  }, [nodes]);
 
   const reactFlowData = useMemo(() => {
     return {
@@ -237,6 +252,20 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
               </button>
             </div>
           </div>
+
+          {/* Validation Warnings */}
+          {validationErrors.length > 0 && (
+            <div className="validation-warnings">
+              <h4>⚠️ Validation Warnings</h4>
+              <ul>
+                {validationErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+              <p><strong>Note:</strong> Please fix these issues for a complete workflow configuration.</p>
+            </div>
+          )}
+
           <pre className="json-content">{jsonString}</pre>
         </div>
       </div>
@@ -359,6 +388,11 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
         ...baseState,
         defaultCondition: node.data.defaultCondition || { transition: { nextState: '' } },
       };
+
+      // Add timeouts for event conditions
+      if (node.data.conditionType === 'event' && node.data.timeouts && node.data.timeouts.eventTimeout) {
+        switchState.timeouts = node.data.timeouts;
+      }
 
       // Determine condition type and handle accordingly
       const conditionType = node.data.conditionType || 'data';

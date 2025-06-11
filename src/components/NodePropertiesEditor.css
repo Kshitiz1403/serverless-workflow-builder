@@ -471,3 +471,34 @@
   padding: 4px 6px;
   font-size: 12px;
 }
+
+/* Required field styles */
+.required-indicator {
+  color: #ef4444;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.required-field {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2;
+}
+
+.required-field:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 1px #ef4444 !important;
+}
+
+.validation-error {
+  margin-top: 4px;
+  padding: 6px 8px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.validation-error small {
+  color: #dc2626;
+  font-weight: 500;
+}

@@ -782,6 +782,7 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                   dataConditions: newType === 'data' ? formData.dataConditions || [] : [],
                   eventConditions: newType === 'event' ? formData.eventConditions || [] : [],
                 };
+
                 setFormData(updatedData);
                 onUpdateNodeData(node.id, updatedData);
               }}
@@ -790,6 +791,34 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
               <option value="event">Event Conditions</option>
             </select>
           </div>
+
+          {/* Event Timeout Configuration - Only visible when using event conditions */}
+          {formData.conditionType === 'event' && (
+            <div className="form-group">
+              <label>Event Timeout <span className="required-indicator">*</span></label>
+              <input
+                type="text"
+                value={formData.timeouts?.eventTimeout || ''}
+                onChange={(e) =>
+                  handleInputChange('timeouts', {
+                    ...formData.timeouts,
+                    eventTimeout: e.target.value,
+                  })
+                }
+                placeholder="PT30M (ISO 8601 duration)"
+                required
+                className={!formData.timeouts?.eventTimeout ? 'required-field' : ''}
+              />
+              <div className="form-help">
+                <small>Maximum time to wait for events before triggering default condition (ISO 8601 duration format)</small>
+              </div>
+              {!formData.timeouts?.eventTimeout && (
+                <div className="validation-error">
+                  <small>Event timeout is required when using event conditions</small>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="section-header">
             <Settings size={16} />

@@ -620,6 +620,11 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
         defaultCondition: state.defaultCondition || true,
       };
 
+      // Add timeouts for event conditions
+      if (hasEventConditions && state.timeouts) {
+        switchData.timeouts = state.timeouts;
+      }
+
       // Convert retry policy name reference to ID reference
       if (state.retryRef && retryPolicyNameToId[state.retryRef]) {
         switchData.retryRef = retryPolicyNameToId[state.retryRef];

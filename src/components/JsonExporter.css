@@ -189,3 +189,38 @@
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
 }
+
+/* Validation Warnings */
+.validation-warnings {
+  margin: 1rem 1.5rem;
+  padding: 1rem;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  color: #92400e;
+}
+
+.validation-warnings h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.validation-warnings ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.validation-warnings li {
+  margin-bottom: 0.25rem;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.validation-warnings p {
+  margin: 0.5rem 0 0 0;
+  font-size: 12px;
+  font-style: italic;
+}

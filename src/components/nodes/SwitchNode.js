@@ -37,6 +37,11 @@ const SwitchNode = ({ data, selected }) => {
         <div className="node-field">
           <strong>Default:</strong> {hasDefault ? 'Yes' : 'No'}
         </div>
+        {conditionType === 'event' && data.timeouts && data.timeouts.eventTimeout && (
+          <div className="node-field">
+            <strong>Timeout:</strong> {data.timeouts.eventTimeout}
+          </div>
+        )}
         {hasMetadata && (
           <div className="node-field metadata-preview">
             <strong>Metadata:</strong>
