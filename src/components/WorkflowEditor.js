@@ -170,7 +170,7 @@ function WorkflowEditor() {
 
     const autoSaveInterval = setInterval(() => {
       saveCurrentProject();
-    }, 30000); // Auto-save every 30 seconds
+    }, 5000); // Auto-save every 5 seconds
 
     return () => clearInterval(autoSaveInterval);
   }, [currentProjectId, hasUnsavedChanges, nodes, edges, workflowMetadata]);
