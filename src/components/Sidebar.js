@@ -37,6 +37,8 @@ const Sidebar = ({
   canRedo,
   workflowMetadata,
   onUpdateWorkflowMetadata,
+  onSaveProject,
+  hasUnsavedChanges,
 }) => {
   const [activeTab, setActiveTab] = useState('palette');
   const [lastSaved, setLastSaved] = useState(null);
@@ -319,6 +321,18 @@ const Sidebar = ({
         )}
 
         <div className="footer-actions">
+          <div className="save-action">
+            <button
+              className="save-project-btn"
+              onClick={onSaveProject}
+              disabled={!hasUnsavedChanges}
+              title={hasUnsavedChanges ? "Save project changes (Ctrl+S)" : "No changes to save"}
+            >
+              <Save size={16} />
+              Save Project
+            </button>
+          </div>
+
           <div className="undo-redo-actions">
             <button
               className="undo-btn"

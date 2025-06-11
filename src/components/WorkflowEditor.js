@@ -440,7 +440,7 @@ function WorkflowEditor() {
     }
   }, [selectedNodes, setNodes, setEdges, updateHistoryState]);
 
-  // Handle keyboard events for deleting selected nodes and undo/redo
+  // Handle keyboard events for deleting selected nodes, undo/redo, and save
   useEffect(() => {
     const handleKeyDown = (event) => {
       // Prevent actions if we're editing text in an input field
@@ -458,6 +458,11 @@ function WorkflowEditor() {
       } else if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey))) {
         event.preventDefault();
         handleRedo();
+      } else if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        if (currentProjectId && hasUnsavedChanges) {
+          saveCurrentProject();
+        }
       }
     };
 
@@ -465,7 +470,7 @@ function WorkflowEditor() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedNodes, deleteSelectedNodes, handleUndo, handleRedo]);
+  }, [selectedNodes, deleteSelectedNodes, handleUndo, handleRedo, currentProjectId, hasUnsavedChanges, saveCurrentProject]);
 
   // Handle 2-finger trackpad panning
   useEffect(() => {
@@ -753,6 +758,8 @@ function WorkflowEditor() {
         canRedo={canRedo}
         workflowMetadata={workflowMetadata}
         onUpdateWorkflowMetadata={setWorkflowMetadata}
+        onSaveProject={saveCurrentProject}
+        hasUnsavedChanges={hasUnsavedChanges}
       />
 
       {showProjectManager && (
