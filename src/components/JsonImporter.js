@@ -555,9 +555,14 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
 }
 
 function convertStateToNodeData(state, retryPolicyNameToId = {}) {
+  const baseData = {
+    metadata: state.metadata || {},
+  };
+
   switch (state.type) {
     case 'operation':
       const operationData = {
+        ...baseData,
         actions: state.actions || [],
         onErrors: state.onErrors || [],
       };
@@ -602,9 +607,16 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
       const hasEventConditions = state.eventConditions && state.eventConditions.length > 0;
 
       const switchData = {
+        ...baseData,
         conditionType: hasDataConditions ? 'data' : 'event',
-        dataConditions: state.dataConditions || [],
-        eventConditions: state.eventConditions || [],
+        dataConditions: (state.dataConditions || []).map(condition => ({
+          ...condition,
+          metadata: condition.metadata || {},
+        })),
+        eventConditions: (state.eventConditions || []).map(condition => ({
+          ...condition,
+          metadata: condition.metadata || {},
+        })),
         defaultCondition: state.defaultCondition || true,
       };
 
@@ -616,15 +628,17 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
       return switchData;
     case 'event':
       return {
+        ...baseData,
         events: state.onEvents || [],
         timeouts: state.timeouts || {},
       };
     case 'sleep':
       return {
+        ...baseData,
         duration: state.duration || 'PT30M',
       };
     default:
-      return {};
+      return baseData;
   }
 }
 

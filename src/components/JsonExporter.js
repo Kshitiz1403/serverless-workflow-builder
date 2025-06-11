@@ -253,6 +253,17 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
   // Find outgoing edges from this node
   const outgoingEdges = edges.filter((edge) => edge.source === node.id);
 
+  // Base state with metadata
+  const baseState = {
+    name: stateName,
+    type: node.type,
+  };
+
+  // Add metadata if it exists and has content
+  if (node.data.metadata && Object.keys(node.data.metadata).length > 0) {
+    baseState.metadata = node.data.metadata;
+  }
+
   switch (node.type) {
     case 'operation':
       const isOperationEnd =
@@ -299,8 +310,7 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
       });
 
       const operationState = {
-        name: stateName,
-        type: 'operation',
+        ...baseState,
         actions: processedActions,
       };
 
@@ -315,8 +325,7 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
     case 'event':
       const isEventEnd = outgoingEdges.length === 0 || hasEndNodeTarget(outgoingEdges, allNodes);
       const eventState = {
-        name: stateName,
-        type: 'event',
+        ...baseState,
         onEvents: node.data.events || [],
         timeouts: node.data.timeouts || {},
       };
@@ -332,8 +341,7 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
     case 'sleep':
       const isSleepEnd = outgoingEdges.length === 0 || hasEndNodeTarget(outgoingEdges, allNodes);
       const sleepState = {
-        name: stateName,
-        type: 'sleep',
+        ...baseState,
         duration: node.data.duration || 'PT30M',
       };
 
@@ -347,8 +355,7 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
 
     case 'switch':
       const switchState = {
-        name: stateName,
-        type: 'switch',
+        ...baseState,
         defaultCondition: node.data.defaultCondition || { transition: { nextState: '' } },
       };
 
@@ -366,6 +373,11 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
           );
 
           const conditionData = { ...condition };
+
+          // Add condition metadata if it exists
+          if (condition.metadata && Object.keys(condition.metadata).length > 0) {
+            conditionData.metadata = condition.metadata;
+          }
 
           if (conditionEdge) {
             const targetNode = allNodes.find((n) => n.id === conditionEdge.target);
@@ -396,6 +408,11 @@ function convertNodeToState(node, edges, allNodes, workflowMetadata) {
           );
 
           const conditionData = { ...condition };
+
+          // Add condition metadata if it exists
+          if (condition.metadata && Object.keys(condition.metadata).length > 0) {
+            conditionData.metadata = condition.metadata;
+          }
 
           if (conditionEdge) {
             const targetNode = allNodes.find((n) => n.id === conditionEdge.target);

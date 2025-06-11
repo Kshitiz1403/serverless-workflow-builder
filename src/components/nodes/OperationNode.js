@@ -1,9 +1,11 @@
 import React from 'react';
 import { Handle, Position, useReactFlow } from 'reactflow';
-import { Play } from 'lucide-react';
+import { Play, Tag } from 'lucide-react';
 import './NodeStyles.css';
 
 const OperationNode = ({ data, selected }) => {
+  const hasMetadata = data.metadata && Object.keys(data.metadata).length > 0;
+
   return (
     <div className={`custom-node operation-node ${selected ? 'selected' : ''}`}>
       <Handle type="target" position={Position.Top} />
@@ -11,6 +13,7 @@ const OperationNode = ({ data, selected }) => {
       <div className="node-header">
         <Play size={16} />
         <span className="node-title">{data.label || 'Operation'}</span>
+        {hasMetadata && <Tag size={12} className="metadata-indicator" />}
       </div>
 
       <div className="node-content">
@@ -25,6 +28,23 @@ const OperationNode = ({ data, selected }) => {
         {data.onErrors && data.onErrors.length > 0 && (
           <div className="node-field">
             <strong>Error Handlers:</strong> {data.onErrors.length}
+          </div>
+        )}
+        {hasMetadata && (
+          <div className="node-field metadata-preview">
+            <strong>Metadata:</strong>
+            <div className="metadata-tags">
+              {Object.entries(data.metadata).slice(0, 2).map(([key, value]) => (
+                <span key={key} className="metadata-tag">
+                  {key}: {value}
+                </span>
+              ))}
+              {Object.keys(data.metadata).length > 2 && (
+                <span className="metadata-tag more">
+                  +{Object.keys(data.metadata).length - 2} more
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>

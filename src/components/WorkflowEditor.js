@@ -791,9 +791,14 @@ function WorkflowEditor() {
 }
 
 function getDefaultNodeData(type) {
+  const baseData = {
+    metadata: {},
+  };
+
   switch (type) {
     case 'operation':
       return {
+        ...baseData,
         label: 'Operation',
         name: 'newOperation',
         actions: [
@@ -809,6 +814,7 @@ function getDefaultNodeData(type) {
       };
     case 'switch':
       return {
+        ...baseData,
         label: 'Switch',
         name: 'newSwitch',
         conditionType: 'data', // 'data' or 'event'
@@ -816,6 +822,7 @@ function getDefaultNodeData(type) {
           {
             name: 'condition1',
             condition: '.data == true',
+            metadata: {},
           },
         ],
         eventConditions: [],
@@ -823,6 +830,7 @@ function getDefaultNodeData(type) {
       };
     case 'event':
       return {
+        ...baseData,
         label: 'Event',
         name: 'newEvent',
         events: [
@@ -837,6 +845,7 @@ function getDefaultNodeData(type) {
       };
     case 'sleep':
       return {
+        ...baseData,
         label: 'Sleep',
         name: 'newSleep',
         duration: 'PT30M', // ISO 8601 duration format (30 minutes)
@@ -846,7 +855,7 @@ function getDefaultNodeData(type) {
     case 'end':
       return {};
     default:
-      return { label: type };
+      return { ...baseData, label: type };
   }
 }
 

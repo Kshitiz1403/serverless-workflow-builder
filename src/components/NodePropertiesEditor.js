@@ -172,7 +172,19 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     const conditionType = formData.conditionType || 'data';
     const conditionKey = conditionType === 'data' ? 'dataConditions' : 'eventConditions';
     const conditions = [...(formData[conditionKey] || [])];
-    conditions[index] = { ...conditions[index], [field]: value };
+
+    if (field.startsWith('metadata.')) {
+      const metadataField = field.split('.')[1];
+      conditions[index] = {
+        ...conditions[index],
+        metadata: {
+          ...conditions[index].metadata,
+          [metadataField]: value,
+        },
+      };
+    } else {
+      conditions[index] = { ...conditions[index], [field]: value };
+    }
 
     const updatedData = { ...formData, [conditionKey]: conditions };
     setFormData(updatedData);
@@ -291,6 +303,76 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
     setModalState({ isOpen: false, value: null, onChange: null, title: '', label: '' });
   };
 
+  // Metadata handling functions
+  const addMetadataField = () => {
+    const metadata = { ...formData.metadata };
+    metadata[`newKey${Object.keys(metadata || {}).length + 1}`] = '';
+    const updatedData = { ...formData, metadata };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  const updateMetadataField = (oldKey, newKey, value) => {
+    const metadata = { ...formData.metadata };
+    if (oldKey !== newKey && oldKey in metadata) {
+      delete metadata[oldKey];
+    }
+    metadata[newKey] = value;
+    const updatedData = { ...formData, metadata };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  const removeMetadataField = (key) => {
+    const metadata = { ...formData.metadata };
+    delete metadata[key];
+    const updatedData = { ...formData, metadata };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  const addConditionMetadataField = (conditionIndex) => {
+    const conditionType = formData.conditionType || 'data';
+    const conditionKey = conditionType === 'data' ? 'dataConditions' : 'eventConditions';
+    const conditions = [...(formData[conditionKey] || [])];
+    const condition = conditions[conditionIndex];
+    const metadata = { ...condition.metadata };
+    metadata[`newKey${Object.keys(metadata || {}).length + 1}`] = '';
+    conditions[conditionIndex] = { ...condition, metadata };
+    const updatedData = { ...formData, [conditionKey]: conditions };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  const updateConditionMetadataField = (conditionIndex, oldKey, newKey, value) => {
+    const conditionType = formData.conditionType || 'data';
+    const conditionKey = conditionType === 'data' ? 'dataConditions' : 'eventConditions';
+    const conditions = [...(formData[conditionKey] || [])];
+    const condition = conditions[conditionIndex];
+    const metadata = { ...condition.metadata };
+    if (oldKey !== newKey && oldKey in metadata) {
+      delete metadata[oldKey];
+    }
+    metadata[newKey] = value;
+    conditions[conditionIndex] = { ...condition, metadata };
+    const updatedData = { ...formData, [conditionKey]: conditions };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
+  const removeConditionMetadataField = (conditionIndex, key) => {
+    const conditionType = formData.conditionType || 'data';
+    const conditionKey = conditionType === 'data' ? 'dataConditions' : 'eventConditions';
+    const conditions = [...(formData[conditionKey] || [])];
+    const condition = conditions[conditionIndex];
+    const metadata = { ...condition.metadata };
+    delete metadata[key];
+    conditions[conditionIndex] = { ...condition, metadata };
+    const updatedData = { ...formData, [conditionKey]: conditions };
+    setFormData(updatedData);
+    onUpdateNodeData(node.id, updatedData);
+  };
+
   return (
     <div className="node-properties-editor">
       <div className="form-group">
@@ -311,6 +393,54 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
           onChange={(e) => handleInputChange('name', e.target.value)}
           placeholder="Enter node name"
         />
+      </div>
+
+      {/* Metadata Section */}
+      <div className="section">
+        <div className="section-header">
+          <Settings size={16} />
+          <span>Metadata</span>
+          <button className="add-btn" onClick={addMetadataField}>
+            <Plus size={14} />
+          </button>
+        </div>
+        <div className="form-help">
+          <small>Add custom key-value metadata for this state</small>
+        </div>
+
+        {formData.metadata && Object.entries(formData.metadata).map(([key, value], index) => (
+          <div key={index} className="metadata-item">
+            <div className="item-header">
+              <span>Metadata Field {index + 1}</span>
+              <button
+                className="remove-btn"
+                onClick={() => removeMetadataField(key)}
+              >
+                <Minus size={14} />
+              </button>
+            </div>
+            <div className="metadata-fields">
+              <div className="form-group">
+                <label>Key</label>
+                <input
+                  type="text"
+                  value={key}
+                  onChange={(e) => updateMetadataField(key, e.target.value, value)}
+                  placeholder="metadata key"
+                />
+              </div>
+              <div className="form-group">
+                <label>Value</label>
+                <input
+                  type="text"
+                  value={value}
+                  onChange={(e) => updateMetadataField(key, key, e.target.value)}
+                  placeholder="metadata value"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {node.type === 'operation' && (
@@ -715,6 +845,53 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                   />
                 </div>
               )}
+
+              {/* Condition Metadata Section */}
+              <div className="subsection">
+                <div className="subsection-header">
+                  <span>Condition Metadata</span>
+                  <button
+                    className="add-btn"
+                    onClick={() => addConditionMetadataField(index)}
+                  >
+                    <Plus size={12} />
+                  </button>
+                </div>
+
+                {condition.metadata && Object.entries(condition.metadata).map(([key, value], metaIndex) => (
+                  <div key={metaIndex} className="metadata-item small">
+                    <div className="item-header">
+                      <span>Meta {metaIndex + 1}</span>
+                      <button
+                        className="remove-btn"
+                        onClick={() => removeConditionMetadataField(index, key)}
+                      >
+                        <Minus size={12} />
+                      </button>
+                    </div>
+                    <div className="metadata-fields">
+                      <div className="form-group">
+                        <label>Key</label>
+                        <input
+                          type="text"
+                          value={key}
+                          onChange={(e) => updateConditionMetadataField(index, key, e.target.value, value)}
+                          placeholder="key"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Value</label>
+                        <input
+                          type="text"
+                          value={value}
+                          onChange={(e) => updateConditionMetadataField(index, key, key, e.target.value)}
+                          placeholder="value"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>

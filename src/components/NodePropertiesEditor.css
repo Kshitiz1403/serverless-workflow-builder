@@ -411,3 +411,63 @@
   margin-top: 0;
   margin-bottom: 0;
 }
+
+.metadata-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background-color: #f9fafb;
+}
+
+.metadata-item.small {
+  padding: 8px;
+  margin-bottom: 6px;
+}
+
+.metadata-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.metadata-fields .form-group {
+  margin-bottom: 0;
+}
+
+.metadata-fields .form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.metadata-fields .form-group input {
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.metadata-fields .form-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.subsection .metadata-item {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+}
+
+.subsection .metadata-fields {
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.subsection .metadata-fields .form-group input {
+  padding: 4px 6px;
+  font-size: 12px;
+}

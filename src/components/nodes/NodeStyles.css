@@ -161,3 +161,50 @@
 .sleep-node .node-header {
   color: #0891b2;
 }
+
+.metadata-indicator {
+  opacity: 0.7;
+  margin-left: 4px;
+  color: #6b7280;
+}
+
+.condition-metadata-indicator {
+  opacity: 0.6;
+  margin-left: 4px;
+  color: #6b7280;
+}
+
+.metadata-preview {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.metadata-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.metadata-tag {
+  background-color: #f3f4f6;
+  color: #374151;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+}
+
+.metadata-tag.more {
+  background-color: #e5e7eb;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.switch-output-item .output-label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}

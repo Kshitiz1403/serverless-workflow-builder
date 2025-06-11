@@ -1,6 +1,6 @@
 import React from 'react';
 import { Handle, Position } from 'reactflow';
-import { GitBranch } from 'lucide-react';
+import { GitBranch, Tag } from 'lucide-react';
 import './NodeStyles.css';
 
 const SwitchNode = ({ data, selected }) => {
@@ -10,6 +10,7 @@ const SwitchNode = ({ data, selected }) => {
   const conditionType = dataConditions.length > 0 ? 'data' : 'event';
   const hasDefault = data.defaultCondition;
   const totalHandles = conditions.length + (hasDefault ? 1 : 0);
+  const hasMetadata = data.metadata && Object.keys(data.metadata).length > 0;
 
   return (
     <div className={`custom-node switch-node switch-node-${conditionType} ${selected ? 'selected' : ''}`}>
@@ -18,6 +19,7 @@ const SwitchNode = ({ data, selected }) => {
       <div className="node-header">
         <GitBranch size={16} />
         <span className="node-title">{data.label || 'Switch'}</span>
+        {hasMetadata && <Tag size={12} className="metadata-indicator" />}
       </div>
 
       <div className="node-content">
@@ -35,12 +37,34 @@ const SwitchNode = ({ data, selected }) => {
         <div className="node-field">
           <strong>Default:</strong> {hasDefault ? 'Yes' : 'No'}
         </div>
+        {hasMetadata && (
+          <div className="node-field metadata-preview">
+            <strong>Metadata:</strong>
+            <div className="metadata-tags">
+              {Object.entries(data.metadata).slice(0, 2).map(([key, value]) => (
+                <span key={key} className="metadata-tag">
+                  {key}: {value}
+                </span>
+              ))}
+              {Object.keys(data.metadata).length > 2 && (
+                <span className="metadata-tag more">
+                  +{Object.keys(data.metadata).length - 2} more
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Render condition handles with labels */}
         <div className="switch-outputs">
           {conditions.map((condition, index) => (
             <div key={`condition-${index}`} className="switch-output-item">
-              <span className="output-label">{condition.name || condition.eventRef || condition.condition || `condition${index + 1}`}</span>
+              <span className="output-label">
+                {condition.name || condition.eventRef || condition.condition || `condition${index + 1}`}
+                {condition.metadata && Object.keys(condition.metadata).length > 0 && (
+                  <Tag size={10} className="condition-metadata-indicator" />
+                )}
+              </span>
               <Handle
                 type="source"
                 position={Position.Right}
