@@ -45,7 +45,7 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
 
     // Add retry policies if they exist
     if (workflowMetadata?.retryPolicies && workflowMetadata.retryPolicies.length > 0) {
-      workflow.retryPolicies = workflowMetadata.retryPolicies.map(policy => {
+      workflow.retries = workflowMetadata.retryPolicies.map(policy => {
         // Convert policy to Serverless Workflow format (exclude internal ID)
         const { id, ...exportPolicy } = policy;
         return exportPolicy;
