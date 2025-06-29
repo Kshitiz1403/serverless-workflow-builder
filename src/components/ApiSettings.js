@@ -40,6 +40,32 @@ const ApiSettings = ({ isOpen, onClose }) => {
   setHasUnsavedChanges(hasChanges);
  }, [formData, config]);
 
+ // Handle Escape key press
+ useEffect(() => {
+  const handleEscapeKey = (event) => {
+   if (event.key === 'Escape' && isOpen) {
+    handleCancel();
+   }
+  };
+
+  if (isOpen) {
+   document.addEventListener('keydown', handleEscapeKey);
+  }
+
+  return () => {
+   document.removeEventListener('keydown', handleEscapeKey);
+  };
+ }, [isOpen]);
+
+ // Handle click outside modal
+ const handleOverlayClick = (event) => {
+  // Only close if clicking directly on the overlay (not on modal content)
+  // This prevents the modal from closing when clicking inside the modal
+  if (event.target === event.currentTarget) {
+   handleCancel();
+  }
+ };
+
  const handleInputChange = (field, value) => {
   setFormData(prev => ({ ...prev, [field]: value }));
   setValidationResult(null); // Clear previous validation when settings change
@@ -103,7 +129,7 @@ const ApiSettings = ({ isOpen, onClose }) => {
  if (!isOpen) return null;
 
  return (
-  <div className="api-settings-overlay">
+  <div className="api-settings-overlay" onClick={handleOverlayClick}>
    <div className="api-settings-modal">
     <div className="api-settings-header">
      <div className="header-title">
