@@ -148,6 +148,44 @@
   color: var(--text-color);
 }
 
+.palette-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.palette-tab {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  color: var(--text-secondary, #6b7280);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  border-radius: 4px 4px 0 0;
+}
+
+.palette-tab:hover {
+  color: var(--text-primary, #1f2937);
+  background: var(--bg-hover, #f9fafb);
+}
+
+.palette-tab.active {
+  color: var(--primary, #6366f1);
+  border-bottom-color: var(--primary, #6366f1);
+  background: var(--bg-secondary, #ffffff);
+}
+
+.basic-nodes h3 {
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #1f2937);
+}
+
 .node-types {
   display: flex;
   flex-direction: column;
@@ -636,4 +674,43 @@
 .manage-projects-btn:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px var(--shadow);
+}
+
+/* Settings actions styling */
+.settings-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.settings-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-alt);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.settings-btn:hover {
+  background: var(--button-hover-bg);
+  border-color: var(--border-hover);
+  color: var(--text-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px var(--shadow);
+}
+
+.settings-btn:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }

@@ -8,16 +8,18 @@ import {
   Upload,
   Trash2,
   Plus,
-  RefreshCw,
   Save,
   Zap,
   Clock,
   Undo,
   Redo,
   GripVertical,
+  Settings,
 } from 'lucide-react';
 import NodePropertiesEditor from './NodePropertiesEditor';
 import WorkflowPropertiesEditor from './WorkflowPropertiesEditor';
+import OperationsPalette from './OperationsPalette';
+import ApiSettings from './ApiSettings';
 import './Sidebar.css';
 
 const Sidebar = ({
@@ -41,12 +43,14 @@ const Sidebar = ({
   hasUnsavedChanges,
 }) => {
   const [activeTab, setActiveTab] = useState('palette');
+  const [activePaletteTab, setActivePaletteTab] = useState('basic');
   const [lastSaved, setLastSaved] = useState(null);
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const savedWidth = localStorage.getItem('sidebar-width');
     return savedWidth ? parseInt(savedWidth, 10) : 320;
   });
   const [isResizing, setIsResizing] = useState(false);
+  const [showApiSettings, setShowApiSettings] = useState(false);
 
   useEffect(() => {
     const timestamp = getSavedTimestamp();
@@ -163,17 +167,26 @@ const Sidebar = ({
     },
   ];
 
-  const handleDragStart = (event, nodeType) => {
-    event.dataTransfer.setData('application/reactflow', nodeType);
+  const handleDragStart = (event, nodeType, operationData = null) => {
+    if (operationData) {
+      // For dynamic operations, pass the operation data
+      event.dataTransfer.setData('application/reactflow', JSON.stringify({
+        type: 'operation',
+        operationData
+      }));
+    } else {
+      // For basic node types
+      event.dataTransfer.setData('application/reactflow', nodeType);
+    }
     event.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleAddNode = (nodeType) => {
+  const handleAddNode = (nodeType, operationData = null) => {
     const position = {
       x: Math.random() * 400 + 100,
       y: Math.random() * 300 + 100,
     };
-    onAddNode(nodeType, position);
+    onAddNode(nodeType, position, operationData);
   };
 
   return (
@@ -217,28 +230,54 @@ const Sidebar = ({
       <div className="sidebar-content">
         {activeTab === 'palette' && (
           <div className="node-palette">
-            <h3>Node Types</h3>
-            <div className="node-types">
-              {nodeTypes.map((nodeType) => {
-                const IconComponent = nodeType.icon;
-                return (
-                  <div
-                    key={nodeType.type}
-                    className="node-type-item"
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, nodeType.type)}
-                    onClick={() => handleAddNode(nodeType.type)}
-                  >
-                    <div className="node-type-header">
-                      <IconComponent size={16} />
-                      <span>{nodeType.label}</span>
-                      <Plus size={14} className="add-icon" />
-                    </div>
-                    <p className="node-type-description">{nodeType.description}</p>
-                  </div>
-                );
-              })}
+            <div className="palette-tabs">
+              <button
+                className={`palette-tab ${activePaletteTab === 'basic' ? 'active' : ''}`}
+                onClick={() => setActivePaletteTab('basic')}
+              >
+                Basic Nodes
+              </button>
+              <button
+                className={`palette-tab ${activePaletteTab === 'operations' ? 'active' : ''}`}
+                onClick={() => setActivePaletteTab('operations')}
+              >
+                Operations
+              </button>
             </div>
+
+            {activePaletteTab === 'basic' && (
+              <div className="basic-nodes">
+                <h3>Node Types</h3>
+                <div className="node-types">
+                  {nodeTypes.map((nodeType) => {
+                    const IconComponent = nodeType.icon;
+                    return (
+                      <div
+                        key={nodeType.type}
+                        className="node-type-item"
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, nodeType.type)}
+                        onClick={() => handleAddNode(nodeType.type)}
+                      >
+                        <div className="node-type-header">
+                          <IconComponent size={16} />
+                          <span>{nodeType.label}</span>
+                          <Plus size={14} className="add-icon" />
+                        </div>
+                        <p className="node-type-description">{nodeType.description}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {activePaletteTab === 'operations' && (
+              <OperationsPalette
+                onDragStart={handleDragStart}
+                onAddNode={(operationData) => handleAddNode('operation', operationData)}
+              />
+            )}
           </div>
         )}
 
@@ -365,8 +404,24 @@ const Sidebar = ({
               Export JSON
             </button>
           </div>
+
+          <div className="settings-actions">
+            <button
+              className="settings-btn"
+              onClick={() => setShowApiSettings(true)}
+              title="API Configuration"
+            >
+              <Settings size={16} />
+              Settings
+            </button>
+          </div>
         </div>
       </div>
+
+      <ApiSettings
+        isOpen={showApiSettings}
+        onClose={() => setShowApiSettings(false)}
+      />
     </div>
   );
 };

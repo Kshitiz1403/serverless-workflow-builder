@@ -154,6 +154,27 @@ The build artifacts will be stored in the `build/` directory.
 - Terminate workflow execution
 - Define completion status and outputs
 
+## ⚙️ Configuration
+
+### API Settings
+
+The application includes a configuration interface for connecting to external operations APIs:
+
+1. **Access Settings**: Click the **Settings** button in the sidebar footer
+2. **Configure API URL**: Set the base URL for your operations API (default: `http://localhost:3001`)
+3. **Test Connection**: Use the "Test Connection" button to verify API connectivity
+4. **Advanced Options**: Configure request timeout and retry attempts
+5. **Auto-save**: All settings are automatically saved to browser localStorage
+
+### Key Configuration Options:
+
+- **Base URL**: The operations API endpoint
+- **Request Timeout**: How long to wait for API responses (default: 30 seconds)
+- **Retry Attempts**: Number of retry attempts for failed requests (default: 3)
+- **Connection Status**: Real-time API connectivity indicator
+
+The settings modal provides a health check feature that tests your API connection and displays the number of available operations.
+
 ## 🏗️ Project Structure
 
 ```

@@ -345,13 +345,13 @@ function WorkflowEditor() {
   }, []);
 
   const addNode = useCallback(
-    (type, position) => {
+    (type, position, operationData = null) => {
       const nodeId = `${type}-${Date.now()}`;
       const newNode = {
         id: nodeId,
         type,
         position,
-        data: getDefaultNodeData(type),
+        data: getDefaultNodeData(type, operationData),
       };
       setNodes((nds) => {
         const newNodes = nds.concat(newNode);
@@ -579,8 +579,20 @@ function WorkflowEditor() {
       event.preventDefault();
       setIsDragOver(false);
 
-      const nodeType = event.dataTransfer.getData('application/reactflow');
-      if (!nodeType) return;
+      const dragData = event.dataTransfer.getData('application/reactflow');
+      if (!dragData) return;
+
+      // Parse drag data - could be just a string (node type) or JSON (operation data)
+      let nodeType, operationData;
+      try {
+        const parsedData = JSON.parse(dragData);
+        nodeType = parsedData.type;
+        operationData = parsedData.operationData;
+      } catch {
+        // It's a simple string node type
+        nodeType = dragData;
+        operationData = null;
+      }
 
       // Update bounds to get current position
       const bounds = reactFlowElement.getBoundingClientRect();
@@ -596,7 +608,7 @@ function WorkflowEditor() {
         id: `${nodeType}-${Date.now()}`,
         type: nodeType,
         position,
-        data: getDefaultNodeData(nodeType),
+        data: getDefaultNodeData(nodeType, operationData),
       };
 
       setNodes((nds) => {
@@ -797,13 +809,49 @@ function WorkflowEditor() {
   );
 }
 
-function getDefaultNodeData(type) {
+function getDefaultNodeData(type, operationData = null) {
   const baseData = {
     metadata: {},
   };
 
   switch (type) {
     case 'operation':
+      // If operation data is provided (from API), use it as template
+      if (operationData && operationData.template) {
+        const template = operationData.template;
+        return {
+          ...baseData,
+          label: operationData.name || 'Operation',
+          name: operationData.name?.toLowerCase().replace(/\s+/g, '_') || 'newOperation',
+          actions: template.actions || [
+            {
+              name: 'action1',
+              functionRef: {
+                refName: 'functionName',
+                arguments: {},
+              },
+            },
+          ],
+          onErrors: operationData.errorHandling || [],
+          operationId: operationData.id, // Keep reference to the original operation
+          operationMetadata: {
+            description: operationData.description,
+            category: operationData.category,
+            tags: operationData.tags,
+            version: operationData.version,
+          },
+          // Include default parameters from template if any
+          parameters: template.parameters ?
+            template.parameters.reduce((acc, param) => {
+              acc[param.name] = param.default !== undefined ? param.default : '';
+              return acc;
+            }, {}) : {},
+          // Include state data filter if provided
+          stateDataFilter: template.stateDataFilter || undefined,
+        };
+      }
+
+      // Default operation node data
       return {
         ...baseData,
         label: 'Operation',

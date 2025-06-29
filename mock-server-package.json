@@ -1,0 +1,20 @@
+{
+  "name": "serverless-workflow-mock-api",
+  "version": "1.0.0",
+  "description": "Mock API server for testing dynamic operations in Serverless Workflow Builder",
+  "main": "mock-server.js",
+  "scripts": {
+    "start": "node mock-server.js",
+    "dev": "nodemon mock-server.js"
+  },
+  "keywords": ["serverless", "workflow", "mock", "api", "operations"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

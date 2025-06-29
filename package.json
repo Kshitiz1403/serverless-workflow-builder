@@ -25,6 +25,8 @@
     "@reactflow/controls": "^11.2.11",
     "@reactflow/minimap": "^11.7.8",
     "@uiw/react-json-view": "^2.0.0-alpha.32",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
