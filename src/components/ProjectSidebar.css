@@ -4,7 +4,7 @@
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   transition: all 0.3s ease;
   z-index: 100;
   overflow: hidden;
