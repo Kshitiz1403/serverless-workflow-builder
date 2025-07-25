@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { X, Copy, Download } from 'lucide-react';
+import { X, Copy, Download, Check, AlertCircle } from 'lucide-react';
 import './JsonExporter.css';
 
 const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
@@ -10,6 +10,7 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
     name: 'My Workflow',
     description: 'Generated serverless workflow',
   });
+  const [copyStatus, setCopyStatus] = useState('idle'); // 'idle', 'copied', 'error'
   const modalRef = useRef(null);
 
   const serverlessWorkflow = useMemo(() => {
@@ -114,9 +115,14 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(jsonString);
-      alert('JSON copied to clipboard!');
+      setCopyStatus('copied');
+      // Reset status after 1 seconds
+      setTimeout(() => setCopyStatus('idle'), 1000);
     } catch (err) {
       console.error('Failed to copy: ', err);
+      setCopyStatus('error');
+      // Reset status after 1 seconds
+      setTimeout(() => setCopyStatus('idle'), 1000);
     }
   };
 
@@ -242,9 +248,27 @@ const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {
           <div className="output-header">
             <h3>Generated {exportFormat === 'serverless' ? 'Serverless Workflow' : 'React Flow Layout'}</h3>
             <div className="output-actions">
-              <button className="copy-btn" onClick={handleCopy}>
-                <Copy size={16} />
-                Copy
+              <button
+                className={`copy-btn ${copyStatus === 'copied' ? 'copied' : ''} ${copyStatus === 'error' ? 'error' : ''}`}
+                onClick={handleCopy}
+                disabled={copyStatus !== 'idle'}
+              >
+                {copyStatus === 'copied' ? (
+                  <>
+                    <Check size={16} />
+                    Copied!
+                  </>
+                ) : copyStatus === 'error' ? (
+                  <>
+                    <AlertCircle size={16} />
+                    Error
+                  </>
+                ) : (
+                  <>
+                    <Copy size={16} />
+                    Copy
+                  </>
+                )}
               </button>
               <button className="download-btn" onClick={handleDownload}>
                 <Download size={16} />
