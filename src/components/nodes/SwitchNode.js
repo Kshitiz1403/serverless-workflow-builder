@@ -48,7 +48,7 @@ const SwitchNode = ({ data, selected }) => {
             <div className="metadata-tags">
               {Object.entries(data.metadata).slice(0, 2).map(([key, value]) => (
                 <span key={key} className="metadata-tag">
-                  {key}: {value}
+                  {key}: {typeof value === 'object' ? JSON.stringify(value) : value}
                 </span>
               ))}
               {Object.keys(data.metadata).length > 2 && (
