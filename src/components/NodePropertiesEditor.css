@@ -471,6 +471,75 @@
   font-size: 12px;
 }
 
+/* Compact metadata styles */
+.metadata-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.metadata-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.metadata-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.metadata-key-input {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+.metadata-value-input {
+  flex: 2;
+  min-width: 180px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+.metadata-key-input:focus,
+.metadata-value-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.remove-btn-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border: 1px solid var(--danger-color);
+  background-color: transparent;
+  color: var(--danger-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.remove-btn-inline:hover {
+  background-color: var(--danger-color);
+  color: white;
+}
+
 /* Required field styles */
 .required-indicator {
   color: #ef4444;

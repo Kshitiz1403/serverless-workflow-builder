@@ -568,39 +568,35 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
           <small>Add custom key-value metadata for this state</small>
         </div>
 
-        {getMetadataItems().map((item, index) => (
-          <div key={item.id} className="metadata-item">
-            <div className="item-header">
-              <span>Metadata Field {index + 1}</span>
-              <button
-                className="remove-btn"
-                onClick={() => removeMetadataField(item.id)}
-              >
-                <Minus size={14} />
-              </button>
-            </div>
-            <div className="metadata-fields">
-              <div className="form-group">
-                <label>Key</label>
+        <div className="metadata-list">
+          {getMetadataItems().map((item, index) => (
+            <div key={item.id} className="metadata-row">
+              <div className="metadata-input-group">
                 <input
                   type="text"
                   value={item.key}
                   onChange={(e) => updateMetadataField(item.id, 'key', e.target.value)}
-                  placeholder="metadata key"
+                  placeholder="Key"
+                  className="metadata-key-input"
                 />
-              </div>
-              <div className="form-group">
-                <label>Value</label>
                 <input
                   type="text"
-                  value={item.value}
+                  value={typeof item.value === 'object' ? JSON.stringify(item.value) : item.value}
                   onChange={(e) => updateMetadataField(item.id, 'value', e.target.value)}
-                  placeholder="metadata value"
+                  placeholder="Value"
+                  className="metadata-value-input"
                 />
+                <button
+                  className="remove-btn-inline"
+                  onClick={() => removeMetadataField(item.id)}
+                  title="Remove metadata field"
+                >
+                  <Minus size={16} />
+                </button>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {node.type === 'operation' && (
@@ -1047,39 +1043,35 @@ const NodePropertiesEditor = ({ node, onUpdateNodeData, workflowMetadata, onUpda
                   </button>
                 </div>
 
-                {getConditionMetadataItems(condition).map((item, metaIndex) => (
-                  <div key={item.id} className="metadata-item small">
-                    <div className="item-header">
-                      <span>Meta {metaIndex + 1}</span>
-                      <button
-                        className="remove-btn"
-                        onClick={() => removeConditionMetadataField(index, item.id)}
-                      >
-                        <Minus size={12} />
-                      </button>
-                    </div>
-                    <div className="metadata-fields">
-                      <div className="form-group">
-                        <label>Key</label>
+                <div className="metadata-list">
+                  {getConditionMetadataItems(condition).map((item, metaIndex) => (
+                    <div key={item.id} className="metadata-row">
+                      <div className="metadata-input-group">
                         <input
                           type="text"
                           value={item.key}
                           onChange={(e) => updateConditionMetadataField(index, item.id, 'key', e.target.value)}
-                          placeholder="key"
+                          placeholder="Key"
+                          className="metadata-key-input"
                         />
-                      </div>
-                      <div className="form-group">
-                        <label>Value</label>
                         <input
                           type="text"
-                          value={item.value}
+                          value={typeof item.value === 'object' ? JSON.stringify(item.value) : item.value}
                           onChange={(e) => updateConditionMetadataField(index, item.id, 'value', e.target.value)}
-                          placeholder="value"
+                          placeholder="Value"
+                          className="metadata-value-input"
                         />
+                        <button
+                          className="remove-btn-inline"
+                          onClick={() => removeConditionMetadataField(index, item.id)}
+                          title="Remove metadata field"
+                        >
+                          <Minus size={14} />
+                        </button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           ))}
