@@ -285,6 +285,17 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
     return null;
   };
 
+  // Helper function to get start state name (handles both string and object formats)
+  const getStartStateName = (start) => {
+    if (typeof start === 'string') {
+      return start;
+    }
+    if (start && typeof start === 'object' && start.stateName) {
+      return start.stateName;
+    }
+    return null;
+  };
+
   // Create start node positioned above the workflow
   const startNode = {
     id: 'start-1',
@@ -325,28 +336,31 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
 
   // Connect start node to the first state
   if (workflowData.start) {
-    const startStateNode = nodes.find((n) => n.data.name === workflowData.start);
-    if (startStateNode) {
-      edges.push({
-        id: `start-to-${workflowData.start}`,
-        source: startNode.id,
-        target: startStateNode.id,
-        label: `→ ${workflowData.start}`,
-        type: 'default',
-        animated: true,
-        className: 'edge-simple',
-        style: { strokeWidth: 2 },
-        data: { type: 'simple' },
-        labelStyle: { fill: '#10b981', fontWeight: 500, fontSize: '12px' },
-        labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
-        labelBgPadding: [6, 3],
-        labelBgBorderRadius: 4,
-        markerEnd: {
-          type: 'arrowclosed',
-          width: 20,
-          height: 20,
-        },
-      });
+    const startStateName = getStartStateName(workflowData.start);
+    if (startStateName) {
+      const startStateNode = nodes.find((n) => n.data.name === startStateName);
+      if (startStateNode) {
+        edges.push({
+          id: `start-to-${startStateName}`,
+          source: startNode.id,
+          target: startStateNode.id,
+          label: `→ ${startStateName}`,
+          type: 'default',
+          animated: true,
+          className: 'edge-simple',
+          style: { strokeWidth: 2 },
+          data: { type: 'simple' },
+          labelStyle: { fill: '#10b981', fontWeight: 500, fontSize: '12px' },
+          labelBgStyle: { fill: 'white', fillOpacity: 0.9 },
+          labelBgPadding: [6, 3],
+          labelBgBorderRadius: 4,
+          markerEnd: {
+            type: 'arrowclosed',
+            width: 20,
+            height: 20,
+          },
+        });
+      }
     }
   }
 

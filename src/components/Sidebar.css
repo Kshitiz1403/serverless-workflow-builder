@@ -7,6 +7,7 @@
   height: 100%;
   transition: background-color 0.2s ease, border-color 0.2s ease;
   position: relative;
+  user-select: none;
 }
 
 .resize-handle {
