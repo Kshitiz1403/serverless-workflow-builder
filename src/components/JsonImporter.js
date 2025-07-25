@@ -669,39 +669,37 @@ function calculateNodePositions(states, workflowData = null) {
   return calculateLayeredLayout(states, workflowData);
 }
 
-// Advanced layered layout algorithm inspired by Mermaid's Dagre approach
+// Tree-based hierarchical layout for maximum readability
 function calculateLayeredLayout(states, workflowData = null) {
   if (!states || states.length === 0) return {};
 
   const config = {
-    nodeWidth: 200,
-    nodeHeight: 80,
-    horizontalSpacing: 400,  // Increased for more breathing room between nodes
-    verticalSpacing: 250,    // Increased for better vertical separation
-    layerSpacing: 500,       // Increased for cleaner horizontal flow
-    startX: 150,             // Slightly more margin from left edge
-    startY: 150,             // More top margin for better centering
-    branchSpacing: 300,      // More space for branch layouts
+    nodeWidth: 220,
+    nodeHeight: 100,
+    mainFlowSpacing: 800,     // Much larger spacing for main flow
+    branchSpacing: 600,      // Large spacing for branches  
+    verticalSpacing: 400,    // Generous vertical spacing
+    startX: 300,             // More left margin
+    startY: 300,             // More top margin
+    errorOffset: 1000,       // Separate area for error paths
+    switchBranchOffset: 500, // Offset for switch branches
   };
 
   try {
-    // Step 1: Build directed graph representation
+    // Step 1: Build directed graph with flow analysis
     const { graph, nodeTypes } = buildDirectedGraph(states, workflowData);
 
-    // Step 2: Create layered hierarchy using topological sorting
-    const layers = createHierarchicalLayers(graph, nodeTypes, workflowData);
+    // Step 2: Identify main flow path (most important path through workflow)
+    const mainFlow = identifyMainFlowPath(graph, workflowData);
 
-    // Step 3: Order nodes within layers to minimize edge crossings
-    const orderedLayers = minimizeEdgeCrossings(layers, graph);
-
-    // Step 4: Position nodes with adaptive spacing
-    const positions = positionNodesInLayers(orderedLayers, config, nodeTypes);
+    // Step 3: Create tree-based layout with clear separation
+    const positions = createTreeBasedLayout(graph, nodeTypes, mainFlow, config);
 
     return positions;
 
   } catch (error) {
-    console.warn('Advanced layout failed, using improved fallback:', error);
-    return createImprovedFallbackLayout(states, workflowData, config);
+    console.warn('Tree layout failed, using improved fallback:', error);
+    return createTreeFallbackLayout(states, workflowData, config);
   }
 }
 
@@ -824,185 +822,149 @@ function buildDirectedGraph(states, workflowData) {
   return { graph, nodeTypes, reverseGraph };
 }
 
-// Create hierarchical layers using modified topological sorting
-function createHierarchicalLayers(graph, nodeTypes, workflowData) {
-  const layers = [];
-  const visited = new Set();
-  const visiting = new Set();
-  const nodeToLayer = {};
-
-  // Find start state
+// Identify the main flow path through the workflow
+function identifyMainFlowPath(graph, workflowData) {
   const startStateName = findStartState(Object.keys(graph), workflowData);
+  if (!startStateName) return [];
 
-  // Calculate layer for each node using DFS with cycle detection
-  function assignLayer(nodeName, currentLayer = 0) {
-    if (visiting.has(nodeName)) {
-      // Cycle detected - assign to current layer + 1
-      return currentLayer + 1;
+  const mainPath = [];
+  const visited = new Set();
+  let current = startStateName;
+
+  // Follow the main path using priority rules
+  while (current && !visited.has(current)) {
+    visited.add(current);
+    mainPath.push(current);
+
+    const node = graph[current];
+    if (!node || node.isEnd) break;
+
+    // Priority: 1) Direct transition, 2) Default branch, 3) First branch
+    let nextNode = null;
+
+    // Look for direct main transition first
+    const mainTransition = node.outgoing.find(edge => edge.type === 'main');
+    if (mainTransition) {
+      nextNode = mainTransition.target;
+    }
+    // For switch nodes, prefer default or first branch
+    else if (node.branches && node.branches.length > 0) {
+      const defaultBranch = node.branches.find(b => b.type === 'default');
+      const preferredBranch = defaultBranch || node.branches[0];
+      nextNode = preferredBranch.target;
     }
 
-    if (visited.has(nodeName)) {
-      return nodeToLayer[nodeName];
-    }
+    current = nextNode;
+  }
 
-    visiting.add(nodeName);
+  return mainPath;
+}
 
-    let maxChildLayer = currentLayer;
+// Create tree-based layout with clear visual separation
+function createTreeBasedLayout(graph, nodeTypes, mainFlow, config) {
+  const positions = {};
+  const positioned = new Set();
+
+  // Step 1: Position main flow vertically down the center
+  mainFlow.forEach((nodeName, index) => {
+    positions[nodeName] = {
+      x: config.startX + config.mainFlowSpacing,
+      y: config.startY + index * config.mainFlowSpacing
+    };
+    positioned.add(nodeName);
+  });
+
+  // Step 2: Position switch branches to the right of their parent switch nodes
+  mainFlow.forEach((nodeName, index) => {
     const node = graph[nodeName];
+    if (nodeTypes[nodeName] === 'switch' && node?.branches) {
+      const switchPos = positions[nodeName];
 
-    if (node && node.outgoing.length > 0) {
-      node.outgoing.forEach(edge => {
-        const childLayer = assignLayer(edge.target, currentLayer + 1);
-        maxChildLayer = Math.max(maxChildLayer, childLayer);
+      node.branches.forEach((branch, branchIndex) => {
+        if (!positioned.has(branch.target)) {
+          positions[branch.target] = {
+            x: switchPos.x + config.switchBranchOffset + (branchIndex * 300),
+            y: switchPos.y + (branchIndex - Math.floor(node.branches.length / 2)) * config.verticalSpacing
+          };
+          positioned.add(branch.target);
+
+          // Position any nodes that follow this branch
+          positionBranchSubtree(branch.target, graph, positions, positioned, config, switchPos.x + config.switchBranchOffset + 300);
+        }
       });
     }
+  });
 
-    visiting.delete(nodeName);
-    visited.add(nodeName);
-
-    const finalLayer = node?.isEnd ? maxChildLayer + 1 : currentLayer;
-    nodeToLayer[nodeName] = finalLayer;
-
-    return finalLayer;
-  }
-
-  // Start from the start state
-  if (startStateName) {
-    assignLayer(startStateName, 0);
-  }
-
-  // Assign layers to any remaining unvisited nodes
+  // Step 3: Position error handling nodes to the left
   Object.keys(graph).forEach(nodeName => {
-    if (!visited.has(nodeName)) {
-      assignLayer(nodeName, 0);
-    }
-  });
-
-  // Group nodes by layer
-  const layerMap = {};
-  Object.entries(nodeToLayer).forEach(([nodeName, layerIndex]) => {
-    if (!layerMap[layerIndex]) {
-      layerMap[layerIndex] = [];
-    }
-    layerMap[layerIndex].push(nodeName);
-  });
-
-  // Convert to array of layers
-  const maxLayer = Math.max(...Object.keys(layerMap).map(Number));
-  for (let i = 0; i <= maxLayer; i++) {
-    layers[i] = layerMap[i] || [];
-  }
-
-  return layers.filter(layer => layer.length > 0);
-}
-
-// Minimize edge crossings using barycenter heuristic
-function minimizeEdgeCrossings(layers, graph) {
-  if (layers.length <= 1) return layers;
-
-  const orderedLayers = [...layers];
-  const maxIterations = 3;
-
-  for (let iteration = 0; iteration < maxIterations; iteration++) {
-    // Forward pass - order based on predecessors
-    for (let i = 1; i < orderedLayers.length; i++) {
-      orderedLayers[i] = orderByBarycenter(orderedLayers[i], orderedLayers[i - 1], graph, 'incoming');
-    }
-
-    // Backward pass - order based on successors
-    for (let i = orderedLayers.length - 2; i >= 0; i--) {
-      orderedLayers[i] = orderByBarycenter(orderedLayers[i], orderedLayers[i + 1], graph, 'outgoing');
-    }
-  }
-
-  return orderedLayers;
-}
-
-// Order nodes within a layer using barycenter heuristic
-function orderByBarycenter(currentLayer, referenceLayer, graph, direction) {
-  if (!currentLayer || currentLayer.length <= 1) return currentLayer;
-
-  const nodePositions = {};
-  referenceLayer.forEach((node, index) => {
-    nodePositions[node] = index;
-  });
-
-  const nodeWithBarycenter = currentLayer.map(nodeName => {
     const node = graph[nodeName];
-    let barycenter = 0;
-    let connectionCount = 0;
-
-    const connections = direction === 'incoming' ? node.incoming : node.outgoing;
-
-    connections.forEach(connection => {
-      const connectedNode = direction === 'incoming' ? connection.source : connection.target;
-      if (nodePositions.hasOwnProperty(connectedNode)) {
-        barycenter += nodePositions[connectedNode] * (connection.weight || 1);
-        connectionCount += (connection.weight || 1);
+    if (node?.errors && node.errors.length > 0) {
+      const sourcePos = positions[nodeName];
+      if (sourcePos) {
+        node.errors.forEach((errorTarget, errorIndex) => {
+          if (!positioned.has(errorTarget)) {
+            positions[errorTarget] = {
+              x: config.startX - config.errorOffset,
+              y: sourcePos.y + errorIndex * config.verticalSpacing
+            };
+            positioned.add(errorTarget);
+          }
+        });
       }
-    });
-
-    return {
-      name: nodeName,
-      barycenter: connectionCount > 0 ? barycenter / connectionCount : currentLayer.indexOf(nodeName),
-      originalIndex: currentLayer.indexOf(nodeName)
-    };
-  });
-
-  // Sort by barycenter, maintaining stability
-  nodeWithBarycenter.sort((a, b) => {
-    if (Math.abs(a.barycenter - b.barycenter) < 0.001) {
-      return a.originalIndex - b.originalIndex;
     }
-    return a.barycenter - b.barycenter;
   });
 
-  return nodeWithBarycenter.map(item => item.name);
-}
-
-// Position nodes in their layers with adaptive spacing
-function positionNodesInLayers(layers, config, nodeTypes) {
-  const positions = {};
-
-  layers.forEach((layer, layerIndex) => {
-    const layerX = config.startX + layerIndex * config.layerSpacing;
-
-    // Calculate optimal spacing for this layer
-    const nodeCount = layer.length;
-    const totalRequiredHeight = nodeCount * config.nodeHeight + (nodeCount - 1) * config.verticalSpacing;
-
-    // Center the layer vertically
-    const startY = config.startY + Math.max(0, (layers.length * config.nodeHeight - totalRequiredHeight) / 2);
-
-    layer.forEach((nodeName, nodeIndex) => {
-      const nodeType = nodeTypes[nodeName];
-
-      // Calculate Y position with even distribution
-      const y = startY + nodeIndex * (config.nodeHeight + config.verticalSpacing);
-
-      // Adjust X position based on node type
-      let x = layerX;
-      if (nodeType === 'start') {
-        x -= config.nodeWidth * 0.5; // Pull start nodes slightly left
-      } else if (nodeType === 'end') {
-        x += config.nodeWidth * 0.5; // Push end nodes slightly right
-      }
-
-      positions[nodeName] = { x, y };
-    });
+  // Step 4: Position any remaining unpositioned nodes
+  const unpositioned = Object.keys(graph).filter(name => !positioned.has(name));
+  unpositioned.forEach((nodeName, index) => {
+    const row = Math.floor(index / 3);
+    const col = index % 3;
+    positions[nodeName] = {
+      x: config.startX + config.mainFlowSpacing * 2 + col * 400,
+      y: config.startY + row * config.verticalSpacing
+    };
   });
 
   return positions;
 }
 
-// Improved fallback layout for error cases
-function createImprovedFallbackLayout(states, workflowData, config) {
+// Position nodes in a branch subtree
+function positionBranchSubtree(rootNode, graph, positions, positioned, config, baseX) {
+  const node = graph[rootNode];
+  if (!node) return;
+
+  let currentY = positions[rootNode]?.y || config.startY;
+  let depth = 0;
+
+  // Position direct children of this branch
+  node.outgoing.forEach((edge, index) => {
+    if (!positioned.has(edge.target)) {
+      positions[edge.target] = {
+        x: baseX + depth * 400,
+        y: currentY + index * config.verticalSpacing
+      };
+      positioned.add(edge.target);
+
+      // Recursively position children
+      positionBranchSubtree(edge.target, graph, positions, positioned, config, baseX + 400);
+    }
+  });
+}
+
+
+
+// Tree-based fallback layout for error cases
+function createTreeFallbackLayout(states, workflowData, config) {
   const positions = {};
   const startStateName = findStartState(states.map(s => s.name), workflowData);
 
-  // Group states by type for better organization
+  // Position start state
+  if (startStateName) {
+    positions[startStateName] = { x: config.startX, y: config.startY };
+  }
+
+  // Group remaining states by type
   const stateGroups = {
-    start: [],
     operation: [],
     switch: [],
     event: [],
@@ -1011,8 +973,9 @@ function createImprovedFallbackLayout(states, workflowData, config) {
   };
 
   states.forEach(state => {
-    const type = state.type === 'start' ? 'start' :
-      state.end ? 'end' : state.type;
+    if (state.name === startStateName) return; // Skip start state
+
+    const type = state.end ? 'end' : state.type;
     if (stateGroups[type]) {
       stateGroups[type].push(state.name);
     } else {
@@ -1020,32 +983,20 @@ function createImprovedFallbackLayout(states, workflowData, config) {
     }
   });
 
-  // Position start state first
-  if (startStateName) {
-    positions[startStateName] = { x: config.startX, y: config.startY + 200 };
-  }
+  // Position groups in vertical columns with massive spacing
+  let currentX = config.startX + config.mainFlowSpacing;
 
-  let currentX = config.startX + config.layerSpacing;
-  let currentY = config.startY;
-
-  // Position each group
-  ['operation', 'switch', 'event', 'sleep', 'end'].forEach(groupType => {
-    const group = stateGroups[groupType];
+  Object.entries(stateGroups).forEach(([groupType, group]) => {
     if (group.length === 0) return;
 
     group.forEach((stateName, index) => {
-      if (stateName === startStateName) return; // Skip if already positioned
-
       positions[stateName] = {
         x: currentX,
-        y: currentY + index * (config.nodeHeight + config.verticalSpacing)
+        y: config.startY + config.mainFlowSpacing + index * config.verticalSpacing
       };
     });
 
-    currentX += config.layerSpacing;
-    if (group.length > 3) {
-      currentY += config.verticalSpacing;
-    }
+    currentX += config.branchSpacing;
   });
 
   return positions;
