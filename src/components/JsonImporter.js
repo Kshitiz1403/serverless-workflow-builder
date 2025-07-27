@@ -3,6 +3,18 @@ import { X, Upload, FileText } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import './JsonImporter.css';
 
+// Helper function to get start state name (handles both string and object formats)  
+function getStartStateName(start) {
+  if (typeof start === 'string') {
+    return start;
+  }
+  if (start && typeof start === 'object' && start.stateName) {
+    return start.stateName;
+  }
+  return null;
+}
+
+
 const JsonImporter = ({ onImport, onClose }) => {
   const [jsonInput, setJsonInput] = useState('');
   const [error, setError] = useState('');
@@ -272,7 +284,7 @@ const JsonImporter = ({ onImport, onClose }) => {
 function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
   const nodes = [];
   const edges = [];
-  const nodePositions = calculateNodePositions(workflowData.states);
+  const nodePositions = calculateNodePositions(workflowData.states, workflowData);
 
   // Helper function to get next state from transition (handles both string and object formats)
   const getNextState = (transition) => {
@@ -285,22 +297,13 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
     return null;
   };
 
-  // Helper function to get start state name (handles both string and object formats)
-  const getStartStateName = (start) => {
-    if (typeof start === 'string') {
-      return start;
-    }
-    if (start && typeof start === 'object' && start.stateName) {
-      return start.stateName;
-    }
-    return null;
-  };
+  // Use the standalone getStartStateName helper function defined below
 
-  // Create start node positioned above the workflow
+  // Create start node positioned to the left of the workflow
   const startNode = {
     id: 'start-1',
     type: 'start',
-    position: { x: 50, y: 0 }, // Position above the main workflow
+    position: { x: 20, y: 400 }, // Left side at center height
     data: { label: 'Start' },
   };
   nodes.push(startNode);
@@ -536,8 +539,8 @@ function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {}) {
         id: endNodeId,
         type: 'end',
         position: {
-          x: sourcePosition.x + 450, // More spacing to the right
-          y: sourcePosition.y + 50,   // Slight offset down for visual clarity
+          x: sourcePosition.x + 400, // Consistent spacing to the right
+          y: sourcePosition.y + 40,   // Slight offset down for visual clarity
         },
         data: { label: 'End' },
       };
@@ -661,58 +664,368 @@ function convertStateToNodeData(state, retryPolicyNameToId = {}) {
   }
 }
 
-function calculateNodePositions(states) {
-  const positions = {};
+function calculateNodePositions(states, workflowData = null) {
+  // Use advanced layered layout algorithm inspired by Mermaid/Dagre
+  return calculateLayeredLayout(states, workflowData);
+}
 
-  // Improved spacing configuration
-  const nodeWidth = 280;
-  const nodeHeight = 180;
-  const horizontalSpacing = 400; // More horizontal space between nodes
-  const verticalSpacing = 250;   // More vertical space between rows
-  const startX = 50;
-  const startY = 50;
+// Tree-based hierarchical layout for maximum readability
+function calculateLayeredLayout(states, workflowData = null) {
+  if (!states || states.length === 0) return {};
 
-  // Calculate better grid layout
-  const totalNodes = states.length;
+  const config = {
+    nodeWidth: 220,
+    nodeHeight: 100,
+    mainFlowSpacing: 800,     // Much larger spacing for main flow
+    branchSpacing: 600,      // Large spacing for branches  
+    verticalSpacing: 400,    // Generous vertical spacing
+    startX: 300,             // More left margin
+    startY: 300,             // More top margin
+    errorOffset: 1000,       // Separate area for error paths
+    switchBranchOffset: 500, // Offset for switch branches
+  };
 
-  // For better visual distribution, use different strategies based on node count
-  if (totalNodes <= 4) {
-    // Small workflows: arrange horizontally
-    states.forEach((state, index) => {
-      positions[state.name] = {
-        x: startX + index * horizontalSpacing,
-        y: startY + 100,
-      };
-    });
-  } else if (totalNodes <= 9) {
-    // Medium workflows: use a balanced grid
-    const columns = Math.min(3, Math.ceil(Math.sqrt(totalNodes)));
-    states.forEach((state, index) => {
-      const row = Math.floor(index / columns);
-      const col = index % columns;
-      positions[state.name] = {
-        x: startX + col * horizontalSpacing,
-        y: startY + row * verticalSpacing,
-      };
-    });
-  } else {
-    // Large workflows: use a wider grid with more columns
-    const columns = Math.min(3, Math.ceil(Math.sqrt(totalNodes * 1.2)));
-    states.forEach((state, index) => {
-      const row = Math.floor(index / columns);
-      const col = index % columns;
+  try {
+    // Step 1: Build directed graph with flow analysis
+    const { graph, nodeTypes } = buildDirectedGraph(states, workflowData);
 
-      // Add some staggering for visual appeal
-      const staggerOffset = (row % 2) * (horizontalSpacing * 0.3);
+    // Step 2: Identify main flow path (most important path through workflow)
+    const mainFlow = identifyMainFlowPath(graph, workflowData);
 
-      positions[state.name] = {
-        x: startX + col * horizontalSpacing + staggerOffset,
-        y: startY + row * verticalSpacing,
-      };
-    });
+    // Step 3: Create tree-based layout with clear separation
+    const positions = createTreeBasedLayout(graph, nodeTypes, mainFlow, config);
+
+    return positions;
+
+  } catch (error) {
+    console.warn('Tree layout failed, using improved fallback:', error);
+    return createTreeFallbackLayout(states, workflowData, config);
   }
+}
+
+// Build comprehensive directed graph representation
+function buildDirectedGraph(states, workflowData) {
+  const graph = {};
+  const nodeTypes = {};
+  const reverseGraph = {}; // For finding incoming connections
+
+  // Initialize graph structure
+  states.forEach(state => {
+    graph[state.name] = {
+      type: state.type,
+      outgoing: [],
+      incoming: [],
+      branches: [],
+      errors: [],
+      isEnd: !!state.end
+    };
+    nodeTypes[state.name] = state.type;
+    reverseGraph[state.name] = [];
+  });
+
+  const getNextState = (transition) => {
+    if (typeof transition === 'string') return transition;
+    return transition?.nextState || null;
+  };
+
+  // Build connections
+  states.forEach(state => {
+    const node = graph[state.name];
+
+    // Main transitions
+    if (state.transition) {
+      const next = getNextState(state.transition);
+      if (next && graph[next]) {
+        node.outgoing.push({ target: next, type: 'main', weight: 1 });
+        graph[next].incoming.push({ source: state.name, type: 'main', weight: 1 });
+        reverseGraph[next].push(state.name);
+      }
+    }
+
+    // Switch conditions (branches)
+    if (state.type === 'switch') {
+      let branchWeight = 0.8; // Slightly less weight than main transitions
+
+      if (state.dataConditions) {
+        state.dataConditions.forEach((condition, index) => {
+          const next = getNextState(condition.transition);
+          if (next && graph[next]) {
+            const branch = {
+              target: next,
+              type: 'condition',
+              name: condition.name || `condition-${index}`,
+              weight: branchWeight
+            };
+            node.branches.push(branch);
+            node.outgoing.push(branch);
+            graph[next].incoming.push({ source: state.name, type: 'condition', weight: branchWeight });
+            reverseGraph[next].push(state.name);
+          }
+        });
+      }
+
+      if (state.eventConditions) {
+        state.eventConditions.forEach((condition, index) => {
+          const next = getNextState(condition.transition);
+          if (next && graph[next]) {
+            const branch = {
+              target: next,
+              type: 'event',
+              name: condition.name || `event-${index}`,
+              weight: branchWeight
+            };
+            node.branches.push(branch);
+            node.outgoing.push(branch);
+            graph[next].incoming.push({ source: state.name, type: 'event', weight: branchWeight });
+            reverseGraph[next].push(state.name);
+          }
+        });
+      }
+
+      if (state.defaultCondition?.transition) {
+        const next = getNextState(state.defaultCondition.transition);
+        if (next && graph[next]) {
+          const branch = {
+            target: next,
+            type: 'default',
+            name: 'default',
+            weight: 0.9
+          };
+          node.branches.push(branch);
+          node.outgoing.push(branch);
+          graph[next].incoming.push({ source: state.name, type: 'default', weight: 0.9 });
+          reverseGraph[next].push(state.name);
+        }
+      }
+    }
+
+    // Error transitions
+    if (state.onErrors) {
+      state.onErrors.forEach((errorHandler, index) => {
+        const next = getNextState(errorHandler.transition);
+        if (next && graph[next]) {
+          const error = {
+            target: next,
+            type: 'error',
+            name: errorHandler.errorRef || `error-${index}`,
+            weight: 0.3
+          };
+          node.errors.push(error);
+          node.outgoing.push(error);
+          graph[next].incoming.push({ source: state.name, type: 'error', weight: 0.3 });
+          reverseGraph[next].push(state.name);
+        }
+      });
+    }
+  });
+
+  return { graph, nodeTypes, reverseGraph };
+}
+
+// Identify the main flow path through the workflow
+function identifyMainFlowPath(graph, workflowData) {
+  const startStateName = findStartState(Object.keys(graph), workflowData);
+  if (!startStateName) return [];
+
+  const mainPath = [];
+  const visited = new Set();
+  let current = startStateName;
+
+  // Follow the main path using priority rules
+  while (current && !visited.has(current)) {
+    visited.add(current);
+    mainPath.push(current);
+
+    const node = graph[current];
+    if (!node || node.isEnd) break;
+
+    // Priority: 1) Direct transition, 2) Default branch, 3) First branch
+    let nextNode = null;
+
+    // Look for direct main transition first
+    const mainTransition = node.outgoing.find(edge => edge.type === 'main');
+    if (mainTransition) {
+      nextNode = mainTransition.target;
+    }
+    // For switch nodes, prefer default or first branch
+    else if (node.branches && node.branches.length > 0) {
+      const defaultBranch = node.branches.find(b => b.type === 'default');
+      const preferredBranch = defaultBranch || node.branches[0];
+      nextNode = preferredBranch.target;
+    }
+
+    current = nextNode;
+  }
+
+  return mainPath;
+}
+
+// Create tree-based layout with clear visual separation
+function createTreeBasedLayout(graph, nodeTypes, mainFlow, config) {
+  const positions = {};
+  const positioned = new Set();
+
+  // Step 1: Position main flow vertically down the center
+  mainFlow.forEach((nodeName, index) => {
+    positions[nodeName] = {
+      x: config.startX + config.mainFlowSpacing,
+      y: config.startY + index * config.mainFlowSpacing
+    };
+    positioned.add(nodeName);
+  });
+
+  // Step 2: Position switch branches to the right of their parent switch nodes
+  mainFlow.forEach((nodeName, index) => {
+    const node = graph[nodeName];
+    if (nodeTypes[nodeName] === 'switch' && node?.branches) {
+      const switchPos = positions[nodeName];
+
+      node.branches.forEach((branch, branchIndex) => {
+        if (!positioned.has(branch.target)) {
+          positions[branch.target] = {
+            x: switchPos.x + config.switchBranchOffset + (branchIndex * 300),
+            y: switchPos.y + (branchIndex - Math.floor(node.branches.length / 2)) * config.verticalSpacing
+          };
+          positioned.add(branch.target);
+
+          // Position any nodes that follow this branch
+          positionBranchSubtree(branch.target, graph, positions, positioned, config, switchPos.x + config.switchBranchOffset + 300);
+        }
+      });
+    }
+  });
+
+  // Step 3: Position error handling nodes to the left
+  Object.keys(graph).forEach(nodeName => {
+    const node = graph[nodeName];
+    if (node?.errors && node.errors.length > 0) {
+      const sourcePos = positions[nodeName];
+      if (sourcePos) {
+        node.errors.forEach((errorTarget, errorIndex) => {
+          if (!positioned.has(errorTarget)) {
+            positions[errorTarget] = {
+              x: config.startX - config.errorOffset,
+              y: sourcePos.y + errorIndex * config.verticalSpacing
+            };
+            positioned.add(errorTarget);
+          }
+        });
+      }
+    }
+  });
+
+  // Step 4: Position any remaining unpositioned nodes
+  const unpositioned = Object.keys(graph).filter(name => !positioned.has(name));
+  unpositioned.forEach((nodeName, index) => {
+    const row = Math.floor(index / 3);
+    const col = index % 3;
+    positions[nodeName] = {
+      x: config.startX + config.mainFlowSpacing * 2 + col * 400,
+      y: config.startY + row * config.verticalSpacing
+    };
+  });
 
   return positions;
 }
+
+// Position nodes in a branch subtree
+function positionBranchSubtree(rootNode, graph, positions, positioned, config, baseX) {
+  const node = graph[rootNode];
+  if (!node) return;
+
+  let currentY = positions[rootNode]?.y || config.startY;
+  let depth = 0;
+
+  // Position direct children of this branch
+  node.outgoing.forEach((edge, index) => {
+    if (!positioned.has(edge.target)) {
+      positions[edge.target] = {
+        x: baseX + depth * 400,
+        y: currentY + index * config.verticalSpacing
+      };
+      positioned.add(edge.target);
+
+      // Recursively position children
+      positionBranchSubtree(edge.target, graph, positions, positioned, config, baseX + 400);
+    }
+  });
+}
+
+
+
+// Tree-based fallback layout for error cases
+function createTreeFallbackLayout(states, workflowData, config) {
+  const positions = {};
+  const startStateName = findStartState(states.map(s => s.name), workflowData);
+
+  // Position start state
+  if (startStateName) {
+    positions[startStateName] = { x: config.startX, y: config.startY };
+  }
+
+  // Group remaining states by type
+  const stateGroups = {
+    operation: [],
+    switch: [],
+    event: [],
+    sleep: [],
+    end: []
+  };
+
+  states.forEach(state => {
+    if (state.name === startStateName) return; // Skip start state
+
+    const type = state.end ? 'end' : state.type;
+    if (stateGroups[type]) {
+      stateGroups[type].push(state.name);
+    } else {
+      stateGroups.operation.push(state.name);
+    }
+  });
+
+  // Position groups in vertical columns with massive spacing
+  let currentX = config.startX + config.mainFlowSpacing;
+
+  Object.entries(stateGroups).forEach(([groupType, group]) => {
+    if (group.length === 0) return;
+
+    group.forEach((stateName, index) => {
+      positions[stateName] = {
+        x: currentX,
+        y: config.startY + config.mainFlowSpacing + index * config.verticalSpacing
+      };
+    });
+
+    currentX += config.branchSpacing;
+  });
+
+  return positions;
+}
+
+// Find the start state
+function findStartState(stateNames, workflowData) {
+  // According to serverless workflow spec, start property is required
+  if (workflowData?.start) {
+    // Use the same helper function as used in edge creation for consistency  
+    const startName = getStartStateName(workflowData.start);
+
+    if (startName) {
+      // Validate that the start state actually exists in the states array
+      const startStateExists = stateNames.includes(startName);
+      if (startStateExists) {
+        return startName;
+      } else {
+        console.warn(`Start state "${startName}" not found in workflow states. Using first state as fallback.`);
+      }
+    }
+  } else {
+    console.warn('No start state defined in workflow. Using first state as fallback.');
+  }
+
+  // Fallback only if start state is not defined or invalid
+  return stateNames[0];
+}
+
+
 
 export default JsonImporter;
