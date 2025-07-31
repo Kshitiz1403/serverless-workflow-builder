@@ -245,6 +245,11 @@
 }
 
 /* Edge Styles */
+.react-flow__edge.edge-animated .react-flow__edge-path {
+  stroke-dasharray: 5, 5;
+  animation: flow-forward 1s linear infinite;
+}
+
 .react-flow__edge.edge-error .react-flow__edge-path {
   stroke: rgba(239, 68, 68, 0.4);
   stroke-width: 2;
@@ -282,8 +287,20 @@
   stroke-width: 3;
 }
 
-@keyframes dash {
+@keyframes flow-forward {
+  from {
+    stroke-dashoffset: 0;
+  }
   to {
     stroke-dashoffset: -10;
+  }
+}
+
+@keyframes dash {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -20;
   }
 }

@@ -14,7 +14,7 @@ import {
  Search,
  MoreVertical
 } from 'lucide-react';
-import { ProjectStorage } from './ProjectManager';
+import { ProjectStorage } from '../ProjectManager';
 import './ProjectSidebar.css';
 
 const ProjectSidebar = ({

@@ -12,19 +12,19 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-import Sidebar from './Sidebar';
-import OperationNode from './nodes/OperationNode';
-import SwitchNode from './nodes/SwitchNode';
-import StartNode from './nodes/StartNode';
-import EndNode from './nodes/EndNode';
-import EventNode from './nodes/EventNode';
-import SleepNode from './nodes/SleepNode';
-import JsonExporter from './JsonExporter';
-import JsonImporter from './JsonImporter';
-import ProjectManager, { ProjectStorage } from './ProjectManager';
-import ProjectSidebar from './ProjectSidebar';
-import { useHistory } from '../hooks/useHistory';
-import { useProjectMigration } from '../hooks/useProjectMigration';
+import Sidebar from '../../ui/Sidebar';
+import OperationNode from '../nodes/OperationNode';
+import SwitchNode from '../nodes/SwitchNode';
+import StartNode from '../nodes/StartNode';
+import EndNode from '../nodes/EndNode';
+import EventNode from '../nodes/EventNode';
+import SleepNode from '../nodes/SleepNode';
+import JsonExporter from '../../import-export/JsonExporter';
+import JsonImporter from '../../import-export/JsonImporter';
+import ProjectManager, { ProjectStorage } from '../../project/ProjectManager';
+import ProjectSidebar from '../../project/ProjectSidebar';
+import { useHistory } from '../../../hooks/useHistory';
+import { useProjectMigration } from '../../../hooks/useProjectMigration';
 import './WorkflowEditor.css';
 
 const nodeTypes = {

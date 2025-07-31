@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ProjectStorage } from '../components/ProjectManager';
+import { ProjectStorage } from '../components/project/ProjectManager';
 
 const OLD_STORAGE_KEY = 'serverless-workflow-editor-state';
 
