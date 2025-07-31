@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, RotateCcw } from 'lucide-react';
-import JsonEditor from './JsonEditor';
+import JsonEditor from '../JsonEditor';
 import './JsonEditorModal.css';
 
 const JsonEditorModal = ({

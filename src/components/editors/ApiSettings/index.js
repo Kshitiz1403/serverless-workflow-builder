@@ -12,7 +12,7 @@ import {
  Clock,
  Repeat,
 } from 'lucide-react';
-import { useApiConfig } from '../hooks/useApiConfig';
+import { useApiConfig } from '../../../hooks/useApiConfig';
 import './ApiSettings.css';
 
 const ApiSettings = ({ isOpen, onClose }) => {

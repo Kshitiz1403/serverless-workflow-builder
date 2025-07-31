@@ -16,10 +16,10 @@ import {
   GripVertical,
   Settings,
 } from 'lucide-react';
-import NodePropertiesEditor from './NodePropertiesEditor';
-import WorkflowPropertiesEditor from './WorkflowPropertiesEditor';
-import OperationsPalette from './OperationsPalette';
-import ApiSettings from './ApiSettings';
+import NodePropertiesEditor from '../../editors/NodePropertiesEditor';
+import WorkflowPropertiesEditor from '../../editors/WorkflowPropertiesEditor';
+import OperationsPalette from '../../import-export/OperationsPalette';
+import ApiSettings from '../../editors/ApiSettings';
 import './Sidebar.css';
 
 const Sidebar = ({

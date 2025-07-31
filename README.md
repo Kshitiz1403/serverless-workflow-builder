@@ -226,6 +226,7 @@ We welcome contributions! Here's how you can help:
 - [ ] **Template Library**: Expanded collection of workflow templates
 - [ ] **Advanced Debugging**: Workflow execution simulation
 - [x] **Export Formats**: Support for additional workflow standards
+- [ ] **Duplicate a project**
 
 ## 🐛 Known Issues
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Moon, Sun, Github } from 'lucide-react';
-import WorkflowEditor from './components/WorkflowEditor';
+import WorkflowEditor from './components/core/WorkflowEditor';
 import './App.css';
 
 function App() {

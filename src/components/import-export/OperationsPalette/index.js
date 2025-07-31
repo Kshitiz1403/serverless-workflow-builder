@@ -15,7 +15,7 @@ import {
  ChevronDown,
  ChevronRight,
 } from 'lucide-react';
-import { useApiConfig } from '../hooks/useApiConfig';
+import { useApiConfig } from '../../../hooks/useApiConfig';
 import './OperationsPalette.css';
 
 // Icon mapping for operation categories/types
