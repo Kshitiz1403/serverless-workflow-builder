@@ -19,6 +19,7 @@ export { default as SleepNode } from './components/nodes/SleepNode';
 // Hooks
 export { useHistory } from './hooks/useHistory';
 export { useWorkflowState } from './hooks/useWorkflowState';
+export { useEdgeConnection } from './hooks/useEdgeConnection';
 
 // Utilities
 export {
@@ -29,10 +30,12 @@ export {
   hasEndNodeTarget,
   createServerlessWorkflow,
   createReactFlowData,
+  convertWorkflowToReactFlow,
 } from './utils/workflowConverter';
 
 // Styles
 import './styles/NodeStyles.css';
+import './styles/EdgeStyles.css';
 
 // Node types configuration for React Flow
 export const nodeTypes = {
@@ -50,7 +53,10 @@ export const defaultInitialNodes = [
     id: 'start-1',
     type: 'start',
     position: { x: 100, y: 100 },
-    data: { label: 'Start' },
+    data: {
+      name: 'Start',
+      metadata: {}
+    },
   },
 ];
 
