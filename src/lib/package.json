@@ -1,6 +1,6 @@
 {
   "name": "serverless-workflow-builder-lib",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A reusable library for building serverless workflow editors with React Flow",
   "main": "index.js",
   "keywords": [
@@ -33,12 +33,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/serverless-workflow-builder-lib.git"
+    "url": "https://github.com/Kshitiz1403/serverless-workflow-builder.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/serverless-workflow-builder-lib/issues"
+    "url": "https://github.com/Kshitiz1403/serverless-workflow-builder/issues"
   },
-  "homepage": "https://github.com/your-username/serverless-workflow-builder-lib#readme",
+  "homepage": "https://github.com/Kshitiz1403/serverless-workflow-builder#readme",
   "scripts": {
     "build": "rm -rf dist && mkdir -p dist && cp -r src/* dist/ && cp README.md dist/ && cp USAGE.md dist/ && node scripts/prepare-package.js",
     "prepublishOnly": "npm run build",
