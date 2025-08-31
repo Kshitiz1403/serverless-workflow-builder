@@ -15,11 +15,11 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
     // Determine edge type based on source and target node types
     const sourceNode = nodes.find(node => node.id === connection.source);
     const targetNode = nodes.find(node => node.id === connection.target);
-    
+
     let edgeType = 'simple';
     let edgeClass = 'edge-simple edge-animated';
     let strokeColor = '#10b981'; // success color
-    
+
     // Determine edge styling based on node types and source handle
     if (sourceNode?.type === 'switch') {
       // Check if this is a default edge from a switch node
@@ -41,30 +41,30 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
       edgeClass = 'edge-simple edge-animated';
       strokeColor = '#10b981'; // success color
     }
-    
+
     // Create styled edge with proper configuration
     const newEdge = {
       ...connection,
       id: `${connection.source}-to-${connection.target}`,
       type: 'default',
       className: edgeClass,
-      style: { 
+      style: {
         strokeWidth: edgeType === 'end' ? 3 : 2,
         stroke: strokeColor
       },
-      data: { 
+      data: {
         type: edgeType,
         sourceNodeType: sourceNode?.type,
         targetNodeType: targetNode?.type
       },
-      labelStyle: { 
-        fill: strokeColor, 
-        fontWeight: 500, 
-        fontSize: '12px' 
+      labelStyle: {
+        fill: strokeColor,
+        fontWeight: 500,
+        fontSize: '12px'
       },
-      labelBgStyle: { 
-        fill: 'white', 
-        fillOpacity: 0.9 
+      labelBgStyle: {
+        fill: 'white',
+        fillOpacity: 0.9
       },
       labelBgPadding: [6, 3],
       labelBgBorderRadius: 4,
@@ -75,10 +75,20 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
         color: strokeColor
       },
     };
-    
+
     // Add label based on edge type
     if (edgeType === 'condition') {
-      newEdge.label = 'condition';
+      // Extract condition information from source node
+      if (connection.sourceHandle && connection.sourceHandle.startsWith('condition-')) {
+        const conditionIndex = parseInt(connection.sourceHandle.replace('condition-', ''));
+        const conditions = sourceNode?.data?.dataConditions || sourceNode?.data?.eventConditions || [];
+        const condition = conditions[conditionIndex];
+
+        // Use condition name, eventRef, condition expression, or fallback to generic label
+        newEdge.label = condition?.name || condition?.eventRef || condition?.condition || `condition${conditionIndex + 1}`;
+      } else {
+        newEdge.label = 'condition';
+      }
     } else if (edgeType === 'default') {
       newEdge.label = 'default';
     } else if (edgeType === 'end') {
@@ -86,16 +96,16 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
     } else {
       newEdge.label = `→ ${targetNode?.data?.name || targetNode?.data?.label || 'next'}`;
     }
-    
+
     const updatedEdges = addEdge(newEdge, edges);
     updateEdges(updatedEdges);
-    
+
     // Update history if setHistoryState is provided
     if (setHistoryState) {
       setHistoryState({ nodes, edges: updatedEdges, workflowMetadata });
     }
   }, [edges, updateEdges, setHistoryState, nodes, workflowMetadata]);
-  
+
   return onConnect;
 };
 

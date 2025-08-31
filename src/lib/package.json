@@ -1,6 +1,6 @@
 {
   "name": "serverless-workflow-builder-lib",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A reusable library for building serverless workflow editors with React Flow",
   "main": "index.js",
   "keywords": [
