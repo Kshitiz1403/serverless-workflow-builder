@@ -15,6 +15,11 @@ import './NodePropertiesPanel.css';
  * @param {Function} props.onReset - Callback to reset changes
  * @param {string} props.className - Additional CSS classes
  * @param {Object} props.style - Inline styles
+ * @param {boolean} props.autoSave - Whether to auto-save changes
+ * @param {boolean} props.enableFunctionDropdown - Whether to show function names as dropdown instead of text input
+ * @param {Array<string>} props.availableFunctions - List of available function names for dropdown
+ * @param {boolean} props.enableRetryDropdown - Whether to show retry strategies as dropdown instead of text input
+ * @param {Array<string>} props.availableRetryStrategies - List of available retry strategy names for dropdown
  */
 export function NodePropertiesPanel({
   isOpen = false,
@@ -28,6 +33,10 @@ export function NodePropertiesPanel({
   className = '',
   style = {},
   autoSave = false,
+  enableFunctionDropdown = false,
+  availableFunctions = [],
+  enableRetryDropdown = false,
+  availableRetryStrategies = [],
 }) {
   if (!isOpen || !node) {
     return null;
@@ -328,27 +337,64 @@ export function NodePropertiesPanel({
                   }}>
                     Function Name
                   </label>
-                  <input
-                    type="text"
-                    value={action.functionRef?.refName || ''}
-                    onChange={(e) => {
-                      const newActions = [...(formData.actions || [])];
-                      if (!newActions[index].functionRef) {
-                        newActions[index].functionRef = {};
-                      }
-                      newActions[index].functionRef.refName = e.target.value;
-                      handleFieldChange('actions', newActions);
-                    }}
-                    placeholder="Enter function name"
-                    style={{
-                      width: '100%',
-                      padding: '6px 8px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      outline: 'none'
-                    }}
-                  />
+                  {enableFunctionDropdown && availableFunctions.length > 0 ? (
+                    <select
+                      value={action.functionRef?.refName || ''}
+                      onChange={(e) => {
+                        const newActions = [...(formData.actions || [])];
+                        if (!newActions[index].functionRef) {
+                          newActions[index].functionRef = {};
+                        }
+                        newActions[index].functionRef.refName = e.target.value;
+                        handleFieldChange('actions', newActions);
+                      }}
+                      disabled={!isNodeEditable}
+                      style={{
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        outline: 'none',
+                        backgroundColor: isNodeEditable ? 'white' : '#f9fafb',
+                        color: isNodeEditable ? '#374151' : '#9ca3af',
+                        cursor: isNodeEditable ? 'pointer' : 'not-allowed'
+                      }}
+                    >
+                      <option value="">Select a function</option>
+                      {availableFunctions.map((funcName) => (
+                        <option key={funcName} value={funcName}>
+                          {funcName}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={action.functionRef?.refName || ''}
+                      onChange={(e) => {
+                        const newActions = [...(formData.actions || [])];
+                        if (!newActions[index].functionRef) {
+                          newActions[index].functionRef = {};
+                        }
+                        newActions[index].functionRef.refName = e.target.value;
+                        handleFieldChange('actions', newActions);
+                      }}
+                      disabled={!isNodeEditable}
+                      placeholder={enableFunctionDropdown ? "No functions available" : "Enter function name"}
+                      style={{
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        outline: 'none',
+                        backgroundColor: isNodeEditable ? 'white' : '#f9fafb',
+                        color: isNodeEditable ? '#374151' : '#9ca3af',
+                        cursor: isNodeEditable ? 'text' : 'not-allowed'
+                      }}
+                    />
+                  )}
                 </div>
 
                 {/* Arguments */}
@@ -417,24 +463,56 @@ export function NodePropertiesPanel({
                   }}>
                     Retry Reference
                   </label>
-                  <input
-                    type="text"
-                    value={action.retryRef || ''}
-                    onChange={(e) => {
-                      const newActions = [...(formData.actions || [])];
-                      newActions[index].retryRef = e.target.value;
-                      handleFieldChange('actions', newActions);
-                    }}
-                    placeholder="Enter retry strategy name"
-                    style={{
-                      width: '100%',
-                      padding: '6px 8px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      outline: 'none'
-                    }}
-                  />
+                  {enableRetryDropdown && availableRetryStrategies && availableRetryStrategies.length > 0 ? (
+                    <select
+                      value={action.retryRef || ''}
+                      onChange={(e) => {
+                        const newActions = [...(formData.actions || [])];
+                        newActions[index].retryRef = e.target.value;
+                        handleFieldChange('actions', newActions);
+                      }}
+                      disabled={!isNodeEditable}
+                      style={{
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        outline: 'none',
+                        backgroundColor: !isNodeEditable ? '#f9fafb' : 'white',
+                        color: !isNodeEditable ? '#6b7280' : 'inherit'
+                      }}
+                    >
+                      <option value="">Select retry strategy</option>
+                      {availableRetryStrategies.map((strategy) => (
+                        <option key={strategy} value={strategy}>
+                          {strategy}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={action.retryRef || ''}
+                      onChange={(e) => {
+                        const newActions = [...(formData.actions || [])];
+                        newActions[index].retryRef = e.target.value;
+                        handleFieldChange('actions', newActions);
+                      }}
+                      placeholder="Enter retry strategy name"
+                      disabled={!isNodeEditable}
+                      style={{
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        outline: 'none',
+                        backgroundColor: !isNodeEditable ? '#f9fafb' : 'white',
+                        color: !isNodeEditable ? '#6b7280' : 'inherit'
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             ))}
