@@ -12,6 +12,7 @@ A reusable React library for building serverless workflow editors using React Fl
 - **🎨 Smart Edge Styling**: Automatic edge styling with animations, colors, and labels based on node types
 - **⏮️ Undo/Redo Support**: Built-in history management with undo/redo functionality
 - **📁 Import/Export**: Load and save workflows in standard Serverless Workflow JSON format
+- **🗺️ Layout Management**: Export, import, and preserve React Flow node positions and workflow layouts
 - **🎨 Pre-configured Styling**: Beautiful CSS styles for nodes and edges with theme support
 - **🔧 Extensible**: Easy to customize and extend with your own node types and styling
 - **📱 Responsive**: Works on desktop and mobile devices
@@ -868,7 +869,13 @@ const {
   fitView,                 // Fit view to all nodes
   centerOnNode,            // Center view on specific node
   getWorkflowStats,        // Get workflow statistics
-  reactFlowInstance        // React Flow instance
+  reactFlowInstance,       // React Flow instance
+  // Layout management functions
+  exportLayout,            // Export current layout as object
+  exportLayoutAsString,    // Export current layout as JSON string
+  downloadLayout,          // Download layout as JSON file
+  importLayout,            // Import layout from JSON string/object
+  copyLayoutToClipboard    // Copy layout JSON to clipboard
 } = useWorkflowState(initialNodes, initialEdges, initialMetadata);
 ```
 
@@ -901,6 +908,67 @@ useEffect(() => {
 const stats = getWorkflowStats();
 console.log(`Total nodes: ${stats.totalNodes}`);
 ```
+
+#### Layout Management
+
+The `useWorkflowState` hook includes powerful layout management functions for preserving and restoring React Flow node positions and workflow structure:
+
+```jsx
+const {
+  exportLayout,
+  exportLayoutAsString,
+  downloadLayout,
+  importLayout,
+  copyLayoutToClipboard
+} = useWorkflowState(initialNodes, initialEdges, initialMetadata);
+
+// Export current layout as object
+const layoutData = exportLayout();
+console.log('Current layout:', layoutData);
+
+// Export as JSON string
+const layoutString = exportLayoutAsString();
+console.log('Layout JSON:', layoutString);
+
+// Download layout as file
+downloadLayout(); // Downloads 'workflow-layout.json'
+
+// Copy to clipboard
+try {
+  await copyLayoutToClipboard();
+  console.log('Layout copied to clipboard!');
+} catch (error) {
+  console.error('Failed to copy:', error);
+}
+
+// Import layout from JSON
+try {
+  const result = importLayout(layoutString);
+  // Update workflow state with imported data
+  updateNodes(result.nodes);
+  updateEdges(result.edges);
+  updateWorkflowMetadata(result.metadata);
+} catch (error) {
+  console.error('Import failed:', error.message);
+}
+```
+
+**Layout Data Structure:**
+```jsx
+{
+  nodes: [...],           // React Flow nodes with positions
+  edges: [...],           // React Flow edges
+  metadata: {...},        // Workflow metadata
+  exportedAt: "2024-01-01T12:00:00.000Z",
+  version: "1.0"
+}
+```
+
+**Use Cases:**
+- **Workflow Templates**: Save and share workflow layouts
+- **Backup & Restore**: Preserve exact node positions
+- **Version Control**: Track layout changes over time
+- **Collaboration**: Share workflows with preserved positioning
 
 ### useWorkflowActions
 
@@ -1200,7 +1268,7 @@ const [edges, setEdges] = useState(defaultInitialEdges);
 ### Hooks
 
 - `useHistory` - Undo/redo functionality
-- `useWorkflowState` - Main workflow state management
+- `useWorkflowState` - Main workflow state management with layout import/export
 - `useEdgeConnection` - Edge connection handling
 - `useWorkflowActions` - Programmatic node manipulation
 - `useNodePropertiesPanel` - Properties panel state management
