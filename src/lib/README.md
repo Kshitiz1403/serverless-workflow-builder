@@ -16,6 +16,10 @@ A reusable React library for building serverless workflow editors using React Fl
 - **🔧 Extensible**: Easy to customize and extend with your own node types and styling
 - **📱 Responsive**: Works on desktop and mobile devices
 - **⚡ Performance Optimized**: Efficient state management and rendering
+- **🎛️ Node Properties Panel**: Built-in properties panel for editing node configurations with auto-save
+- **🔗 Smart Edge Label Sync**: Automatic synchronization of edge labels with node names and conditions
+- **⚙️ Advanced Switch States**: Support for both data and event-based conditions with timeout handling
+- **📝 Rich Node Editing**: Comprehensive forms for editing all node types with validation and real-time updates
 
 ## Installation
 
@@ -25,147 +29,411 @@ npm install ./src/lib
 
 ## Quick Start
 
+The Serverless Workflow Builder Library is designed to work with existing Serverless Workflow specifications. Here are two ways to get started:
+
+### Option 1: Start from Scratch
+
+If you want to create a new workflow from scratch:
+
 ```jsx
-import React from 'react';
-import ReactFlow, {
-  Background,
-  Controls,
-  applyNodeChanges,
-  applyEdgeChanges,
-  ReactFlowProvider,
-} from 'reactflow';
+import React, { useState } from 'react';
+import ReactFlow, { Background, Controls } from 'reactflow';
 import {
   nodeTypes,
   defaultInitialNodes,
   defaultInitialEdges,
-  useHistory,
   useWorkflowState,
   useEdgeConnection,
-  useWorkflowActions,
-  createServerlessWorkflow,
-  convertWorkflowToReactFlow,
+  useHistory,
+  useEdgeLabelSync,
+  useNodePropertiesPanel,
+  NodePropertiesPanel
 } from 'serverless-workflow-builder-lib';
 import 'reactflow/dist/style.css';
+import 'serverless-workflow-builder-lib/dist/style.css';
 
-function WorkflowEditor() {
-  const [workflowMetadata, setWorkflowMetadata] = React.useState({
-    name: 'My Workflow',
-    description: 'A serverless workflow',
-    version: '1.0',
-  });
-
+function App() {
   const { nodes, edges, updateNodes, updateEdges } = useWorkflowState(
     defaultInitialNodes,
-    defaultInitialEdges,
-    workflowMetadata
+    defaultInitialEdges
   );
-
-  const { state: historyState, setState: setHistoryState } = useHistory({
-    nodes: defaultInitialNodes,
-    edges: defaultInitialEdges,
-    workflowMetadata
+  
+  const { onConnect } = useEdgeConnection(edges, updateEdges);
+  const { undo, redo, canUndo, canRedo } = useHistory();
+  
+  // Automatically sync edge labels with node names
+  useEdgeLabelSync(nodes, edges, updateEdges);
+  
+  // Properties panel for editing nodes
+  const nodePropertiesPanel = useNodePropertiesPanel({
+    onNodeUpdate: (nodeId, updatedData) => {
+      const updatedNodes = nodes.map(node =>
+        node.id === nodeId ? { ...node, data: { ...node.data, ...updatedData } } : node
+      );
+      updateNodes(updatedNodes);
+    },
+    autoSave: true
   });
 
-  const onNodesChange = (changes) => {
-    const updatedNodes = applyNodeChanges(changes, nodes);
-    updateNodes(updatedNodes);
-    setHistoryState({ nodes: updatedNodes, edges, workflowMetadata });
-  };
-
-  const onEdgesChange = (changes) => {
-    const updatedEdges = applyEdgeChanges(changes, edges);
-    updateEdges(updatedEdges);
-    setHistoryState({ nodes, edges: updatedEdges, workflowMetadata });
-  };
-
-  const onConnect = useEdgeConnection(
-    edges,
-    updateEdges,
-    setHistoryState,
-    nodes,
-    workflowMetadata
-  );
-
-  // Initialize workflow actions for programmatic node creation
-  const workflowActions = useWorkflowActions(
-    { nodes, edges, workflowMetadata, updateNodes, updateEdges },
-    setHistoryState
-  );
-
-  // Convert current workflow to Serverless Workflow JSON
-  const exportWorkflow = () => {
-    const workflow = createServerlessWorkflow(nodes, edges, workflowMetadata);
-    console.log('Exported workflow:', JSON.stringify(workflow, null, 2));
-  };
-
-  // Load workflow from Serverless Workflow JSON
-  const loadWorkflow = (workflowJson) => {
-    try {
-      const { nodes: convertedNodes, edges: convertedEdges } = 
-        convertWorkflowToReactFlow(workflowJson);
-      updateNodes(convertedNodes);
-      updateEdges(convertedEdges);
-      setWorkflowMetadata({
-        name: workflowJson.name || 'Imported Workflow',
-        description: workflowJson.description || 'Imported from JSON',
-        version: workflowJson.version || '1.0',
-      });
-    } catch (error) {
-      console.error('Error loading workflow:', error);
-    }
+  const onNodeClick = (event, node) => {
+    nodePropertiesPanel.openPanel(node);
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      {/* Toolbar */}
-      <div style={{ padding: '10px', borderBottom: '1px solid #ccc' }}>
-        <button onClick={exportWorkflow}>Export Workflow</button>
-        <input
-          type="file"
-          accept=".json"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                const workflow = JSON.parse(event.target.result);
-                loadWorkflow(workflow);
-              };
-              reader.readAsText(file);
-            }
-          }}
-        />
-      </div>
-      
-      {/* Workflow Canvas */}
-      <div style={{ width: '100%', height: 'calc(100% - 60px)' }}>
+    <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
+      <div style={{ flex: 1 }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
+          onNodesChange={(changes) => updateNodes(changes)}
+          onEdgesChange={(changes) => updateEdges(changes)}
           onConnect={onConnect}
+          onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
           fitView
         >
+          <Background />
           <Controls />
-          <Background variant="dots" gap={12} size={1} />
         </ReactFlow>
+        
+        {/* Undo/Redo buttons */}
+        <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
+          <button onClick={undo} disabled={!canUndo}>Undo</button>
+          <button onClick={redo} disabled={!canRedo}>Redo</button>
+        </div>
       </div>
+      
+      {/* Node Properties Panel */}
+      <NodePropertiesPanel {...nodePropertiesPanel} />
     </div>
-  );
-}
-
-function App() {
-  return (
-    <ReactFlowProvider>
-      <WorkflowEditor />
-    </ReactFlowProvider>
   );
 }
 
 export default App;
 ```
+
+### Option 2: Import an Existing Serverless Workflow
+
+Converting an existing Serverless Workflow JSON into an editable visual workflow:
+
+```jsx
+import React, { useState } from 'react';
+import ReactFlow, { Background, Controls } from 'reactflow';
+import {
+  nodeTypes,
+  useWorkflowState,
+  useEdgeConnection,
+  useHistory,
+  useEdgeLabelSync,
+  useNodePropertiesPanel,
+  NodePropertiesPanel,
+  convertWorkflowToReactFlow
+} from 'serverless-workflow-builder-lib';
+import 'reactflow/dist/style.css';
+import 'serverless-workflow-builder-lib/dist/style.css';
+
+// Example Serverless Workflow JSON
+const sampleWorkflow = {
+  "id": "loan-application",
+  "name": "Loan Application Workflow",
+  "description": "A workflow for processing loan applications",
+  "version": "1.0",
+  "specVersion": "0.8",
+  "start": "GetLoanApplication",
+  "states": [
+    {
+      "name": "GetLoanApplication",
+      "type": "operation",
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "getLoanApplicationFunction",
+            "arguments": {
+              "applicationId": "${ .applicationId }"
+            }
+          }
+        }
+      ],
+      "transition": "CheckCreditScore"
+    },
+    {
+      "name": "CheckCreditScore",
+      "type": "operation",
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "checkCreditScoreFunction",
+            "arguments": {
+              "ssn": "${ .applicant.ssn }"
+            }
+          }
+        }
+      ],
+      "transition": "CreditDecision"
+    },
+    {
+      "name": "CreditDecision",
+      "type": "switch",
+      "dataConditions": [
+        {
+          "name": "HighCreditScore",
+          "condition": "${ .creditScore >= 700 }",
+          "transition": "ApproveLoan"
+        }
+      ],
+      "defaultCondition": {
+        "transition": "RejectLoan"
+      }
+    },
+    {
+      "name": "ApproveLoan",
+      "type": "operation",
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "approveLoanFunction"
+          }
+        }
+      ],
+      "end": true
+    },
+    {
+      "name": "RejectLoan",
+      "type": "operation",
+      "actions": [
+        {
+          "functionRef": {
+            "refName": "rejectLoanFunction"
+          }
+        }
+      ],
+      "end": true
+    }
+  ]
+};
+
+function App() {
+  // Convert Serverless Workflow to React Flow format
+  const { nodes: initialNodes, edges: initialEdges } = convertWorkflowToReactFlow(sampleWorkflow);
+  
+  const { nodes, edges, updateNodes, updateEdges } = useWorkflowState(
+    initialNodes,
+    initialEdges
+  );
+  
+  const { onConnect } = useEdgeConnection(edges, updateEdges);
+  const { undo, redo, canUndo, canRedo } = useHistory();
+  
+  // Automatically sync edge labels with node names and conditions
+  useEdgeLabelSync(nodes, edges, updateEdges);
+  
+  // Properties panel for editing nodes
+  const nodePropertiesPanel = useNodePropertiesPanel({
+    onNodeUpdate: (nodeId, updatedData) => {
+      const updatedNodes = nodes.map(node =>
+        node.id === nodeId ? { ...node, data: { ...node.data, ...updatedData } } : node
+      );
+      updateNodes(updatedNodes);
+    },
+    autoSave: true
+  });
+
+  const onNodeClick = (event, node) => {
+    nodePropertiesPanel.openPanel(node);
+  };
+
+  return (
+    <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
+      <div style={{ flex: 1 }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={(changes) => updateNodes(changes)}
+          onEdgesChange={(changes) => updateEdges(changes)}
+          onConnect={onConnect}
+          onNodeClick={onNodeClick}
+          nodeTypes={nodeTypes}
+          fitView
+        >
+          <Background />
+          <Controls />
+        </ReactFlow>
+        
+        {/* Undo/Redo buttons */}
+        <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
+          <button onClick={undo} disabled={!canUndo}>Undo</button>
+          <button onClick={redo} disabled={!canRedo}>Redo</button>
+        </div>
+      </div>
+      
+      {/* Node Properties Panel */}
+      <NodePropertiesPanel {...nodePropertiesPanel} />
+    </div>
+  );
+}
+
+export default App;
+```
+
+### Enhanced Quick Start with Properties Panel
+
+For a more complete editor experience with node editing capabilities:
+
+```jsx
+import React from 'react';
+import ReactFlow, { Background, Controls } from 'reactflow';
+import {
+  nodeTypes,
+  defaultInitialNodes,
+  defaultInitialEdges,
+  useWorkflowState,
+  useEdgeConnection,
+  useHistory,
+  useEdgeLabelSync,
+  useNodePropertiesPanel,
+  NodePropertiesPanel
+} from 'serverless-workflow-builder-lib';
+import 'reactflow/dist/style.css';
+import 'serverless-workflow-builder-lib/dist/style.css';
+
+function App() {
+  const { nodes, edges, updateNodes, updateEdges } = useWorkflowState(
+    defaultInitialNodes,
+    defaultInitialEdges
+  );
+  
+  const { onConnect } = useEdgeConnection(edges, updateEdges);
+  const { undo, redo, canUndo, canRedo } = useHistory();
+  useEdgeLabelSync(nodes, edges, updateEdges);
+  
+  // Properties panel for editing nodes
+  const nodePropertiesPanel = useNodePropertiesPanel({
+    onNodeUpdate: (nodeId, updatedData) => {
+      const updatedNodes = nodes.map(node =>
+        node.id === nodeId ? { ...node, data: { ...node.data, ...updatedData } } : node
+      );
+      updateNodes(updatedNodes);
+    },
+    autoSave: true
+  });
+
+  const onNodeClick = (event, node) => {
+    nodePropertiesPanel.openPanel(node);
+  };
+
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={(changes) => updateNodes(changes)}
+        onEdgesChange={(changes) => updateEdges(changes)}
+        onConnect={onConnect}
+        onNodeClick={onNodeClick}
+        nodeTypes={nodeTypes}
+        fitView
+      >
+        <Background />
+        <Controls />
+      </ReactFlow>
+      
+      {/* Undo/Redo buttons */}
+      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
+        <button onClick={undo} disabled={!canUndo}>Undo</button>
+        <button onClick={redo} disabled={!canRedo}>Redo</button>
+      </div>
+      
+      {/* Properties Panel */}
+      <NodePropertiesPanel
+        isOpen={nodePropertiesPanel.isOpen}
+        node={nodePropertiesPanel.selectedNode}
+        formData={nodePropertiesPanel.formData}
+        isDirty={nodePropertiesPanel.isDirty}
+        onClose={nodePropertiesPanel.closePanel}
+        onFieldChange={nodePropertiesPanel.updateField}
+        onSave={nodePropertiesPanel.applyChanges}
+        onReset={nodePropertiesPanel.resetChanges}
+        autoSave={true}
+      />
+    </div>
+  );
+}
+
+export default App;
+```
+
+## Node Properties Panel
+
+The library includes a built-in properties panel for editing node configurations. This panel provides a comprehensive interface for modifying all node properties with real-time validation and auto-save functionality.
+
+### Properties Panel Features
+
+- **Auto-save**: Automatically saves changes as you type
+- **Validation**: Real-time validation of node properties
+- **Type-specific forms**: Different forms for each node type (Operation, Switch, Event, etc.)
+- **Condition management**: Advanced editing for switch state conditions
+- **Timeout support**: Built-in timeout configuration for event-based states
+- **Metadata editing**: Support for custom metadata on all nodes
+
+### useNodePropertiesPanel Hook
+
+```jsx
+const nodePropertiesPanel = useNodePropertiesPanel({
+  onNodeUpdate: (nodeId, updatedData) => {
+    // Handle node updates
+  },
+  autoSave: true, // Enable auto-save (default: false)
+  debounceMs: 300 // Auto-save debounce delay (default: 300ms)
+});
+
+// Available methods and properties:
+const {
+  isOpen,           // Boolean: panel open state
+  selectedNode,     // Currently selected node
+  formData,         // Current form data
+  isDirty,          // Boolean: has unsaved changes
+  openPanel,        // Function: open panel for node
+  closePanel,       // Function: close panel
+  updateField,      // Function: update form field
+  applyChanges,     // Function: apply changes to node
+  resetChanges      // Function: reset form to original values
+} = nodePropertiesPanel;
+```
+
+## Edge Label Synchronization
+
+The library automatically synchronizes edge labels with node names and switch conditions using the `useEdgeLabelSync` hook.
+
+```jsx
+import { useEdgeLabelSync } from 'serverless-workflow-builder-lib';
+
+function WorkflowEditor() {
+  const { nodes, edges, updateEdges } = useWorkflowState();
+  
+  // Automatically sync edge labels
+  useEdgeLabelSync(nodes, edges, updateEdges);
+  
+  // Edge labels will automatically update when:
+  // - Node names change
+  // - Switch condition names change
+  // - Event condition names change
+  
+  return (
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      // ... other props
+    />
+  );
+}
+```
+
+### Label Sync Features
+
+- **Simple edges**: Labels update to `→ {targetNodeName}`
+- **Switch conditions**: Labels update to condition names or expressions
+- **Event conditions**: Labels update to event names or event references
+- **Real-time updates**: Changes are reflected immediately
 
 ## Common Use Cases
 
@@ -871,35 +1139,73 @@ const state = convertNodeToState(node, edges, allNodes, workflowMetadata);
 
 ## Default Exports
 
+The library provides several default exports for quick setup:
+
 ### nodeTypes
 
-Pre-configured node types object for React Flow:
+Pre-configured node types for React Flow:
 
 ```jsx
 import { nodeTypes } from 'serverless-workflow-builder-lib';
 
 // Contains:
 // {
+//   start: StartNode,
 //   operation: OperationNode,
 //   switch: SwitchNode,
-//   start: StartNode,
-//   end: EndNode,
 //   event: EventNode,
-//   sleep: SleepNode
+//   sleep: SleepNode,
+//   end: EndNode
 // }
 ```
 
-### Default Initial State
+### defaultInitialNodes and defaultInitialEdges
+
+Default workflow setup with Start and End nodes:
 
 ```jsx
-import {
-  defaultInitialNodes,
-  defaultInitialEdges
-} from 'serverless-workflow-builder-lib';
+import { defaultInitialNodes, defaultInitialEdges } from 'serverless-workflow-builder-lib';
 
-// defaultInitialNodes contains a single start node
-// defaultInitialEdges is an empty array
+// Use as initial state for your workflow
+const [nodes, setNodes] = useState(defaultInitialNodes);
+const [edges, setEdges] = useState(defaultInitialEdges);
 ```
+
+## Complete API Reference
+
+### Components
+
+- `StartNode` - Start state node component
+- `OperationNode` - Operation state node component  
+- `SwitchNode` - Switch state node component
+- `EventNode` - Event state node component
+- `SleepNode` - Sleep state node component
+- `EndNode` - End state node component
+- `NodePropertiesPanel` - Properties panel for editing nodes
+
+### Hooks
+
+- `useHistory` - Undo/redo functionality
+- `useWorkflowState` - Main workflow state management
+- `useEdgeConnection` - Edge connection handling
+- `useWorkflowActions` - Programmatic node manipulation
+- `useNodePropertiesPanel` - Properties panel state management
+- `useEdgeLabelSync` - Automatic edge label synchronization
+
+### Utilities
+
+- `createServerlessWorkflow` - Convert React Flow data to Serverless Workflow
+- `createReactFlowData` - Convert Serverless Workflow to React Flow data
+- `convertWorkflowToReactFlow` - Enhanced workflow conversion with positioning
+- `convertNodeToState` - Convert individual nodes to workflow states
+- `createOperationNode` - Create operation nodes
+- `createNode` - Generic node creation utility
+
+### Default Exports
+
+- `nodeTypes` - Pre-configured node types object
+- `defaultInitialNodes` - Default starting nodes
+- `defaultInitialEdges` - Default starting edges
 
 ## Styling
 
@@ -1059,6 +1365,90 @@ const debouncedUpdate = debounce((newState) => {
 - Debounce frequent state updates
 - Limit the number of nodes for better performance (recommended: <100 nodes)
 - Use the `fitView` prop on ReactFlow for better initial positioning
+
+## Working Example
+
+A complete working example is available in the `test-library` directory of this repository. This example demonstrates all the library features in action:
+
+### Features Demonstrated
+
+- **Complete workflow editor** with all node types
+- **Node properties panel** for editing node configurations
+- **Automatic edge label synchronization**
+- **Undo/redo functionality** with history management
+- **Import/export workflows** in Serverless Workflow format
+- **Programmatic node creation** with toolbar buttons
+- **Real-time workflow validation**
+- **Complex workflow examples** including loan processing workflows
+
+### Running the Example
+
+```bash
+# Navigate to the test library
+cd test-library
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm start
+```
+
+The example will be available at `http://localhost:3001` and includes:
+
+- A fully functional workflow editor
+- Sample workflows you can load and modify
+- All node types with their respective property forms
+- Export functionality to download workflows as JSON
+- Comprehensive demonstration of all library capabilities
+
+### Example Code Structure
+
+The test library shows how to:
+
+```jsx
+// Complete integration example
+import {
+  nodeTypes,
+  defaultInitialNodes,
+  defaultInitialEdges,
+  useHistory,
+  useWorkflowState,
+  useEdgeConnection,
+  useWorkflowActions,
+  useNodePropertiesPanel,
+  useEdgeLabelSync,
+  NodePropertiesPanel,
+  createServerlessWorkflow,
+  convertWorkflowToReactFlow
+} from 'serverless-workflow-builder-lib';
+
+function WorkflowEditor() {
+  // State management
+  const { nodes, edges, updateNodes, updateEdges } = useWorkflowState();
+  const { undo, redo, canUndo, canRedo } = useHistory();
+  
+  // Edge connections and labels
+  const { onConnect } = useEdgeConnection(edges, updateEdges);
+  useEdgeLabelSync(nodes, edges, updateEdges);
+  
+  // Node actions
+  const workflowActions = useWorkflowActions(nodes, edges, updateNodes, updateEdges);
+  
+  // Properties panel
+  const nodePropertiesPanel = useNodePropertiesPanel({
+    onNodeUpdate: (nodeId, updatedData) => {
+      const updatedNodes = nodes.map(node =>
+        node.id === nodeId ? { ...node, data: { ...node.data, ...updatedData } } : node
+      );
+      updateNodes(updatedNodes);
+    },
+    autoSave: true
+  });
+  
+  // ... rest of component implementation
+}
+```
 
 ## Examples Repository
 
