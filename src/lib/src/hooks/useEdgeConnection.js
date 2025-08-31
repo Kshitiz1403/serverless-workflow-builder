@@ -30,7 +30,12 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
       } else {
         edgeType = 'condition';
         edgeClass = 'edge-condition';
-        strokeColor = '#f59e0b'; // warning color
+        // Use purple for event-based switch conditions, yellow for data-based
+        if (sourceNode?.data?.conditionType === 'event') {
+          strokeColor = '#8b5cf6'; // purple color for event conditions
+        } else {
+          strokeColor = '#f59e0b'; // yellow color for data conditions
+        }
       }
     } else if (targetNode?.type === 'end') {
       edgeType = 'end';
