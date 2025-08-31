@@ -20,6 +20,7 @@ export { default as SleepNode } from './components/nodes/SleepNode';
 export { useHistory } from './hooks/useHistory';
 export { useWorkflowState } from './hooks/useWorkflowState';
 export { useEdgeConnection } from './hooks/useEdgeConnection';
+export { useWorkflowActions } from './hooks/useWorkflowActions';
 
 // Utilities
 export {
@@ -32,6 +33,18 @@ export {
   createReactFlowData,
   convertWorkflowToReactFlow,
 } from './utils/workflowConverter';
+
+export {
+  createOperationNode,
+  createSleepNode,
+  createEventNode,
+  createSwitchNode,
+  createEndNode,
+  createStartNode,
+  createNode,
+  generateNodeId,
+  getDefaultPosition
+} from './utils/nodeFactory';
 
 // Styles
 import './styles/NodeStyles.css';

@@ -6,6 +6,8 @@ A reusable React library for building serverless workflow editors using React Fl
 
 - **🎯 Pre-built Node Components**: Ready-to-use React Flow nodes for different workflow states (Start, Operation, Switch, Event, Sleep, End)
 - **🔄 State Management Hooks**: Comprehensive hooks for workflow state, history management, and edge connections
+- **🚀 Programmatic Node Creation**: Add, remove, and manipulate workflow nodes programmatically with useWorkflowActions hook
+- **🏭 Node Factory Utilities**: Low-level utilities for creating workflow nodes with custom configurations
 - **📊 Workflow Conversion**: Bidirectional conversion between React Flow data and Serverless Workflow specification
 - **🎨 Smart Edge Styling**: Automatic edge styling with animations, colors, and labels based on node types
 - **⏮️ Undo/Redo Support**: Built-in history management with undo/redo functionality
@@ -39,6 +41,7 @@ import {
   useHistory,
   useWorkflowState,
   useEdgeConnection,
+  useWorkflowActions,
   createServerlessWorkflow,
   convertWorkflowToReactFlow,
 } from 'serverless-workflow-builder-lib';
@@ -81,6 +84,12 @@ function WorkflowEditor() {
     setHistoryState,
     nodes,
     workflowMetadata
+  );
+
+  // Initialize workflow actions for programmatic node creation
+  const workflowActions = useWorkflowActions(
+    { nodes, edges, workflowMetadata, updateNodes, updateEdges },
+    setHistoryState
   );
 
   // Convert current workflow to Serverless Workflow JSON
@@ -609,6 +618,210 @@ useEffect(() => {
 // Get statistics
 const stats = getWorkflowStats();
 console.log(`Total nodes: ${stats.totalNodes}`);
+```
+
+### useWorkflowActions
+
+Provides functions to programmatically add, remove, and manipulate workflow nodes.
+
+```jsx
+import { useWorkflowActions } from 'serverless-workflow-builder-lib';
+
+const workflowActions = useWorkflowActions(workflowState, historyCallback);
+
+const {
+  // Add specific node types
+  addOperationNode,     // Add operation node
+  addSleepNode,         // Add sleep node
+  addEventNode,         // Add event node
+  addSwitchNode,        // Add switch node
+  addEndNode,           // Add end node
+  addStartNode,         // Add start node
+  
+  // Generic functions
+  addNode,              // Add any node type
+  removeNode,           // Remove node by ID
+  duplicateNode,        // Duplicate existing node
+  clearAllNodes,        // Clear all nodes
+  
+  // Utility
+  getDefaultPosition    // Get default position for new nodes
+} = workflowActions;
+```
+
+#### Parameters
+- `workflowState`: The workflow state object from useWorkflowState
+- `historyCallback`: Optional callback to update history state
+
+#### Example
+
+```jsx
+function WorkflowEditor() {
+  const { nodes, edges, workflowMetadata, updateNodes, updateEdges } = useWorkflowState(
+    defaultInitialNodes,
+    defaultInitialEdges,
+    workflowMetadata
+  );
+  
+  const { setState: setHistoryState } = useHistory({
+    nodes: defaultInitialNodes,
+    edges: defaultInitialEdges,
+    workflowMetadata
+  });
+  
+  const workflowActions = useWorkflowActions(
+    { nodes, edges, workflowMetadata, updateNodes, updateEdges },
+    setHistoryState
+  );
+  
+  return (
+    <div>
+      {/* Add state buttons */}
+      <div style={{ padding: '10px', display: 'flex', gap: '10px' }}>
+        <button onClick={() => workflowActions.addOperationNode()}>
+          + Operation
+        </button>
+        <button onClick={() => workflowActions.addSleepNode()}>
+          + Sleep
+        </button>
+        <button onClick={() => workflowActions.addEventNode()}>
+          + Event
+        </button>
+        <button onClick={() => workflowActions.addSwitchNode()}>
+          + Switch
+        </button>
+        <button onClick={() => workflowActions.addEndNode()}>
+          + End
+        </button>
+      </div>
+      
+      {/* Custom positioned node */}
+      <button 
+        onClick={() => workflowActions.addOperationNode({
+          position: { x: 200, y: 300 },
+          name: 'Custom Operation',
+          actions: [{ name: 'customAction', functionRef: 'myFunction' }]
+        })}
+      >
+        Add Custom Operation
+      </button>
+      
+      {/* Remove node */}
+      <button onClick={() => workflowActions.removeNode('node-id')}>
+        Remove Node
+      </button>
+      
+      {/* Duplicate node */}
+      <button onClick={() => workflowActions.duplicateNode('node-id')}>
+        Duplicate Node
+      </button>
+      
+      {/* React Flow component */}
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        // ... other props
+      />
+    </div>
+  );
+}
+```
+
+#### Node Creation Options
+
+Each add function accepts an optional options object:
+
+```jsx
+// Basic usage
+workflowActions.addOperationNode();
+
+// With custom options
+workflowActions.addOperationNode({
+  position: { x: 100, y: 200 },           // Custom position
+  name: 'My Operation',                   // Custom name
+  actions: [                              // Custom actions
+    { name: 'action1', functionRef: 'func1' }
+  ],
+  metadata: { custom: 'data' }            // Custom metadata
+});
+
+// Sleep node with duration
+workflowActions.addSleepNode({
+  name: 'Wait 5 seconds',
+  duration: 'PT5S'
+});
+
+// Event node with events
+workflowActions.addEventNode({
+  name: 'Wait for Order',
+  onEvents: [{
+    eventRefs: ['order.created']
+  }]
+});
+```
+
+## Node Factory Utilities
+
+Low-level utilities for creating workflow nodes programmatically.
+
+```jsx
+import {
+  createOperationNode,
+  createSleepNode,
+  createEventNode,
+  createSwitchNode,
+  createEndNode,
+  createStartNode,
+  createNode,
+  generateNodeId,
+  getDefaultPosition
+} from 'serverless-workflow-builder-lib';
+```
+
+### Individual Node Creators
+
+```jsx
+// Create specific node types
+const operationNode = createOperationNode({
+  position: { x: 100, y: 200 },
+  name: 'Process Order',
+  actions: [{ name: 'processOrder', functionRef: 'orderProcessor' }]
+});
+
+const sleepNode = createSleepNode({
+  position: { x: 200, y: 300 },
+  name: 'Wait',
+  duration: 'PT30S'
+});
+
+const eventNode = createEventNode({
+  position: { x: 300, y: 400 },
+  name: 'Wait for Event',
+  onEvents: [{ eventRefs: ['user.action'] }]
+});
+```
+
+### Generic Node Creator
+
+```jsx
+// Create any node type
+const node = createNode('operation', {
+  position: { x: 100, y: 200 },
+  name: 'My Node',
+  // ... type-specific options
+});
+```
+
+### Utility Functions
+
+```jsx
+// Generate unique node ID
+const nodeId = generateNodeId(); // Returns: 'node-1234567890'
+
+// Get default position for new nodes
+const position = getDefaultPosition(existingNodes);
+// Returns: { x: number, y: number }
 ```
 
 ## Utilities
