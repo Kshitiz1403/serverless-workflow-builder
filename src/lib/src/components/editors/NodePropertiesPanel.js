@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Save, RotateCcw, Settings } from 'lucide-react';
+import './NodePropertiesPanel.css';
 
 /**
  * A simple node properties panel component for editing node data
@@ -221,38 +222,205 @@ export function NodePropertiesPanel({
         {/* Node-specific fields based on type */}
         {node.type === 'operation' && (
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '12px', 
-              fontWeight: '500', 
-              color: '#374151',
-              marginBottom: '4px'
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '8px'
             }}>
-              Function Reference
-            </label>
-            <input
-              type="text"
-              value={formData.functionRef?.refName || ''}
-              onChange={(e) => handleFieldChange('functionRef.refName', e.target.value)}
-              placeholder="Enter function name"
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid #d1d5db',
+              <label style={{ 
+                fontSize: '12px', 
+                fontWeight: '500', 
+                color: '#374151'
+              }}>
+                Actions ({(formData.actions || []).length})
+              </label>
+              <button
+                onClick={() => {
+                  const newAction = {
+                    functionRef: {
+                      refName: '',
+                      arguments: {}
+                    },
+                    retryRef: ''
+                  };
+                  const currentActions = formData.actions || [];
+                  handleFieldChange('actions', [...currentActions, newAction]);
+                }}
+                className="add-btn"
+              >
+                <span style={{ fontSize: '14px', lineHeight: '1' }}>+</span>
+                Add Action
+              </button>
+            </div>
+            
+            {(formData.actions || []).map((action, index) => (
+              <div key={index} style={{
+                border: '1px solid #e5e7eb',
                 borderRadius: '6px',
-                fontSize: '14px',
-                outline: 'none',
-                transition: 'border-color 0.2s',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
-                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#d1d5db';
-                e.target.style.boxShadow = 'none';
-              }}
-            />
+                padding: '12px',
+                marginBottom: '8px',
+                backgroundColor: '#f9fafb'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '8px'
+                }}>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: '500',
+                    color: '#6b7280'
+                  }}>
+                    Action {index + 1}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const newActions = formData.actions.filter((_, i) => i !== index);
+                      handleFieldChange('actions', newActions);
+                    }}
+                    className="remove-btn"
+                  >
+                    <span style={{ fontSize: '12px', lineHeight: '1' }}>×</span>
+                    Remove
+                  </button>
+                </div>
+                
+                {/* Function Reference Name */}
+                <div style={{ marginBottom: '8px' }}>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '11px',
+                    fontWeight: '500',
+                    color: '#374151',
+                    marginBottom: '2px'
+                  }}>
+                    Function Name
+                  </label>
+                  <input
+                    type="text"
+                    value={action.functionRef?.refName || ''}
+                    onChange={(e) => {
+                      const newActions = [...(formData.actions || [])];
+                      if (!newActions[index].functionRef) {
+                        newActions[index].functionRef = {};
+                      }
+                      newActions[index].functionRef.refName = e.target.value;
+                      handleFieldChange('actions', newActions);
+                    }}
+                    placeholder="Enter function name"
+                    style={{
+                      width: '100%',
+                      padding: '6px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                
+                {/* Arguments */}
+                <div style={{ marginBottom: '8px' }}>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '11px',
+                    fontWeight: '500',
+                    color: '#374151',
+                    marginBottom: '2px'
+                  }}>
+                    Arguments (JSON)
+                  </label>
+                  <textarea
+                    value={typeof action.functionRef?.arguments === 'string' 
+                      ? action.functionRef.arguments 
+                      : JSON.stringify(action.functionRef?.arguments || {}, null, 2)}
+                    onChange={(e) => {
+                      const newActions = [...(formData.actions || [])];
+                      if (!newActions[index].functionRef) {
+                        newActions[index].functionRef = {};
+                      }
+                      
+                      // Store as string while editing
+                      newActions[index].functionRef.arguments = e.target.value;
+                      handleFieldChange('actions', newActions);
+                    }}
+                    onBlur={(e) => {
+                      // Try to parse as JSON when user finishes editing
+                      try {
+                        const parsedArgs = JSON.parse(e.target.value);
+                        const newActions = [...(formData.actions || [])];
+                        if (!newActions[index].functionRef) {
+                          newActions[index].functionRef = {};
+                        }
+                        newActions[index].functionRef.arguments = parsedArgs;
+                        handleFieldChange('actions', newActions);
+                      } catch (error) {
+                        // Keep as string if invalid JSON
+                        console.warn('Invalid JSON in arguments field:', error.message);
+                      }
+                    }}
+                    placeholder='{"key": "value"}'
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      padding: '6px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontFamily: 'monospace',
+                      outline: 'none',
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+                
+                {/* Retry Reference */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '11px',
+                    fontWeight: '500',
+                    color: '#374151',
+                    marginBottom: '2px'
+                  }}>
+                    Retry Reference
+                  </label>
+                  <input
+                    type="text"
+                    value={action.retryRef || ''}
+                    onChange={(e) => {
+                      const newActions = [...(formData.actions || [])];
+                      newActions[index].retryRef = e.target.value;
+                      handleFieldChange('actions', newActions);
+                    }}
+                    placeholder="Enter retry strategy name"
+                    style={{
+                      width: '100%',
+                      padding: '6px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+            
+            {(!formData.actions || formData.actions.length === 0) && (
+              <div style={{
+                padding: '16px',
+                textAlign: 'center',
+                color: '#6b7280',
+                fontSize: '12px',
+                border: '1px dashed #d1d5db',
+                borderRadius: '6px'
+              }}>
+                No actions defined. Click "Add Action" to create one.
+              </div>
+            )}
           </div>
         )}
 
