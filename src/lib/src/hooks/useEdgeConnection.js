@@ -97,7 +97,19 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
       newEdge.label = `→ ${targetNode?.data?.name || targetNode?.data?.label || 'next'}`;
     }
 
-    const updatedEdges = addEdge(newEdge, edges);
+    // Remove existing outgoing edges from the same source handle to ensure only one connection per handle
+    let filteredEdges = edges;
+    if (sourceNode?.type === 'switch') {
+      // For switch nodes, only remove edges from the same source handle
+      filteredEdges = edges.filter(edge => 
+        !(edge.source === connection.source && edge.sourceHandle === connection.sourceHandle)
+      );
+    } else {
+      // For non-switch nodes, remove all existing outgoing edges
+      filteredEdges = edges.filter(edge => edge.source !== connection.source);
+    }
+    
+    const updatedEdges = addEdge(newEdge, filteredEdges);
     updateEdges(updatedEdges);
 
     // Update history if setHistoryState is provided
