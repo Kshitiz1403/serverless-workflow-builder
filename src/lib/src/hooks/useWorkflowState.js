@@ -126,6 +126,153 @@ export function useWorkflowState(initialNodes = [], initialEdges = [], initialMe
     };
   }, [nodes, edges, lastUpdateTimestamp]);
 
+  // Export current React Flow layout as JSON
+  const exportLayout = useCallback(() => {
+    const layout = {
+      version: '1.0',
+      type: 'react-flow-layout',
+      timestamp: new Date().toISOString(),
+      metadata: {
+        name: workflowMetadata.name || 'Untitled Workflow',
+        description: workflowMetadata.description || '',
+        version: workflowMetadata.version || '1.0',
+        ...workflowMetadata
+      },
+      nodes: nodes.map(node => ({
+        id: node.id,
+        type: node.type,
+        position: node.position,
+        data: node.data,
+        // Include any other React Flow specific properties
+        ...(node.style && { style: node.style }),
+        ...(node.className && { className: node.className }),
+        ...(node.hidden !== undefined && { hidden: node.hidden }),
+        ...(node.selected !== undefined && { selected: node.selected }),
+        ...(node.dragging !== undefined && { dragging: node.dragging })
+      })),
+      edges: edges.map(edge => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        type: edge.type,
+        ...(edge.label && { label: edge.label }),
+        ...(edge.style && { style: edge.style }),
+        ...(edge.className && { className: edge.className }),
+        ...(edge.hidden !== undefined && { hidden: edge.hidden }),
+        ...(edge.selected !== undefined && { selected: edge.selected }),
+        ...(edge.data && { data: edge.data }),
+        ...(edge.sourceHandle && { sourceHandle: edge.sourceHandle }),
+        ...(edge.targetHandle && { targetHandle: edge.targetHandle })
+      }))
+    };
+
+    return layout;
+  }, [nodes, edges, workflowMetadata]);
+
+  // Export layout as JSON string
+  const exportLayoutAsString = useCallback((pretty = true) => {
+    const layout = exportLayout();
+    return JSON.stringify(layout, null, pretty ? 2 : 0);
+  }, [exportLayout]);
+
+  // Download layout as JSON file
+  const downloadLayout = useCallback((filename) => {
+    const layout = exportLayout();
+    const jsonString = JSON.stringify(layout, null, 2);
+    
+    const defaultFilename = (workflowMetadata.name || 'workflow')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename || defaultFilename}-layout.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [exportLayout, workflowMetadata.name]);
+
+  // Import layout from JSON data
+  const importLayout = useCallback((layoutData) => {
+    try {
+      let layout;
+      
+      if (typeof layoutData === 'string') {
+        layout = JSON.parse(layoutData);
+      } else {
+        layout = layoutData;
+      }
+
+      // Validate layout structure
+      if (!layout || typeof layout !== 'object') {
+        throw new Error('Invalid layout data: must be an object');
+      }
+
+      if (!Array.isArray(layout.nodes)) {
+        throw new Error('Invalid layout data: nodes must be an array');
+      }
+
+      if (!Array.isArray(layout.edges)) {
+        throw new Error('Invalid layout data: edges must be an array');
+      }
+
+      // Validate node structure
+      layout.nodes.forEach((node, index) => {
+        if (!node.id || !node.type) {
+          throw new Error(`Invalid node at index ${index}: must have id and type`);
+        }
+        if (!node.position || typeof node.position.x !== 'number' || typeof node.position.y !== 'number') {
+          throw new Error(`Invalid node at index ${index}: must have valid position with x and y coordinates`);
+        }
+      });
+
+      // Validate edge structure
+      layout.edges.forEach((edge, index) => {
+        if (!edge.id || !edge.source || !edge.target) {
+          throw new Error(`Invalid edge at index ${index}: must have id, source, and target`);
+        }
+      });
+
+      // Update state with imported layout
+      setNodes(layout.nodes);
+      setEdges(layout.edges);
+      if (layout.metadata) {
+        setWorkflowMetadata(layout.metadata);
+      }
+
+      return {
+        nodes: layout.nodes,
+        edges: layout.edges,
+        metadata: layout.metadata || {},
+        layoutInfo: {
+          version: layout.version,
+          type: layout.type,
+          timestamp: layout.timestamp
+        }
+      };
+    } catch (error) {
+      console.error('Error importing layout:', error);
+      throw new Error(`Failed to import layout: ${error.message}`);
+    }
+  }, []);
+
+  // Copy layout to clipboard
+  const copyLayoutToClipboard = useCallback(async () => {
+    try {
+      const layoutString = exportLayoutAsString();
+      await navigator.clipboard.writeText(layoutString);
+      return true;
+    } catch (error) {
+      console.error('Failed to copy layout to clipboard:', error);
+      throw error;
+    }
+  }, [exportLayoutAsString]);
+
   return {
     // Current state
     nodes,
@@ -153,6 +300,13 @@ export function useWorkflowState(initialNodes = [], initialEdges = [], initialMe
     
     // Workflow utilities
     getWorkflowStats,
+    
+    // Layout management
+    exportLayout,
+    exportLayoutAsString,
+    downloadLayout,
+    importLayout,
+    copyLayoutToClipboard,
     
     // React Flow instance (for advanced usage)
     reactFlowInstance,
