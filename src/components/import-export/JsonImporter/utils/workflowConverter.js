@@ -166,7 +166,7 @@ export function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {
                   sourceHandle: `condition-${conditionIndex}`,
                   type: 'default',
                   className: 'edge-condition',
-                  label: condition.name || `condition${conditionIndex + 1}`,
+                  label: condition.name || condition.condition || `condition${conditionIndex + 1}`,
                   style: { strokeWidth: 2 },
                   data: { type: 'condition' },
                   labelStyle: { fill: '#f59e0b', fontWeight: 500, fontSize: '12px' },
@@ -203,7 +203,7 @@ export function convertWorkflowToReactFlow(workflowData, retryPolicyNameToId = {
                   sourceHandle: `condition-${conditionIndex}`,
                   type: 'default',
                   className: 'edge-condition',
-                  label: condition.name || `event${conditionIndex + 1}`,
+                  label: condition.name || condition.eventRef || `event${conditionIndex + 1}`,
                   style: { strokeWidth: 2 },
                   data: { type: 'condition' },
                   labelStyle: { fill: '#8b5cf6', fontWeight: 500, fontSize: '12px' },
@@ -332,4 +332,4 @@ function getNodeType(stateType) {
   };
 
   return typeMap[stateType] || 'operation';
-} 
+}
