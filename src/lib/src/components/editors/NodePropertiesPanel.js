@@ -33,8 +33,11 @@ export function NodePropertiesPanel({
     return null;
   }
 
+  // Check if the node is editable (start nodes should not be editable)
+  const isNodeEditable = node.type !== 'start';
+
   const handleFieldChange = (field, value) => {
-    if (onFieldChange) {
+    if (onFieldChange && isNodeEditable) {
       onFieldChange(field, value);
 
       // When name changes, also update label to keep them in sync
@@ -159,6 +162,25 @@ export function NodePropertiesPanel({
           </div>
         </div>
 
+        {/* Read-only notice for start nodes */}
+        {!isNodeEditable && (
+          <div style={{
+            marginBottom: '16px',
+            padding: '12px',
+            backgroundColor: '#fef3c7',
+            border: '1px solid #f59e0b',
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: '#92400e',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span style={{ fontSize: '14px' }}>ℹ️</span>
+            <span>Start nodes are read-only and cannot be edited.</span>
+          </div>
+        )}
+
         {/* Node ID */}
         <div style={{ marginBottom: '16px' }}>
           <label style={{
@@ -198,7 +220,8 @@ export function NodePropertiesPanel({
             type="text"
             value={formData.name || ''}
             onChange={(e) => handleFieldChange('name', e.target.value)}
-            placeholder="Enter node name"
+            placeholder={isNodeEditable ? "Enter node name" : "Start node name cannot be edited"}
+            disabled={!isNodeEditable}
             style={{
               width: '100%',
               padding: '8px 12px',
@@ -207,14 +230,21 @@ export function NodePropertiesPanel({
               fontSize: '14px',
               outline: 'none',
               transition: 'border-color 0.2s',
+              backgroundColor: !isNodeEditable ? '#f9fafb' : 'white',
+              color: !isNodeEditable ? '#6b7280' : '#374151',
+              cursor: !isNodeEditable ? 'not-allowed' : 'text',
             }}
             onFocus={(e) => {
-              e.target.style.borderColor = '#3b82f6';
-              e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              if (isNodeEditable) {
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }
             }}
             onBlur={(e) => {
-              e.target.style.borderColor = '#d1d5db';
-              e.target.style.boxShadow = 'none';
+              if (isNodeEditable) {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }
             }}
           />
         </div>
@@ -873,28 +903,30 @@ export function NodePropertiesPanel({
         >
           <button
             onClick={handleReset}
-            disabled={!isDirty}
+            disabled={!isDirty || !isNodeEditable}
             style={{
               padding: '8px 12px',
               border: '1px solid #d1d5db',
               backgroundColor: 'white',
-              color: isDirty ? '#374151' : '#9ca3af',
+              color: (isDirty && isNodeEditable) ? '#374151' : '#9ca3af',
               borderRadius: '6px',
               fontSize: '12px',
               fontWeight: '500',
-              cursor: isDirty ? 'pointer' : 'not-allowed',
+              cursor: (isDirty && isNodeEditable) ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
               transition: 'all 0.2s',
             }}
             onMouseEnter={(e) => {
-              if (isDirty) {
+              if (isDirty && isNodeEditable) {
                 e.target.style.backgroundColor = '#f3f4f6';
               }
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'white';
+              if (isNodeEditable) {
+                e.target.style.backgroundColor = 'white';
+              }
             }}
           >
             <RotateCcw size={12} />
@@ -902,28 +934,28 @@ export function NodePropertiesPanel({
           </button>
           <button
             onClick={handleSave}
-            disabled={!isDirty}
+            disabled={!isDirty || !isNodeEditable}
             style={{
               padding: '8px 12px',
               border: '1px solid #3b82f6',
-              backgroundColor: isDirty ? '#3b82f6' : '#e5e7eb',
-              color: isDirty ? 'white' : '#9ca3af',
+              backgroundColor: (isDirty && isNodeEditable) ? '#3b82f6' : '#e5e7eb',
+              color: (isDirty && isNodeEditable) ? 'white' : '#9ca3af',
               borderRadius: '6px',
               fontSize: '12px',
               fontWeight: '500',
-              cursor: isDirty ? 'pointer' : 'not-allowed',
+              cursor: (isDirty && isNodeEditable) ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
               transition: 'all 0.2s',
             }}
             onMouseEnter={(e) => {
-              if (isDirty) {
+              if (isDirty && isNodeEditable) {
                 e.target.style.backgroundColor = '#2563eb';
               }
             }}
             onMouseLeave={(e) => {
-              if (isDirty) {
+              if (isDirty && isNodeEditable) {
                 e.target.style.backgroundColor = '#3b82f6';
               }
             }}
