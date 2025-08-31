@@ -36,7 +36,7 @@ export function NodePropertiesPanel({
   const handleFieldChange = (field, value) => {
     if (onFieldChange) {
       onFieldChange(field, value);
-      
+
       // When name changes, also update label to keep them in sync
       if (field === 'name') {
         onFieldChange('label', value);
@@ -69,7 +69,7 @@ export function NodePropertiesPanel({
   };
 
   return (
-    <div 
+    <div
       className={`node-properties-panel ${className}`}
       style={{
         position: 'fixed',
@@ -89,7 +89,7 @@ export function NodePropertiesPanel({
       }}
     >
       {/* Header */}
-      <div 
+      <div
         style={{
           padding: '16px',
           borderBottom: '1px solid #e5e7eb',
@@ -129,7 +129,7 @@ export function NodePropertiesPanel({
       </div>
 
       {/* Content */}
-      <div 
+      <div
         style={{
           padding: '16px',
           flex: 1,
@@ -138,10 +138,10 @@ export function NodePropertiesPanel({
       >
         {/* Node Type */}
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ 
-            display: 'block', 
-            fontSize: '12px', 
-            fontWeight: '500', 
+          <label style={{
+            display: 'block',
+            fontSize: '12px',
+            fontWeight: '500',
             color: '#374151',
             marginBottom: '4px'
           }}>
@@ -161,10 +161,10 @@ export function NodePropertiesPanel({
 
         {/* Node ID */}
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ 
-            display: 'block', 
-            fontSize: '12px', 
-            fontWeight: '500', 
+          <label style={{
+            display: 'block',
+            fontSize: '12px',
+            fontWeight: '500',
             color: '#374151',
             marginBottom: '4px'
           }}>
@@ -185,10 +185,10 @@ export function NodePropertiesPanel({
 
         {/* Node Name */}
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ 
-            display: 'block', 
-            fontSize: '12px', 
-            fontWeight: '500', 
+          <label style={{
+            display: 'block',
+            fontSize: '12px',
+            fontWeight: '500',
             color: '#374151',
             marginBottom: '4px'
           }}>
@@ -228,9 +228,9 @@ export function NodePropertiesPanel({
               alignItems: 'center',
               marginBottom: '8px'
             }}>
-              <label style={{ 
-                fontSize: '12px', 
-                fontWeight: '500', 
+              <label style={{
+                fontSize: '12px',
+                fontWeight: '500',
                 color: '#374151'
               }}>
                 Actions ({(formData.actions || []).length})
@@ -253,7 +253,7 @@ export function NodePropertiesPanel({
                 Add Action
               </button>
             </div>
-            
+
             {(formData.actions || []).map((action, index) => (
               <div key={index} style={{
                 border: '1px solid #e5e7eb',
@@ -286,7 +286,7 @@ export function NodePropertiesPanel({
                     Remove
                   </button>
                 </div>
-                
+
                 {/* Function Reference Name */}
                 <div style={{ marginBottom: '8px' }}>
                   <label style={{
@@ -320,7 +320,7 @@ export function NodePropertiesPanel({
                     }}
                   />
                 </div>
-                
+
                 {/* Arguments */}
                 <div style={{ marginBottom: '8px' }}>
                   <label style={{
@@ -333,15 +333,15 @@ export function NodePropertiesPanel({
                     Arguments (JSON)
                   </label>
                   <textarea
-                    value={typeof action.functionRef?.arguments === 'string' 
-                      ? action.functionRef.arguments 
+                    value={typeof action.functionRef?.arguments === 'string'
+                      ? action.functionRef.arguments
                       : JSON.stringify(action.functionRef?.arguments || {}, null, 2)}
                     onChange={(e) => {
                       const newActions = [...(formData.actions || [])];
                       if (!newActions[index].functionRef) {
                         newActions[index].functionRef = {};
                       }
-                      
+
                       // Store as string while editing
                       newActions[index].functionRef.arguments = e.target.value;
                       handleFieldChange('actions', newActions);
@@ -375,7 +375,7 @@ export function NodePropertiesPanel({
                     }}
                   />
                 </div>
-                
+
                 {/* Retry Reference */}
                 <div>
                   <label style={{
@@ -408,7 +408,7 @@ export function NodePropertiesPanel({
                 </div>
               </div>
             ))}
-            
+
             {(!formData.actions || formData.actions.length === 0) && (
               <div style={{
                 padding: '16px',
@@ -426,10 +426,10 @@ export function NodePropertiesPanel({
 
         {node.type === 'sleep' && (
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ 
-              display: 'block', 
-              fontSize: '12px', 
-              fontWeight: '500', 
+            <label style={{
+              display: 'block',
+              fontSize: '12px',
+              fontWeight: '500',
               color: '#374151',
               marginBottom: '4px'
             }}>
@@ -460,11 +460,368 @@ export function NodePropertiesPanel({
             />
           </div>
         )}
+
+        {node.type === 'switch' && (
+          <div style={{ marginBottom: '16px' }}>
+
+
+            {/* Data Conditions */}
+            {(formData.conditionType || 'data') === 'data' && (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '8px'
+                }}>
+                  <label style={{
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#374151'
+                  }}>
+                    Data Conditions ({(formData.dataConditions || []).length})
+                  </label>
+                  <button
+                    onClick={() => {
+                      const newCondition = {
+                        name: `condition${(formData.dataConditions || []).length + 1}`,
+                        condition: '.data == true'
+                      };
+                      const currentConditions = formData.dataConditions || [];
+                      handleFieldChange('dataConditions', [...currentConditions, newCondition]);
+                    }}
+                    className="add-btn"
+                  >
+                    <span style={{ fontSize: '14px', lineHeight: '1' }}>+</span>
+                    Add Condition
+                  </button>
+                </div>
+
+                {(formData.dataConditions || []).map((condition, index) => (
+                  <div key={index} style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    marginBottom: '8px',
+                    backgroundColor: '#f9fafb'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px'
+                    }}>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        color: '#6b7280'
+                      }}>
+                        Data Condition {index + 1}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const newConditions = formData.dataConditions.filter((_, i) => i !== index);
+                          handleFieldChange('dataConditions', newConditions);
+                        }}
+                        className="remove-btn"
+                      >
+                        <span style={{ fontSize: '12px', lineHeight: '1' }}>×</span>
+                        Remove
+                      </button>
+                    </div>
+
+                    {/* Condition Name */}
+                    <div style={{ marginBottom: '8px' }}>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '2px'
+                      }}>
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        value={condition.name || ''}
+                        onChange={(e) => {
+                          const newConditions = [...(formData.dataConditions || [])];
+                          newConditions[index] = { ...newConditions[index], name: e.target.value };
+                          handleFieldChange('dataConditions', newConditions);
+                        }}
+                        placeholder="Condition name"
+                        style={{
+                          width: '100%',
+                          padding: '6px 8px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Condition Expression */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '2px'
+                      }}>
+                        Condition Expression
+                      </label>
+                      <input
+                        type="text"
+                        value={condition.condition || ''}
+                        onChange={(e) => {
+                          const newConditions = [...(formData.dataConditions || [])];
+                          newConditions[index] = { ...newConditions[index], condition: e.target.value };
+                          handleFieldChange('dataConditions', newConditions);
+                        }}
+                        placeholder=".data == true"
+                        style={{
+                          width: '100%',
+                          padding: '6px 8px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontFamily: 'monospace',
+                          outline: 'none'
+                        }}
+                      />
+                      <div style={{
+                        fontSize: '10px',
+                        color: '#6b7280',
+                        marginTop: '2px'
+                      }}>
+                        jq expression to evaluate condition
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {(!formData.dataConditions || formData.dataConditions.length === 0) && (
+                  <div style={{
+                    padding: '16px',
+                    textAlign: 'center',
+                    color: '#6b7280',
+                    fontSize: '12px',
+                    border: '1px dashed #d1d5db',
+                    borderRadius: '6px'
+                  }}>
+                    No data conditions defined. Click "Add Condition" to create one.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Event Conditions */}
+            {(formData.conditionType || 'data') === 'event' && (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '8px'
+                }}>
+                  <label style={{
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#374151'
+                  }}>
+                    Event Conditions ({(formData.eventConditions || []).length})
+                  </label>
+                  <button
+                    onClick={() => {
+                      const newCondition = {
+                        name: `eventCondition${(formData.eventConditions || []).length + 1}`,
+                        eventRef: 'event1'
+                      };
+                      const currentConditions = formData.eventConditions || [];
+                      handleFieldChange('eventConditions', [...currentConditions, newCondition]);
+                    }}
+                    className="add-btn"
+                  >
+                    <span style={{ fontSize: '14px', lineHeight: '1' }}>+</span>
+                    Add Event Condition
+                  </button>
+                </div>
+
+                {(formData.eventConditions || []).map((condition, index) => (
+                  <div key={index} style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '6px',
+                    padding: '12px',
+                    marginBottom: '8px',
+                    backgroundColor: '#f9fafb'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px'
+                    }}>
+                      <span style={{
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        color: '#6b7280'
+                      }}>
+                        Event Condition {index + 1}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const newConditions = formData.eventConditions.filter((_, i) => i !== index);
+                          handleFieldChange('eventConditions', newConditions);
+                        }}
+                        className="remove-btn"
+                      >
+                        <span style={{ fontSize: '12px', lineHeight: '1' }}>×</span>
+                        Remove
+                      </button>
+                    </div>
+
+                    {/* Condition Name */}
+                    <div style={{ marginBottom: '8px' }}>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '2px'
+                      }}>
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        value={condition.name || ''}
+                        onChange={(e) => {
+                          const newConditions = [...(formData.eventConditions || [])];
+                          newConditions[index] = { ...newConditions[index], name: e.target.value };
+                          handleFieldChange('eventConditions', newConditions);
+                        }}
+                        placeholder="Event condition name"
+                        style={{
+                          width: '100%',
+                          padding: '6px 8px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    {/* Event Reference */}
+                    <div>
+                      <label style={{
+                        display: 'block',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        marginBottom: '2px'
+                      }}>
+                        Event Reference
+                      </label>
+                      <input
+                        type="text"
+                        value={condition.eventRef || ''}
+                        onChange={(e) => {
+                          const newConditions = [...(formData.eventConditions || [])];
+                          newConditions[index] = { ...newConditions[index], eventRef: e.target.value };
+                          handleFieldChange('eventConditions', newConditions);
+                        }}
+                        placeholder="event1"
+                        style={{
+                          width: '100%',
+                          padding: '6px 8px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          outline: 'none'
+                        }}
+                      />
+                      <div style={{
+                        fontSize: '10px',
+                        color: '#6b7280',
+                        marginTop: '2px'
+                      }}>
+                        Reference to an event defined in the workflow
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {(!formData.eventConditions || formData.eventConditions.length === 0) && (
+                  <div style={{
+                    padding: '16px',
+                    textAlign: 'center',
+                    color: '#6b7280',
+                    fontSize: '12px',
+                    border: '1px dashed #d1d5db',
+                    borderRadius: '6px'
+                  }}>
+                    No event conditions defined. Click "Add Event Condition" to create one.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Default Condition - Always Enabled */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{
+                padding: '12px',
+                backgroundColor: '#f0f9ff',
+                border: '1px solid #0ea5e9',
+                borderRadius: '6px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '4px'
+                }}>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    backgroundColor: '#0ea5e9',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <span style={{
+                      color: 'white',
+                      fontSize: '10px',
+                      fontWeight: 'bold'
+                    }}>✓</span>
+                  </div>
+                  <span style={{
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#0369a1'
+                  }}>
+                    Default Condition Enabled
+                  </span>
+                </div>
+                <div style={{
+                  fontSize: '10px',
+                  color: '#0369a1',
+                  marginLeft: '24px'
+                }}>
+                  Provides a fallback path when no {(formData.conditionType || 'data') === 'event' ? 'events' : 'data conditions'} match
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
 
       {/* Footer with action buttons (only show if not auto-save) */}
       {!autoSave && (
-        <div 
+        <div
           style={{
             padding: '16px',
             borderTop: '1px solid #e5e7eb',
@@ -539,7 +896,7 @@ export function NodePropertiesPanel({
 
       {/* Dirty indicator */}
       {isDirty && (
-        <div 
+        <div
           style={{
             position: 'absolute',
             top: '8px',
