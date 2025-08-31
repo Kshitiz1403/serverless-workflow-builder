@@ -14,6 +14,33 @@ export function generateNodeId(nodeType) {
 }
 
 /**
+ * Generate a unique node name based on existing nodes
+ * @param {string} baseNodeType - The base type of node (e.g., 'Operation', 'Switch')
+ * @param {Array} existingNodes - Array of existing nodes
+ * @returns {string} Unique node name
+ */
+export function generateUniqueNodeName(baseNodeType, existingNodes = []) {
+  const baseName = baseNodeType;
+  const existingNames = existingNodes.map(node => node.data?.name || node.data?.label || '').filter(Boolean);
+  
+  // If base name doesn't exist, use it
+  if (!existingNames.includes(baseName)) {
+    return baseName;
+  }
+  
+  // Find the next available number
+  let counter = 1;
+  let candidateName;
+  
+  do {
+    candidateName = `${baseName} ${counter}`;
+    counter++;
+  } while (existingNames.includes(candidateName));
+  
+  return candidateName;
+}
+
+/**
  * Get default position for a new node
  * @param {Array} existingNodes - Array of existing nodes
  * @returns {Object} Position object with x and y coordinates
@@ -59,11 +86,12 @@ export function getDefaultPosition(existingNodes = []) {
  * @param {Array} options.actions - Array of actions
  * @param {Object} options.position - Position coordinates
  * @param {Object} options.metadata - Additional metadata
+ * @param {Array} options.existingNodes - Array of existing nodes for unique naming
  * @returns {Object} Operation node object
  */
 export function createOperationNode(options = {}) {
   const {
-    name = 'New Operation',
+    name,
     actions = [{
       name: 'defaultAction',
       functionRef: {
@@ -72,8 +100,11 @@ export function createOperationNode(options = {}) {
       }
     }],
     position,
-    metadata = {}
+    metadata = {},
+    existingNodes = []
   } = options;
+  
+  const nodeName = name || generateUniqueNodeName('Operation', existingNodes);
 
   const nodeId = generateNodeId('operation');
   
@@ -82,10 +113,10 @@ export function createOperationNode(options = {}) {
     type: 'operation',
     position: position || getDefaultPosition(),
     data: {
-      name,
+      name: nodeName,
       actions,
       metadata,
-      label: name
+      label: nodeName
     }
   };
 }
@@ -101,12 +132,14 @@ export function createOperationNode(options = {}) {
  */
 export function createSleepNode(options = {}) {
   const {
-    name = 'New Sleep',
+    name,
     duration = 'PT5S',
     position,
-    metadata = {}
+    metadata = {},
+    existingNodes = []
   } = options;
-
+  
+  const nodeName = name || generateUniqueNodeName('Sleep', existingNodes);
   const nodeId = generateNodeId('sleep');
   
   return {
@@ -114,10 +147,10 @@ export function createSleepNode(options = {}) {
     type: 'sleep',
     position: position || getDefaultPosition(),
     data: {
-      name,
+      name: nodeName,
       duration,
       metadata,
-      label: name
+      label: nodeName
     }
   };
 }
@@ -134,15 +167,17 @@ export function createSleepNode(options = {}) {
  */
 export function createEventNode(options = {}) {
   const {
-    name = 'New Event',
+    name,
     onEvents = [{
       eventRefs: ['sample-event']
     }],
     timeouts = {},
     position,
-    metadata = {}
+    metadata = {},
+    existingNodes = []
   } = options;
-
+  
+  const nodeName = name || generateUniqueNodeName('Event', existingNodes);
   const nodeId = generateNodeId('event');
   
   return {
@@ -150,11 +185,11 @@ export function createEventNode(options = {}) {
     type: 'event',
     position: position || getDefaultPosition(),
     data: {
-      name,
+      name: nodeName,
       onEvents,
       timeouts,
       metadata,
-      label: name
+      label: nodeName
     }
   };
 }
@@ -172,7 +207,7 @@ export function createEventNode(options = {}) {
  */
 export function createSwitchNode(options = {}) {
   const {
-    name = 'New Switch',
+    name,
     dataConditions = [{
       condition: '${ .data }',
       transition: {
@@ -186,8 +221,11 @@ export function createSwitchNode(options = {}) {
       }
     },
     position,
-    metadata = {}
+    metadata = {},
+    existingNodes = []
   } = options;
+  
+  const nodeName = name || generateUniqueNodeName('Switch', existingNodes);
 
   const nodeId = generateNodeId('switch');
   
@@ -196,12 +234,12 @@ export function createSwitchNode(options = {}) {
     type: 'switch',
     position: position || getDefaultPosition(),
     data: {
-      name,
+      name: nodeName,
       dataConditions,
       eventConditions,
       defaultCondition,
       metadata,
-      label: name
+      label: nodeName
     }
   };
 }
@@ -217,12 +255,14 @@ export function createSwitchNode(options = {}) {
  */
 export function createEndNode(options = {}) {
   const {
-    name = 'New End',
+    name,
     terminate = true,
     position,
-    metadata = {}
+    metadata = {},
+    existingNodes = []
   } = options;
-
+  
+  const nodeName = name || generateUniqueNodeName('End', existingNodes);
   const nodeId = generateNodeId('end');
   
   return {
@@ -230,10 +270,10 @@ export function createEndNode(options = {}) {
     type: 'end',
     position: position || getDefaultPosition(),
     data: {
-      name,
+      name: nodeName,
       terminate,
       metadata,
-      label: name
+      label: nodeName
     }
   };
 }

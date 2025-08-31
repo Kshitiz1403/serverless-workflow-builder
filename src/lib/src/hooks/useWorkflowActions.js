@@ -39,42 +39,42 @@ export function useWorkflowActions(workflowState, historyCallback) {
   // Add operation node
   const addOperationNode = useCallback((options = {}) => {
     const position = options.position || getDefaultPosition(nodes);
-    const newNode = createOperationNode({ ...options, position });
+    const newNode = createOperationNode({ ...options, position, existingNodes: nodes });
     return addNodeToWorkflow(newNode);
   }, [nodes, addNodeToWorkflow]);
 
   // Add sleep node
   const addSleepNode = useCallback((options = {}) => {
     const position = options.position || getDefaultPosition(nodes);
-    const newNode = createSleepNode({ ...options, position });
+    const newNode = createSleepNode({ ...options, position, existingNodes: nodes });
     return addNodeToWorkflow(newNode);
   }, [nodes, addNodeToWorkflow]);
 
   // Add event node
   const addEventNode = useCallback((options = {}) => {
     const position = options.position || getDefaultPosition(nodes);
-    const newNode = createEventNode({ ...options, position });
+    const newNode = createEventNode({ ...options, position, existingNodes: nodes });
     return addNodeToWorkflow(newNode);
   }, [nodes, addNodeToWorkflow]);
 
   // Add switch node
   const addSwitchNode = useCallback((options = {}) => {
     const position = options.position || getDefaultPosition(nodes);
-    const newNode = createSwitchNode({ ...options, position });
+    const newNode = createSwitchNode({ ...options, position, existingNodes: nodes });
     return addNodeToWorkflow(newNode);
   }, [nodes, addNodeToWorkflow]);
 
   // Add end node
   const addEndNode = useCallback((options = {}) => {
     const position = options.position || getDefaultPosition(nodes);
-    const newNode = createEndNode({ ...options, position });
+    const newNode = createEndNode({ ...options, position, existingNodes: nodes });
     return addNodeToWorkflow(newNode);
   }, [nodes, addNodeToWorkflow]);
 
   // Add start node
   const addStartNode = useCallback((options = {}) => {
     const position = options.position || getDefaultPosition(nodes);
-    const newNode = createStartNode({ ...options, position });
+    const newNode = createStartNode({ ...options, position, existingNodes: nodes });
     return addNodeToWorkflow(newNode);
   }, [nodes, addNodeToWorkflow]);
 
