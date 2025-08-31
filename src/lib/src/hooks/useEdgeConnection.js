@@ -20,11 +20,18 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
     let edgeClass = 'edge-simple edge-animated';
     let strokeColor = '#10b981'; // success color
     
-    // Determine edge styling based on node types
+    // Determine edge styling based on node types and source handle
     if (sourceNode?.type === 'switch') {
-      edgeType = 'condition';
-      edgeClass = 'edge-condition';
-      strokeColor = '#f59e0b'; // warning color
+      // Check if this is a default edge from a switch node
+      if (connection.sourceHandle === 'default') {
+        edgeType = 'default';
+        edgeClass = 'edge-default';
+        strokeColor = '#6b7280'; // gray color for default edges
+      } else {
+        edgeType = 'condition';
+        edgeClass = 'edge-condition';
+        strokeColor = '#f59e0b'; // warning color
+      }
     } else if (targetNode?.type === 'end') {
       edgeType = 'end';
       edgeClass = 'edge-end';
@@ -72,6 +79,8 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
     // Add label based on edge type
     if (edgeType === 'condition') {
       newEdge.label = 'condition';
+    } else if (edgeType === 'default') {
+      newEdge.label = 'default';
     } else if (edgeType === 'end') {
       newEdge.label = 'end';
     } else {
