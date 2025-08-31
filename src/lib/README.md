@@ -442,49 +442,63 @@ function WorkflowEditor() {
 ```jsx
 // Sample Serverless Workflow JSON
 const sampleWorkflow = {
-  id: 'greeting',
-  version: '1.0',
-  specVersion: '0.8',
-  name: 'Greeting workflow',
-  description: 'JSON based greeting workflow',
-  start: 'ChooseOnLanguage',
-  states: [
-    {
-      name: 'ChooseOnLanguage',
-      type: 'switch',
-      dataConditions: [
+    "id": "greeting",
+    "version": "1.0",
+    "specVersion": "0.8",
+    "name": "Greeting workflow",
+    "description": "JSON based greeting workflow",
+    "start": "ChooseOnLanguage",
+    "states": [
         {
-          name: "English",
-          condition: '${ .language == "English" }',
-          transition: 'GreetInEnglish'
+            "name": "ChooseOnLanguage",
+            "type": "switch",
+            "dataConditions": [
+                {
+                    "name": "English",
+                    "condition": "${ .language == \"English\" }",
+                    "transition": "GreetInEnglish"
+                },
+                {
+                    "name": "Spanish",
+                    "condition": "${ .language == \"Spanish\" }",
+                    "transition": "GreetInSpanish"
+                }
+            ],
+            "defaultCondition": {
+                "transition": "GreetInEnglish"
+            }
         },
         {
-          name: "Spanish",
-          condition: '${ .language == "Spanish" }',
-          transition: 'GreetInSpanish'
+            "name": "GreetInEnglish",
+            "type": "operation",
+            "actions": [
+                {
+                    "functionRef": {
+                        "refName": "Greet",
+                        "arguments": {
+                            "message": "${ \"Hello\" + .name }"
+                        }
+                    }
+                }
+            ],
+            "end": true
+        },
+        {
+            "name": "GreetInSpanish",
+            "type": "operation",
+            "actions": [
+                {
+                    "functionRef": {
+                        "refName": "Greet",
+                        "arguments": {
+                            "message": "${ \"Hola\" + .name }"
+                        }
+                    }
+                }
+            ],
+            "end": true
         }
-      ],
-      defaultCondition: {
-        transition: 'GreetInEnglish'
-      }
-    },
-    {
-      name: 'GreetInEnglish',
-      type: 'inject',
-      data: {
-        greeting: 'Hello from JSON Workflow, '
-      },
-      transition: 'GreetPerson'
-    },
-    {
-      name: 'GreetPerson',
-      type: 'inject',
-      data: {
-        greetingMessage: '${ .greeting + .name }'
-      },
-      end: true
-    }
-  ]
+    ]
 };
 
 // Load the workflow
