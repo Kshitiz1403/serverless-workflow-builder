@@ -464,6 +464,46 @@ export function NodePropertiesPanel({
         {node.type === 'switch' && (
           <div style={{ marginBottom: '16px' }}>
 
+            {/* Timeout for Event-based Switch */}
+            {(formData.conditionType || 'data') === 'event' && (
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  color: '#374151',
+                  marginBottom: '4px'
+                }}>
+                  Timeout
+                </label>
+                <input
+                  type="text"
+                  value={formData.timeouts?.eventTimeout || ''}
+                  onChange={(e) => {
+                    const currentTimeouts = formData.timeouts || {};
+                    handleFieldChange('timeouts', { ...currentTimeouts, eventTimeout: e.target.value });
+                  }}
+                  placeholder="e.g., PT30S, PT5M, PT1H"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#d1d5db';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+            )}
 
             {/* Data Conditions */}
             {(formData.conditionType || 'data') === 'data' && (
@@ -810,7 +850,7 @@ export function NodePropertiesPanel({
                   color: '#0369a1',
                   marginLeft: '24px'
                 }}>
-                  Provides a fallback path when no {(formData.conditionType || 'data') === 'event' ? 'events' : 'data conditions'} match
+                  Provides a fallback path when no {(formData.conditionType || 'data') === 'event' ? 'events' : 'data conditions'} match {(formData.conditionType || 'data') === 'event' ? 'within the timeout period' : null}
                 </div>
               </div>
             </div>
