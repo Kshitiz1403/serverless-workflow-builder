@@ -39,7 +39,11 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
     } else if (sourceNode?.type === 'start') {
       edgeType = 'simple';
       edgeClass = 'edge-simple edge-animated';
-      strokeColor = '#10b981'; // success color
+      strokeColor = '#3b82f6'; // blue color matching start node
+    } else if (sourceNode?.type === 'sleep') {
+      edgeType = 'simple';
+      edgeClass = 'edge-simple edge-animated';
+      strokeColor = '#06b6d4'; // cyan color matching sleep node
     }
 
     // Create styled edge with proper configuration
