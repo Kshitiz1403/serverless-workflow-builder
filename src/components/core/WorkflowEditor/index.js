@@ -13,39 +13,30 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 
 import Sidebar from '../../ui/Sidebar';
-import OperationNode from '../nodes/OperationNode';
-import SwitchNode from '../nodes/SwitchNode';
-import StartNode from '../nodes/StartNode';
-import EndNode from '../nodes/EndNode';
-import EventNode from '../nodes/EventNode';
-import SleepNode from '../nodes/SleepNode';
 import JsonExporter from '../../import-export/JsonExporter';
 import JsonImporter from '../../import-export/JsonImporter';
 import ProjectManager, { ProjectStorage } from '../../project/ProjectManager';
 import ProjectSidebar from '../../project/ProjectSidebar';
-import { useHistory } from '../../../hooks/useHistory';
 import { useProjectMigration } from '../../../hooks/useProjectMigration';
+// Import from library
+import {
+  OperationNode,
+  SwitchNode,
+  StartNode,
+  EndNode,
+  EventNode,
+  SleepNode,
+  useHistory,
+  nodeTypes as libraryNodeTypes,
+  defaultInitialNodes as libraryDefaultNodes,
+  defaultInitialEdges as libraryDefaultEdges,
+} from '../../../lib/src';
 import './WorkflowEditor.css';
 
-const nodeTypes = {
-  operation: OperationNode,
-  switch: SwitchNode,
-  start: StartNode,
-  end: EndNode,
-  event: EventNode,
-  sleep: SleepNode,
-};
-
-const defaultInitialNodes = [
-  {
-    id: 'start-1',
-    type: 'start',
-    position: { x: 100, y: 100 },
-    data: { label: 'Start' },
-  },
-];
-
-const defaultInitialEdges = [];
+// Use library exports
+const nodeTypes = libraryNodeTypes;
+const defaultInitialNodes = libraryDefaultNodes;
+const defaultInitialEdges = libraryDefaultEdges;
 
 // Load project state from localStorage
 function loadProjectState(projectId) {

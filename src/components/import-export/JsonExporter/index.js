@@ -8,7 +8,7 @@ import WorkflowInfoEditor from './components/WorkflowInfoEditor';
 import JsonOutput from './components/JsonOutput';
 
 // Import extracted utilities
-import { createServerlessWorkflow, createReactFlowData } from './utils/workflowConverter';
+import { createServerlessWorkflow, createReactFlowData } from '../../../lib/src';
 import { validateWorkflow } from './utils/exportValidation';
 
 const JsonExporter = ({ nodes, edges, workflowMetadata, onClose }) => {

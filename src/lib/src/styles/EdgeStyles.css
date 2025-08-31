@@ -1,0 +1,166 @@
+/* Edge styling improvements */
+.react-flow__edge-path {
+  stroke: var(--primary-color);
+  stroke-width: 2;
+}
+
+.react-flow__edge-text {
+  font-size: 12px;
+  font-weight: 500;
+  fill: var(--text-color);
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--primary-color);
+  stroke-width: 3;
+}
+
+.react-flow__edge .react-flow__edge-textbg {
+  fill: var(--surface-color);
+  fill-opacity: 0.9;
+}
+
+/* Different edge types */
+.react-flow__edge.edge-simple .react-flow__edge-path {
+  stroke: var(--success-color);
+  stroke-width: 2;
+  animation: flow 2s ease-in-out infinite;
+}
+
+.react-flow__edge.edge-condition .react-flow__edge-path {
+  stroke: var(--warning-color);
+  stroke-width: 2;
+}
+
+.react-flow__edge.edge-default .react-flow__edge-path {
+  stroke: var(--text-secondary);
+  stroke-width: 2;
+  stroke-dasharray: 5,5;
+}
+
+.react-flow__edge.edge-end .react-flow__edge-path {
+  stroke: var(--danger-color);
+  stroke-width: 3;
+}
+
+/* Animated edges */
+.react-flow__edge.edge-animated .react-flow__edge-path {
+  stroke-dasharray: 5, 5;
+  animation: flow-forward 1s linear infinite;
+}
+
+.react-flow__edge.edge-error .react-flow__edge-path {
+  stroke: rgba(239, 68, 68, 0.4);
+  stroke-width: 2;
+  stroke-dasharray: 5, 5;
+  animation: dash 1s linear infinite;
+}
+
+.react-flow__edge.edge-error .react-flow__edge-text {
+  fill: rgba(239, 68, 68, 0.6);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.react-flow__edge.edge-error .react-flow__arrowhead {
+  fill: rgba(239, 68, 68, 0.4);
+}
+
+/* Flow animation */
+@keyframes flow {
+  0%, 100% {
+    stroke-dasharray: 5, 5;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 5, 5;
+    stroke-dashoffset: -10;
+  }
+}
+
+@keyframes flow-forward {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+@keyframes dash {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+/* Arrow head styling */
+.react-flow__arrowhead {
+  fill: var(--primary-color);
+}
+
+.react-flow__edge.edge-simple .react-flow__arrowhead {
+  fill: var(--success-color);
+}
+
+.react-flow__edge.edge-condition .react-flow__arrowhead {
+  fill: var(--warning-color);
+}
+
+.react-flow__edge.edge-default .react-flow__arrowhead {
+  fill: var(--text-secondary);
+}
+
+.react-flow__edge.edge-end .react-flow__arrowhead {
+  fill: var(--danger-color);
+}
+
+/* Handle styling improvements */
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: #555;
+}
+
+.react-flow__handle.connectingfrom {
+  background: #ff6b6b;
+}
+
+.react-flow__handle.connectingto {
+  background: #4ecdc4;
+}
+
+/* ReactFlow dark mode support */
+:root.dark .react-flow__handle {
+  background: var(--text-secondary);
+  border: 2px solid var(--surface-color);
+}
+
+/* CSS Variables for colors - fallback values */
+:root {
+  --primary-color: #4f46e5;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --text-color: #1f2937;
+  --text-secondary: #6b7280;
+  --surface-color: #ffffff;
+  --border-color: #d1d5db;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-hover: rgba(0, 0, 0, 0.15);
+}
+
+:root.dark {
+  --primary-color: #6366f1;
+  --success-color: #34d399;
+  --warning-color: #fbbf24;
+  --danger-color: #f87171;
+  --text-color: #f9fafb;
+  --text-secondary: #9ca3af;
+  --surface-color: #1f2937;
+  --border-color: #374151;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-hover: rgba(0, 0, 0, 0.4);
+}
