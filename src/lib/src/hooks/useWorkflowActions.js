@@ -73,6 +73,13 @@ export function useWorkflowActions(workflowState, historyCallback) {
 
   // Add start node
   const addStartNode = useCallback((options = {}) => {
+    // Check if a start node already exists
+    const existingStartNode = nodes.find(node => node.type === 'start');
+    if (existingStartNode) {
+      console.warn('A start node already exists. Only one start node is allowed per workflow.');
+      return null;
+    }
+
     const position = options.position || getDefaultPosition(nodes);
     const newNode = createStartNode({ ...options, position, existingNodes: nodes });
     return addNodeToWorkflow(newNode);
