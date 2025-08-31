@@ -1,0 +1,391 @@
+import React from 'react';
+import { X, Save, RotateCcw, Settings } from 'lucide-react';
+
+/**
+ * A simple node properties panel component for editing node data
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the panel is open
+ * @param {Object} props.node - The selected node object
+ * @param {Object} props.formData - Current form data
+ * @param {boolean} props.isDirty - Whether there are unsaved changes
+ * @param {Function} props.onClose - Callback to close the panel
+ * @param {Function} props.onFieldChange - Callback when a field changes
+ * @param {Function} props.onSave - Callback to save changes
+ * @param {Function} props.onReset - Callback to reset changes
+ * @param {string} props.className - Additional CSS classes
+ * @param {Object} props.style - Inline styles
+ */
+export function NodePropertiesPanel({
+  isOpen = false,
+  node = null,
+  formData = {},
+  isDirty = false,
+  onClose,
+  onFieldChange,
+  onSave,
+  onReset,
+  className = '',
+  style = {},
+  autoSave = false,
+}) {
+  if (!isOpen || !node) {
+    return null;
+  }
+
+  const handleFieldChange = (field, value) => {
+    if (onFieldChange) {
+      onFieldChange(field, value);
+      
+      // When name changes, also update label to keep them in sync
+      if (field === 'name') {
+        onFieldChange('label', value);
+      }
+    }
+  };
+
+  const handleSave = () => {
+    if (onSave && isDirty) {
+      onSave();
+    }
+  };
+
+  const handleReset = () => {
+    if (onReset && isDirty) {
+      onReset();
+    }
+  };
+
+  const getNodeTypeLabel = (type) => {
+    const labels = {
+      start: 'Start Node',
+      end: 'End Node',
+      operation: 'Operation Node',
+      switch: 'Switch Node',
+      event: 'Event Node',
+      sleep: 'Sleep Node',
+    };
+    return labels[type] || 'Unknown Node';
+  };
+
+  return (
+    <div 
+      className={`node-properties-panel ${className}`}
+      style={{
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        width: '320px',
+        maxHeight: '80vh',
+        backgroundColor: 'white',
+        border: '1px solid #e5e7eb',
+        borderRadius: '8px',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        zIndex: 1000,
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        ...style,
+      }}
+    >
+      {/* Header */}
+      <div 
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid #e5e7eb',
+          backgroundColor: '#f9fafb',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Settings size={16} color="#6b7280" />
+          <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+            Node Properties
+          </h3>
+        </div>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#f3f4f6';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'transparent';
+          }}
+        >
+          <X size={16} color="#6b7280" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div 
+        style={{
+          padding: '16px',
+          flex: 1,
+          overflow: 'auto',
+        }}
+      >
+        {/* Node Type */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ 
+            display: 'block', 
+            fontSize: '12px', 
+            fontWeight: '500', 
+            color: '#374151',
+            marginBottom: '4px'
+          }}>
+            Node Type
+          </label>
+          <div style={{
+            padding: '8px 12px',
+            backgroundColor: '#f3f4f6',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            fontSize: '14px',
+            color: '#6b7280',
+          }}>
+            {getNodeTypeLabel(node.type)}
+          </div>
+        </div>
+
+        {/* Node ID */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ 
+            display: 'block', 
+            fontSize: '12px', 
+            fontWeight: '500', 
+            color: '#374151',
+            marginBottom: '4px'
+          }}>
+            Node ID
+          </label>
+          <div style={{
+            padding: '8px 12px',
+            backgroundColor: '#f3f4f6',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            fontSize: '14px',
+            color: '#6b7280',
+            fontFamily: 'monospace',
+          }}>
+            {node.id}
+          </div>
+        </div>
+
+        {/* Node Name */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ 
+            display: 'block', 
+            fontSize: '12px', 
+            fontWeight: '500', 
+            color: '#374151',
+            marginBottom: '4px'
+          }}>
+            Name
+          </label>
+          <input
+            type="text"
+            value={formData.name || ''}
+            onChange={(e) => handleFieldChange('name', e.target.value)}
+            placeholder="Enter node name"
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              fontSize: '14px',
+              outline: 'none',
+              transition: 'border-color 0.2s',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#3b82f6';
+              e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
+          />
+        </div>
+
+        {/* Node-specific fields based on type */}
+        {node.type === 'operation' && (
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '12px', 
+              fontWeight: '500', 
+              color: '#374151',
+              marginBottom: '4px'
+            }}>
+              Function Reference
+            </label>
+            <input
+              type="text"
+              value={formData.functionRef?.refName || ''}
+              onChange={(e) => handleFieldChange('functionRef.refName', e.target.value)}
+              placeholder="Enter function name"
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+          </div>
+        )}
+
+        {node.type === 'sleep' && (
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ 
+              display: 'block', 
+              fontSize: '12px', 
+              fontWeight: '500', 
+              color: '#374151',
+              marginBottom: '4px'
+            }}>
+              Duration
+            </label>
+            <input
+              type="text"
+              value={formData.duration || ''}
+              onChange={(e) => handleFieldChange('duration', e.target.value)}
+              placeholder="e.g., PT30S, PT5M, PT1H"
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#3b82f6';
+                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1d5db';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Footer with action buttons (only show if not auto-save) */}
+      {!autoSave && (
+        <div 
+          style={{
+            padding: '16px',
+            borderTop: '1px solid #e5e7eb',
+            backgroundColor: '#f9fafb',
+            display: 'flex',
+            gap: '8px',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <button
+            onClick={handleReset}
+            disabled={!isDirty}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #d1d5db',
+              backgroundColor: 'white',
+              color: isDirty ? '#374151' : '#9ca3af',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '500',
+              cursor: isDirty ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              if (isDirty) {
+                e.target.style.backgroundColor = '#f3f4f6';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'white';
+            }}
+          >
+            <RotateCcw size={12} />
+            Reset
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!isDirty}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #3b82f6',
+              backgroundColor: isDirty ? '#3b82f6' : '#e5e7eb',
+              color: isDirty ? 'white' : '#9ca3af',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '500',
+              cursor: isDirty ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              if (isDirty) {
+                e.target.style.backgroundColor = '#2563eb';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (isDirty) {
+                e.target.style.backgroundColor = '#3b82f6';
+              }
+            }}
+          >
+            <Save size={12} />
+            Save
+          </button>
+        </div>
+      )}
+
+      {/* Dirty indicator */}
+      {isDirty && (
+        <div 
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '40px',
+            width: '8px',
+            height: '8px',
+            backgroundColor: '#f59e0b',
+            borderRadius: '50%',
+            border: '2px solid white',
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+export default NodePropertiesPanel;

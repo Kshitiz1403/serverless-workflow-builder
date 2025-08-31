@@ -16,11 +16,16 @@ export { default as EventNode } from './components/nodes/EventNode';
 export { default as EndNode } from './components/nodes/EndNode';
 export { default as SleepNode } from './components/nodes/SleepNode';
 
-// Hooks
+// Export components
+export { default as NodePropertiesPanel } from './components/editors/NodePropertiesPanel';
+
+// Export hooks
 export { useHistory } from './hooks/useHistory';
 export { useWorkflowState } from './hooks/useWorkflowState';
 export { useEdgeConnection } from './hooks/useEdgeConnection';
 export { useWorkflowActions } from './hooks/useWorkflowActions';
+export { useNodePropertiesPanel } from './hooks/useNodePropertiesPanel';
+export { useEdgeLabelSync } from './hooks/useEdgeLabelSync';
 
 // Utilities
 export {
