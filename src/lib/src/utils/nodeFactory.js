@@ -22,21 +22,21 @@ export function generateNodeId(nodeType) {
 export function generateUniqueNodeName(baseNodeType, existingNodes = []) {
   const baseName = baseNodeType;
   const existingNames = existingNodes.map(node => node.data?.name || node.data?.label || '').filter(Boolean);
-  
+
   // If base name doesn't exist, use it
   if (!existingNames.includes(baseName)) {
     return baseName;
   }
-  
+
   // Find the next available number
   let counter = 1;
   let candidateName;
-  
+
   do {
     candidateName = `${baseName} ${counter}`;
     counter++;
   } while (existingNames.includes(candidateName));
-  
+
   return candidateName;
 }
 
@@ -54,11 +54,11 @@ export function getDefaultPosition(existingNodes = []) {
   // Find a position that doesn't overlap with existing nodes
   const gridSize = 200;
   const maxAttempts = 50;
-  
+
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const x = 100 + (attempt % 5) * gridSize + Math.random() * 50;
     const y = 100 + Math.floor(attempt / 5) * gridSize + Math.random() * 50;
-    
+
     // Check if this position is too close to existing nodes
     const tooClose = existingNodes.some(node => {
       const distance = Math.sqrt(
@@ -66,12 +66,12 @@ export function getDefaultPosition(existingNodes = []) {
       );
       return distance < 150; // Minimum distance between nodes
     });
-    
+
     if (!tooClose) {
       return { x, y };
     }
   }
-  
+
   // Fallback to random position if no good spot found
   return {
     x: Math.random() * 400 + 100,
@@ -103,11 +103,11 @@ export function createOperationNode(options = {}) {
     metadata = {},
     existingNodes = []
   } = options;
-  
+
   const nodeName = name || generateUniqueNodeName('Operation', existingNodes);
 
   const nodeId = generateNodeId('operation');
-  
+
   return {
     id: nodeId,
     type: 'operation',
@@ -138,10 +138,10 @@ export function createSleepNode(options = {}) {
     metadata = {},
     existingNodes = []
   } = options;
-  
+
   const nodeName = name || generateUniqueNodeName('Sleep', existingNodes);
   const nodeId = generateNodeId('sleep');
-  
+
   return {
     id: nodeId,
     type: 'sleep',
@@ -156,10 +156,11 @@ export function createSleepNode(options = {}) {
 }
 
 /**
- * Create a new event node
+ * Create a new event node (event-based switch state)
  * @param {Object} options - Configuration options
  * @param {string} options.name - Node name
- * @param {Array} options.onEvents - Array of event configurations
+ * @param {Array} options.eventConditions - Array of event conditions for switching
+ * @param {Object} options.defaultCondition - Default condition when no events match
  * @param {Object} options.timeouts - Timeout configurations
  * @param {Object} options.position - Position coordinates
  * @param {Object} options.metadata - Additional metadata
@@ -168,28 +169,40 @@ export function createSleepNode(options = {}) {
 export function createEventNode(options = {}) {
   const {
     name,
-    onEvents = [{
-      eventRefs: ['sample-event']
+    eventConditions = [{
+      eventRef: 'sample-event',
+      transition: {
+        nextState: 'NextState'
+      }
     }],
-    timeouts = {},
+    defaultCondition = {
+      transition: {
+        nextState: 'DefaultState'
+      }
+    },
+    timeouts = {
+      eventTimeout: 'PT30S'
+    },
     position,
     metadata = {},
     existingNodes = []
   } = options;
-  
+
   const nodeName = name || generateUniqueNodeName('Event', existingNodes);
-  const nodeId = generateNodeId('event');
-  
+  const nodeId = generateNodeId('switch');
+
   return {
     id: nodeId,
-    type: 'event',
+    type: 'switch',
     position: position || getDefaultPosition(),
     data: {
       name: nodeName,
-      onEvents,
+      eventConditions,
+      defaultCondition,
       timeouts,
       metadata,
-      label: nodeName
+      label: nodeName,
+      conditionType: 'event'
     }
   };
 }
@@ -224,11 +237,11 @@ export function createSwitchNode(options = {}) {
     metadata = {},
     existingNodes = []
   } = options;
-  
+
   const nodeName = name || generateUniqueNodeName('Switch', existingNodes);
 
   const nodeId = generateNodeId('switch');
-  
+
   return {
     id: nodeId,
     type: 'switch',
@@ -261,10 +274,10 @@ export function createEndNode(options = {}) {
     metadata = {},
     existingNodes = []
   } = options;
-  
+
   const nodeName = name || generateUniqueNodeName('End', existingNodes);
   const nodeId = generateNodeId('end');
-  
+
   return {
     id: nodeId,
     type: 'end',
@@ -294,7 +307,7 @@ export function createStartNode(options = {}) {
   } = options;
 
   const nodeId = generateNodeId('start');
-  
+
   return {
     id: nodeId,
     type: 'start',

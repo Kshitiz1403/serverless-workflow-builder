@@ -105,14 +105,14 @@ export const useEdgeConnection = (edges, updateEdges, setHistoryState, nodes, wo
     let filteredEdges = edges;
     if (sourceNode?.type === 'switch') {
       // For switch nodes, only remove edges from the same source handle
-      filteredEdges = edges.filter(edge => 
+      filteredEdges = edges.filter(edge =>
         !(edge.source === connection.source && edge.sourceHandle === connection.sourceHandle)
       );
     } else {
       // For non-switch nodes, remove all existing outgoing edges
       filteredEdges = edges.filter(edge => edge.source !== connection.source);
     }
-    
+
     const updatedEdges = addEdge(newEdge, filteredEdges);
     updateEdges(updatedEdges);
 

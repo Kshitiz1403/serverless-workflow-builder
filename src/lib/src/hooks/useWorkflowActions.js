@@ -23,7 +23,7 @@ export function useWorkflowActions(workflowState, historyCallback) {
   const addNodeToWorkflow = useCallback((newNode) => {
     const updatedNodes = [...nodes, newNode];
     updateNodes(updatedNodes);
-    
+
     // Update history if callback provided
     if (historyCallback) {
       historyCallback({
@@ -32,7 +32,7 @@ export function useWorkflowActions(workflowState, historyCallback) {
         workflowMetadata
       });
     }
-    
+
     return newNode;
   }, [nodes, edges, workflowMetadata, updateNodes, historyCallback]);
 
@@ -89,12 +89,12 @@ export function useWorkflowActions(workflowState, historyCallback) {
   const removeNode = useCallback((nodeId) => {
     const updatedNodes = nodes.filter(node => node.id !== nodeId);
     // Also remove edges connected to this node
-    const updatedEdges = edges.filter(edge => 
+    const updatedEdges = edges.filter(edge =>
       edge.source !== nodeId && edge.target !== nodeId
     );
-    
+
     updateNodes(updatedNodes);
-    
+
     // Update history if callback provided
     if (historyCallback) {
       historyCallback({
@@ -103,7 +103,7 @@ export function useWorkflowActions(workflowState, historyCallback) {
         workflowMetadata
       });
     }
-    
+
     return { nodes: updatedNodes, edges: updatedEdges };
   }, [nodes, edges, workflowMetadata, updateNodes, historyCallback]);
 
@@ -132,7 +132,7 @@ export function useWorkflowActions(workflowState, historyCallback) {
   // Clear all nodes
   const clearAllNodes = useCallback(() => {
     updateNodes([]);
-    
+
     // Update history if callback provided
     if (historyCallback) {
       historyCallback({
@@ -151,13 +151,13 @@ export function useWorkflowActions(workflowState, historyCallback) {
     addSwitchNode,
     addEndNode,
     addStartNode,
-    
+
     // Generic functions
     addNode,
     removeNode,
     duplicateNode,
     clearAllNodes,
-    
+
     // Utility
     getDefaultPosition: () => getDefaultPosition(nodes)
   };

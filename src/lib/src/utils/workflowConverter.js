@@ -114,16 +114,17 @@ export function convertNodeToState(node, edges, allNodes, workflowMetadata) {
     defaultCondition: node.data.defaultCondition || { transition: { nextState: '' } },
    };
 
-   // Add timeouts for event conditions
-   if (node.data.conditionType === 'event' && node.data.timeouts && node.data.timeouts.eventTimeout) {
-    switchState.timeouts = node.data.timeouts;
-   }
 
    // Determine condition type and handle accordingly
    const conditionType = node.data.conditionType || 'data';
    const dataConditions = node.data.dataConditions || [];
    const eventConditions = node.data.eventConditions || [];
    const conditions = conditionType === 'data' ? dataConditions : eventConditions;
+
+   // Add timeouts for event conditions
+   if (conditionType === 'event' && node.data.timeouts && node.data.timeouts.eventTimeout) {
+    switchState.timeouts = node.data.timeouts;
+   }
 
    if (conditionType === 'data') {
     switchState.dataConditions = [];
