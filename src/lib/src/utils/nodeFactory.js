@@ -222,7 +222,7 @@ export function createSwitchNode(options = {}) {
   const {
     name,
     dataConditions = [{
-      condition: '${ .data }',
+      condition: '.age > 18',
       transition: {
         nextState: 'NextState'
       }
