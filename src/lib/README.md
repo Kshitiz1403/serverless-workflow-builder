@@ -25,7 +25,7 @@ A reusable React library for building serverless workflow editors using React Fl
 ## Installation
 
 ```bash
-npm install ./src/lib
+npm i serverless-workflow-builder-lib
 ```
 
 ## Quick Start
